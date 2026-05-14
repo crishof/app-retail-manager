@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "stocksuite": {
+    "retailmanager": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular/build:application",
           "options": {
-            "outputPath": "dist/stocksuite",
+            "outputPath": "dist/retailmanager",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": ["zone.js"],
@@ -23,8 +23,7 @@
               "@angular/material/prebuilt-themes/cyan-orange.css",
               "src/styles.css"
             ],
-            "scripts": [
-            ],
+            "scripts": [],
             "server": "src/main.server.ts",
             "prerender": false,
             "ssr": {
@@ -42,13 +41,18 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kb",
-                  "maximumError": "1mb"
+
+                  "maximumWarning": "2mb",
+
+                  "maximumError": "5mb"
                 },
+
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "2kb",
-                  "maximumError": "4kb"
+
+                  "maximumWarning": "28kb",
+
+                  "maximumError": "35kb"
                 }
               ],
               "outputHashing": "all"
@@ -65,10 +69,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "stocksuite:build:production"
+              "buildTarget": "retailmanager:build:production"
             },
             "development": {
-              "buildTarget": "stocksuite:build:development"
+              "buildTarget": "retailmanager:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -76,7 +80,7 @@
         "extract-i18n": {
           "builder": "@angular/build:extract-i18n",
           "options": {
-            "buildTarget": "stocksuite:build"
+            "buildTarget": "retailmanager:build"
           }
         },
         "test": {

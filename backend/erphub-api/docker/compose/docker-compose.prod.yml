@@ -1,0 +1,821 @@
+# =============================================================
+# docker-compose.prod.yml — Stack completo de producción
+# =============================================================
+# Uso:
+#   docker compose -f docker-compose.prod.yml up -d
+#   docker compose -f docker-compose.prod.yml up -d --build   # rebuild imágenes
+#   docker compose -f docker-compose.prod.yml logs -f         # seguir logs
+#   docker compose -f docker-compose.prod.yml down            # detener
+#
+# Prerrequisitos: exportar todas las variables requeridas en el sistema:
+#   export POSTGRES_USER=...
+#   export POSTGRES_PASSWORD=...
+#   export RABBITMQ_DEFAULT_USER=...
+#   export RABBITMQ_DEFAULT_PASS=...
+#   export CORS_ALLOWED_ORIGINS=https://tu-dominio.com
+#
+# Ver .env.example para la lista completa de variables.
+# =============================================================
+
+services:
+
+  # ===========================================================
+  # INFRAESTRUCTURA
+  # ===========================================================
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../postgres/init:/docker-entrypoint-initdb.d/:ro
+    networks:
+      - erphub-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    # Puerto NO expuesto al host en PROD (solo accesible dentro de la red Docker)
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - erphub-net
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    # Puerto AMQP y management UI NO expuestos al host en PROD
+
+  service-registry:
+    build:
+      context: ../../microservices
+      dockerfile: service-registry/Dockerfile
+    container_name: service-registry
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      LOG_LEVEL_SPRING: WARN
+    networks:
+      - erphub-net
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8761/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    # Dashboard Eureka (8761) NO expuesto al host en PROD
+
+  config-server:
+    build:
+      context: ../../microservices
+      dockerfile: config-server/Dockerfile
+    container_name: config-server
+    environment:
+      SPRING_PROFILES_ACTIVE: native
+      SPRING_CLOUD_CONFIG_ENABLED: "false"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://service-registry:8761/eureka/
+    depends_on:
+      service-registry:
+        condition: service_healthy
+    networks:
+      - erphub-net
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8088/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    # Config Server (8088) NO expuesto al host en PROD
+
+  api-gateway:
+    build:
+      context: ../../microservices
+      dockerfile: api-gateway/Dockerfile
+    container_name: api-gateway
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_CONFIG_IMPORT: "configserver:http://config-server:8088"
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      LOG_LEVEL_SPRING: WARN
+    ports:
+      - "8080:8080"
+    depends_on:
+      config-server:
+        condition: service_healthy
+      service-registry:
+        condition: service_healthy
+    networks:
+      - erphub-net
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ===========================================================
+  # MICROSERVICIOS
+  # Descomentar cada servicio al momento de desplegarlo.
+  # Cada servicio requiere las variables compartidas de Postgres
+  # y RabbitMQ exportadas en el sistema, más su variable de DB.
+  # ===========================================================
+
+#  branch-sv:
+#    build:
+#      context: ../../microservices
+#      dockerfile: branch-sv/Dockerfile
+#    container_name: branch-sv
+#    environment:
+#      SPRING_PROFILES_ACTIVE: prod
+#      SPRING_CONFIG_IMPORT: "configserver:http://config-server:8088"
+#      EUREKA_INSTANCE_HOSTNAME: branch-sv
+#      LOG_LEVEL_SPRING: WARN
+#      POSTGRES_NETWORK_HOST: postgres
+#      POSTGRES_CONTAINER_PORT: 5432
+#      POSTGRES_USER: ${POSTGRES_USER}
+#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+#      BRANCH_DB: ${BRANCH_DB:-branch_db}
+#      RABBITMQ_NETWORK_HOST: rabbitmq
+#      RABBITMQ_PORT: 5672
+#      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+#      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+#    depends_on:
+#      config-server:
+#        condition: service_healthy
+#      service-registry:
+#        condition: service_healthy
+#      postgres:
+#        condition: service_healthy
+#      rabbitmq:
+#        condition: service_healthy
+#    networks:
+#      - erphub-net
+#    healthcheck:
+#      test: ["CMD", "wget", "-qO-", "http://localhost:9000/actuator/health"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+#    restart: unless-stopped
+
+#  brand-sv:
+#    build:
+#      context: ../../microservices
+#      dockerfile: brand-sv/Dockerfile
+#    container_name: brand-sv
+#    environment:
+#      SPRING_PROFILES_ACTIVE: prod
+#      SPRING_CONFIG_IMPORT: "configserver:http://config-server:8088"
+#      EUREKA_INSTANCE_HOSTNAME: brand-sv
+#      LOG_LEVEL_SPRING: WARN
+#      POSTGRES_NETWORK_HOST: postgres
+#      POSTGRES_CONTAINER_PORT: 5432
+#      POSTGRES_USER: ${POSTGRES_USER}
+#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+#      BRAND_DB: ${BRAND_DB:-brand_db}
+#      RABBITMQ_NETWORK_HOST: rabbitmq
+#      RABBITMQ_PORT: 5672
+#      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+#      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+#    depends_on:
+#      config-server:
+#        condition: service_healthy
+#      service-registry:
+#        condition: service_healthy
+#      postgres:
+#        condition: service_healthy
+#      rabbitmq:
+#        condition: service_healthy
+#    networks:
+#      - erphub-net
+#    healthcheck:
+#      test: ["CMD", "wget", "-qO-", "http://localhost:9001/actuator/health"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+#    restart: unless-stopped
+
+#  cash-sv:
+#    build:
+#      context: ../../microservices
+#      dockerfile: cash-sv/Dockerfile
+#    container_name: cash-sv
+#    environment:
+#      SPRING_PROFILES_ACTIVE: prod
+#      SPRING_CONFIG_IMPORT: "configserver:http://config-server:8088"
+#      EUREKA_INSTANCE_HOSTNAME: cash-sv
+#      LOG_LEVEL_SPRING: WARN
+#      POSTGRES_NETWORK_HOST: postgres
+#      POSTGRES_CONTAINER_PORT: 5432
+#      POSTGRES_USER: ${POSTGRES_USER}
+#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+#      CASH_DB: ${CASH_DB:-cash_db}
+#      RABBITMQ_NETWORK_HOST: rabbitmq
+#      RABBITMQ_PORT: 5672
+#      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+#      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+#    depends_on:
+#      config-server:
+#        condition: service_healthy
+#      service-registry:
+#        condition: service_healthy
+#      postgres:
+#        condition: service_healthy
+#      rabbitmq:
+#        condition: service_healthy
+#    networks:
+#      - erphub-net
+#    healthcheck:
+#      test: ["CMD", "wget", "-qO-", "http://localhost:9002/actuator/health"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+#    restart: unless-stopped
+
+#  category-sv:
+#    build:
+#      context: ../../microservices
+#      dockerfile: category-sv/Dockerfile
+#    container_name: category-sv
+#    environment:
+#      SPRING_PROFILES_ACTIVE: prod
+#      SPRING_CONFIG_IMPORT: "configserver:http://config-server:8088"
+#      EUREKA_INSTANCE_HOSTNAME: category-sv
+#      LOG_LEVEL_SPRING: WARN
+#      POSTGRES_NETWORK_HOST: postgres
+#      POSTGRES_CONTAINER_PORT: 5432
+#      POSTGRES_USER: ${POSTGRES_USER}
+#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+#      CATEGORY_DB: ${CATEGORY_DB:-category_db}
+#      RABBITMQ_NETWORK_HOST: rabbitmq
+#      RABBITMQ_PORT: 5672
+#      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+#      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+#    depends_on:
+#      config-server:
+#        condition: service_healthy
+#      service-registry:
+#        condition: service_healthy
+#      postgres:
+#        condition: service_healthy
+#      rabbitmq:
+#        condition: service_healthy
+#    networks:
+#      - erphub-net
+#    healthcheck:
+#      test: ["CMD", "wget", "-qO-", "http://localhost:9003/actuator/health"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+#    restart: unless-stopped
+
+#  customer-sv:
+#    build:
+#      context: ../../microservices
+#      dockerfile: customer-sv/Dockerfile
+#    container_name: customer-sv
+#    environment:
+#      SPRING_PROFILES_ACTIVE: prod
+#      SPRING_CONFIG_IMPORT: "configserver:http://config-server:8088"
+#      EUREKA_INSTANCE_HOSTNAME: customer-sv
+#      LOG_LEVEL_SPRING: WARN
+#      POSTGRES_NETWORK_HOST: postgres
+#      POSTGRES_CONTAINER_PORT: 5432
+#      POSTGRES_USER: ${POSTGRES_USER}
+#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+#      CUSTOMER_DB: ${CUSTOMER_DB:-customer_db}
+#      RABBITMQ_NETWORK_HOST: rabbitmq
+#      RABBITMQ_PORT: 5672
+#      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+#      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+#    depends_on:
+#      config-server:
+#        condition: service_healthy
+#      service-registry:
+#        condition: service_healthy
+#      postgres:
+#        condition: service_healthy
+#      rabbitmq:
+#        condition: service_healthy
+#    networks:
+#      - erphub-net
+#    healthcheck:
+#      test: ["CMD", "wget", "-qO-", "http://localhost:9004/actuator/health"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+#    restart: unless-stopped
+
+#  exchange-sv:
+#    build:
+#      context: ../../microservices
+#      dockerfile: exchange-sv/Dockerfile
+#    container_name: exchange-sv
+#    environment:
+#      SPRING_PROFILES_ACTIVE: prod
+#      SPRING_CONFIG_IMPORT: "configserver:http://config-server:8088"
+#      EUREKA_INSTANCE_HOSTNAME: exchange-sv
+#      LOG_LEVEL_SPRING: WARN
+#      POSTGRES_NETWORK_HOST: postgres
+#      POSTGRES_CONTAINER_PORT: 5432
+#      POSTGRES_USER: ${POSTGRES_USER}
+#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+#      EXCHANGE_DB: ${EXCHANGE_DB:-exchange_db}
+#      RABBITMQ_NETWORK_HOST: rabbitmq
+#      RABBITMQ_PORT: 5672
+#      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+#      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+#    depends_on:
+#      config-server:
+#        condition: service_healthy
+#      service-registry:
+#        condition: service_healthy
+#      postgres:
+#        condition: service_healthy
+#      rabbitmq:
+#        condition: service_healthy
+#    networks:
+#      - erphub-net
+#    healthcheck:
+#      test: ["CMD", "wget", "-qO-", "http://localhost:9005/actuator/health"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+#    restart: unless-stopped
+
+#  identity-sv:
+#    build:
+#      context: ../../microservices
+#      dockerfile: identity-sv/Dockerfile
+#    container_name: identity-sv
+#    environment:
+#      SPRING_PROFILES_ACTIVE: prod
+#      SPRING_CONFIG_IMPORT: "configserver:http://config-server:8088"
+#      EUREKA_INSTANCE_HOSTNAME: identity-sv
+#      LOG_LEVEL_SPRING: WARN
+#      POSTGRES_NETWORK_HOST: postgres
+#      POSTGRES_CONTAINER_PORT: 5432
+#      POSTGRES_USER: ${POSTGRES_USER}
+#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+#      IDENTITY_DB: ${IDENTITY_DB:-identity_db}
+#      RABBITMQ_NETWORK_HOST: rabbitmq
+#      RABBITMQ_PORT: 5672
+#      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+#      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+#      BASE64_SECRET_KEY: ${BASE64_SECRET_KEY}
+#      JWT_EXPIRATION: ${JWT_EXPIRATION:-900000}
+#      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION:-604800000}
+#      MAIL_ENABLED: ${MAIL_ENABLED:-false}
+#      MAIL_HOST: ${MAIL_HOST}
+#      MAIL_USERNAME: ${MAIL_USERNAME}
+#      MAIL_PASSWORD: ${MAIL_PASSWORD}
+#      BREVO_API_KEY: ${BREVO_API_KEY}
+#      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+#      RESET_PASSWORD_BASE_URL: ${RESET_PASSWORD_BASE_URL}
+#      ACCEPT_INVITE_BASE_URL: ${ACCEPT_INVITE_BASE_URL}
+#    depends_on:
+#      config-server:
+#        condition: service_healthy
+#      service-registry:
+#        condition: service_healthy
+#      postgres:
+#        condition: service_healthy
+#      rabbitmq:
+#        condition: service_healthy
+#    networks:
+#      - erphub-net
+#    healthcheck:
+#      test: ["CMD", "wget", "-qO-", "http://localhost:9006/actuator/health"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+#    restart: unless-stopped
+
+#  image-sv:
+#    build:
+#      context: ../../microservices
+#      dockerfile: image-sv/Dockerfile
+#    container_name: image-sv
+#    environment:
+#      SPRING_PROFILES_ACTIVE: prod
+#      SPRING_CONFIG_IMPORT: "configserver:http://config-server:8088"
+#      EUREKA_INSTANCE_HOSTNAME: image-sv
+#      LOG_LEVEL_SPRING: WARN
+#      POSTGRES_NETWORK_HOST: postgres
+#      POSTGRES_CONTAINER_PORT: 5432
+#      POSTGRES_USER: ${POSTGRES_USER}
+#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+#      IMAGE_DB: ${IMAGE_DB:-image_db}
+#      RABBITMQ_NETWORK_HOST: rabbitmq
+#      RABBITMQ_PORT: 5672
+#      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+#      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+#    depends_on:
+#      config-server:
+#        condition: service_healthy
+#      service-registry:
+#        condition: service_healthy
+#      postgres:
+#        condition: service_healthy
+#      rabbitmq:
+#        condition: service_healthy
+#    networks:
+#      - erphub-net
+#    healthcheck:
+#      test: ["CMD", "wget", "-qO-", "http://localhost:9007/actuator/health"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+#    restart: unless-stopped
+
+#  inventory-sv:
+#    build:
+#      context: ../../microservices
+#      dockerfile: inventory-sv/Dockerfile
+#    container_name: inventory-sv
+#    environment:
+#      SPRING_PROFILES_ACTIVE: prod
+#      SPRING_CONFIG_IMPORT: "configserver:http://config-server:8088"
+#      EUREKA_INSTANCE_HOSTNAME: inventory-sv
+#      LOG_LEVEL_SPRING: WARN
+#      POSTGRES_NETWORK_HOST: postgres
+#      POSTGRES_CONTAINER_PORT: 5432
+#      POSTGRES_USER: ${POSTGRES_USER}
+#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+#      INVENTORY_DB: ${INVENTORY_DB:-inventory_db}
+#      RABBITMQ_NETWORK_HOST: rabbitmq
+#      RABBITMQ_PORT: 5672
+#      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+#      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+#    depends_on:
+#      config-server:
+#        condition: service_healthy
+#      service-registry:
+#        condition: service_healthy
+#      postgres:
+#        condition: service_healthy
+#      rabbitmq:
+#        condition: service_healthy
+#    networks:
+#      - erphub-net
+#    healthcheck:
+#      test: ["CMD", "wget", "-qO-", "http://localhost:9008/actuator/health"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+#    restart: unless-stopped
+
+#  location-sv:
+#    build:
+#      context: ../../microservices
+#      dockerfile: location-sv/Dockerfile
+#    container_name: location-sv
+#    environment:
+#      SPRING_PROFILES_ACTIVE: prod
+#      SPRING_CONFIG_IMPORT: "configserver:http://config-server:8088"
+#      EUREKA_INSTANCE_HOSTNAME: location-sv
+#      LOG_LEVEL_SPRING: WARN
+#      POSTGRES_NETWORK_HOST: postgres
+#      POSTGRES_CONTAINER_PORT: 5432
+#      POSTGRES_USER: ${POSTGRES_USER}
+#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+#      LOCATION_DB: ${LOCATION_DB:-location_db}
+#      RABBITMQ_NETWORK_HOST: rabbitmq
+#      RABBITMQ_PORT: 5672
+#      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+#      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+#    depends_on:
+#      config-server:
+#        condition: service_healthy
+#      service-registry:
+#        condition: service_healthy
+#      postgres:
+#        condition: service_healthy
+#      rabbitmq:
+#        condition: service_healthy
+#    networks:
+#      - erphub-net
+#    healthcheck:
+#      test: ["CMD", "wget", "-qO-", "http://localhost:9009/actuator/health"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+#    restart: unless-stopped
+
+#  pricing-sv:
+#    build:
+#      context: ../../microservices
+#      dockerfile: pricing-sv/Dockerfile
+#    container_name: pricing-sv
+#    environment:
+#      SPRING_PROFILES_ACTIVE: prod
+#      SPRING_CONFIG_IMPORT: "configserver:http://config-server:8088"
+#      EUREKA_INSTANCE_HOSTNAME: pricing-sv
+#      LOG_LEVEL_SPRING: WARN
+#      POSTGRES_NETWORK_HOST: postgres
+#      POSTGRES_CONTAINER_PORT: 5432
+#      POSTGRES_USER: ${POSTGRES_USER}
+#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+#      PRICING_DB: ${PRICING_DB:-pricing_db}
+#      RABBITMQ_NETWORK_HOST: rabbitmq
+#      RABBITMQ_PORT: 5672
+#      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+#      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+#    depends_on:
+#      config-server:
+#        condition: service_healthy
+#      service-registry:
+#        condition: service_healthy
+#      postgres:
+#        condition: service_healthy
+#      rabbitmq:
+#        condition: service_healthy
+#    networks:
+#      - erphub-net
+#    healthcheck:
+#      test: ["CMD", "wget", "-qO-", "http://localhost:9010/actuator/health"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+#    restart: unless-stopped
+
+#  product-sv:
+#    build:
+#      context: ../../microservices
+#      dockerfile: product-sv/Dockerfile
+#    container_name: product-sv
+#    environment:
+#      SPRING_PROFILES_ACTIVE: prod
+#      SPRING_CONFIG_IMPORT: "configserver:http://config-server:8088"
+#      EUREKA_INSTANCE_HOSTNAME: product-sv
+#      LOG_LEVEL_SPRING: WARN
+#      POSTGRES_NETWORK_HOST: postgres
+#      POSTGRES_CONTAINER_PORT: 5432
+#      POSTGRES_USER: ${POSTGRES_USER}
+#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+#      PRODUCT_DB: ${PRODUCT_DB:-product_db}
+#      RABBITMQ_NETWORK_HOST: rabbitmq
+#      RABBITMQ_PORT: 5672
+#      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+#      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+#    depends_on:
+#      config-server:
+#        condition: service_healthy
+#      service-registry:
+#        condition: service_healthy
+#      postgres:
+#        condition: service_healthy
+#      rabbitmq:
+#        condition: service_healthy
+#    networks:
+#      - erphub-net
+#    healthcheck:
+#      test: ["CMD", "wget", "-qO-", "http://localhost:9011/actuator/health"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+#    restart: unless-stopped
+
+#  purchase-sv:
+#    build:
+#      context: ../../microservices
+#      dockerfile: purchase-sv/Dockerfile
+#    container_name: purchase-sv
+#    environment:
+#      SPRING_PROFILES_ACTIVE: prod
+#      SPRING_CONFIG_IMPORT: "configserver:http://config-server:8088"
+#      EUREKA_INSTANCE_HOSTNAME: purchase-sv
+#      LOG_LEVEL_SPRING: WARN
+#      POSTGRES_NETWORK_HOST: postgres
+#      POSTGRES_CONTAINER_PORT: 5432
+#      POSTGRES_USER: ${POSTGRES_USER}
+#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+#      PURCHASE_DB: ${PURCHASE_DB:-purchase_db}
+#      RABBITMQ_NETWORK_HOST: rabbitmq
+#      RABBITMQ_PORT: 5672
+#      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+#      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+#    depends_on:
+#      config-server:
+#        condition: service_healthy
+#      service-registry:
+#        condition: service_healthy
+#      postgres:
+#        condition: service_healthy
+#      rabbitmq:
+#        condition: service_healthy
+#    networks:
+#      - erphub-net
+#    healthcheck:
+#      test: ["CMD", "wget", "-qO-", "http://localhost:9012/actuator/health"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+#    restart: unless-stopped
+
+#  reporting-sv:
+#    build:
+#      context: ../../microservices
+#      dockerfile: reporting-sv/Dockerfile
+#    container_name: reporting-sv
+#    environment:
+#      SPRING_PROFILES_ACTIVE: prod
+#      SPRING_CONFIG_IMPORT: "configserver:http://config-server:8088"
+#      EUREKA_INSTANCE_HOSTNAME: reporting-sv
+#      LOG_LEVEL_SPRING: WARN
+#      POSTGRES_NETWORK_HOST: postgres
+#      POSTGRES_CONTAINER_PORT: 5432
+#      POSTGRES_USER: ${POSTGRES_USER}
+#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+#      REPORTING_DB: ${REPORTING_DB:-reporting_db}
+#      RABBITMQ_NETWORK_HOST: rabbitmq
+#      RABBITMQ_PORT: 5672
+#      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+#      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+#    depends_on:
+#      config-server:
+#        condition: service_healthy
+#      service-registry:
+#        condition: service_healthy
+#      postgres:
+#        condition: service_healthy
+#      rabbitmq:
+#        condition: service_healthy
+#    networks:
+#      - erphub-net
+#    healthcheck:
+#      test: ["CMD", "wget", "-qO-", "http://localhost:9013/actuator/health"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+#    restart: unless-stopped
+
+#  sales-sv:
+#    build:
+#      context: ../../microservices
+#      dockerfile: sales-sv/Dockerfile
+#    container_name: sales-sv
+#    environment:
+#      SPRING_PROFILES_ACTIVE: prod
+#      SPRING_CONFIG_IMPORT: "configserver:http://config-server:8088"
+#      EUREKA_INSTANCE_HOSTNAME: sales-sv
+#      LOG_LEVEL_SPRING: WARN
+#      POSTGRES_NETWORK_HOST: postgres
+#      POSTGRES_CONTAINER_PORT: 5432
+#      POSTGRES_USER: ${POSTGRES_USER}
+#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+#      SALES_DB: ${SALES_DB:-sales_db}
+#      RABBITMQ_NETWORK_HOST: rabbitmq
+#      RABBITMQ_PORT: 5672
+#      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+#      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+#    depends_on:
+#      config-server:
+#        condition: service_healthy
+#      service-registry:
+#        condition: service_healthy
+#      postgres:
+#        condition: service_healthy
+#      rabbitmq:
+#        condition: service_healthy
+#    networks:
+#      - erphub-net
+#    healthcheck:
+#      test: ["CMD", "wget", "-qO-", "http://localhost:9014/actuator/health"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+#    restart: unless-stopped
+
+#  supplier-catalog-sv:
+#    build:
+#      context: ../../microservices
+#      dockerfile: supplier-catalog-sv/Dockerfile
+#    container_name: supplier-catalog-sv
+#    environment:
+#      SPRING_PROFILES_ACTIVE: prod
+#      SPRING_CONFIG_IMPORT: "configserver:http://config-server:8088"
+#      EUREKA_INSTANCE_HOSTNAME: supplier-catalog-sv
+#      LOG_LEVEL_SPRING: WARN
+#      POSTGRES_NETWORK_HOST: postgres
+#      POSTGRES_CONTAINER_PORT: 5432
+#      POSTGRES_USER: ${POSTGRES_USER}
+#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+#      SUPPLIER_CATALOG_DB: ${SUPPLIER_CATALOG_DB:-supplier_catalog_db}
+#      RABBITMQ_NETWORK_HOST: rabbitmq
+#      RABBITMQ_PORT: 5672
+#      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+#      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+#    depends_on:
+#      config-server:
+#        condition: service_healthy
+#      service-registry:
+#        condition: service_healthy
+#      postgres:
+#        condition: service_healthy
+#      rabbitmq:
+#        condition: service_healthy
+#    networks:
+#      - erphub-net
+#    healthcheck:
+#      test: ["CMD", "wget", "-qO-", "http://localhost:9015/actuator/health"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+#    restart: unless-stopped
+
+#  supplier-sv:
+#    build:
+#      context: ../../microservices
+#      dockerfile: supplier-sv/Dockerfile
+#    container_name: supplier-sv
+#    environment:
+#      SPRING_PROFILES_ACTIVE: prod
+#      SPRING_CONFIG_IMPORT: "configserver:http://config-server:8088"
+#      EUREKA_INSTANCE_HOSTNAME: supplier-sv
+#      LOG_LEVEL_SPRING: WARN
+#      POSTGRES_NETWORK_HOST: postgres
+#      POSTGRES_CONTAINER_PORT: 5432
+#      POSTGRES_USER: ${POSTGRES_USER}
+#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+#      SUPPLIER_DB: ${SUPPLIER_DB:-supplier_db}
+#      RABBITMQ_NETWORK_HOST: rabbitmq
+#      RABBITMQ_PORT: 5672
+#      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+#      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+#    depends_on:
+#      config-server:
+#        condition: service_healthy
+#      service-registry:
+#        condition: service_healthy
+#      postgres:
+#        condition: service_healthy
+#      rabbitmq:
+#        condition: service_healthy
+#    networks:
+#      - erphub-net
+#    healthcheck:
+#      test: ["CMD", "wget", "-qO-", "http://localhost:9016/actuator/health"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+#    restart: unless-stopped
+
+#  tenant-sv:
+#    build:
+#      context: ../../microservices
+#      dockerfile: tenant-sv/Dockerfile
+#    container_name: tenant-sv
+#    environment:
+#      SPRING_PROFILES_ACTIVE: prod
+#      SPRING_CONFIG_IMPORT: "configserver:http://config-server:8088"
+#      EUREKA_INSTANCE_HOSTNAME: tenant-sv
+#      LOG_LEVEL_SPRING: WARN
+#      POSTGRES_NETWORK_HOST: postgres
+#      POSTGRES_CONTAINER_PORT: 5432
+#      POSTGRES_USER: ${POSTGRES_USER}
+#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+#      TENANT_DB: ${TENANT_DB:-tenant_db}
+#      RABBITMQ_NETWORK_HOST: rabbitmq
+#      RABBITMQ_PORT: 5672
+#      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+#      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+#    depends_on:
+#      config-server:
+#        condition: service_healthy
+#      service-registry:
+#        condition: service_healthy
+#      postgres:
+#        condition: service_healthy
+#      rabbitmq:
+#        condition: service_healthy
+#    networks:
+#      - erphub-net
+#    healthcheck:
+#      test: ["CMD", "wget", "-qO-", "http://localhost:9017/actuator/health"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+#    restart: unless-stopped
+
+networks:
+  erphub-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  rabbitmq_data:
+    driver: local
