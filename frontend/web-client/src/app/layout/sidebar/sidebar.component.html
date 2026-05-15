@@ -22,18 +22,33 @@
           <p class="sidebar__section-label">{{ section.title }}</p>
         }
         @for (item of section.items; track item.label) {
-          <a
-            class="sidebar__item"
-            [routerLink]="item.route"
-            routerLinkActive="sidebar__item--active"
-            [routerLinkActiveOptions]="{ exact: item.route === '/' }"
-            [title]="collapsed ? item.label : ''"
-          >
-            <span class="material-icons sidebar__item-icon">{{ item.icon }}</span>
-            @if (!collapsed) {
-              <span class="sidebar__item-label">{{ item.label }}</span>
-            }
-          </a>
+          @if (item.externalUrl) {
+            <a
+              class="sidebar__item"
+              [href]="item.externalUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              [title]="collapsed ? item.label : ''"
+            >
+              <span class="material-icons sidebar__item-icon">{{ item.icon }}</span>
+              @if (!collapsed) {
+                <span class="sidebar__item-label">{{ item.label }}</span>
+              }
+            </a>
+          } @else {
+            <a
+              class="sidebar__item"
+              [routerLink]="item.route"
+              routerLinkActive="sidebar__item--active"
+              [routerLinkActiveOptions]="{ exact: item.route === '/' }"
+              [title]="collapsed ? item.label : ''"
+            >
+              <span class="material-icons sidebar__item-icon">{{ item.icon }}</span>
+              @if (!collapsed) {
+                <span class="sidebar__item-label">{{ item.label }}</span>
+              }
+            </a>
+          }
         }
       </div>
     }

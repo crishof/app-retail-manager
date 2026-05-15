@@ -1,11 +1,13 @@
 import { Component, Input } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { environment } from '../../../environments/environment';
 
 export interface NavItem {
   label: string;
   icon: string;
   route?: string;
+  externalUrl?: string;
   children?: NavItem[];
   expanded?: boolean;
 }
@@ -84,6 +86,7 @@ export class SidebarComponent {
     {
       title: 'Ecommerce',
       items: [
+        { label: 'Ver tienda',    icon: 'storefront',     externalUrl: environment.ecommerceUrl },
         { label: 'Órdenes',       icon: 'shopping_cart',  route: '/ecommerce/ordenes' },
         { label: 'Configuración', icon: 'tune',           route: '/ecommerce/config'  },
         { label: 'SEO',           icon: 'search',         route: '/ecommerce/seo'     },
