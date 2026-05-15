@@ -2,7 +2,8 @@ import { Component, HostListener, inject, OnDestroy } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { Router } from "@angular/router";
-import { Subscription } from "rxjs";
+import { forkJoin, of, Subscription } from "rxjs";
+import { catchError, map } from "rxjs/operators";
 
 import { IProduct } from "../../../model/product.model";
 import { ProductService } from "../../../services/product.service";
@@ -144,12 +145,71 @@ export class ProductsComponent implements OnDestroy {
   private runSearch(term: string): void {
     this.loading = true;
     this.subscription?.unsubscribe();
-    this.subscription = this._productService
-      .getProducts({ search: term, inStock: this.filterStock || undefined, page: 0, size: 50 })
+
+    const terms = this.tokenizeSearchTerm(term);
+    const searchTerms = terms.length > 1 ? terms : [term];
+
+    const requests = searchTerms.map((search) =>
+      this._productService
+        .getProducts({
+          search,
+          inStock: this.filterStock || undefined,
+          page: 0,
+          size: 100,
+        })
+        .pipe(
+          map((page) => page.content),
+          catchError((err) => {
+            console.error(err);
+            return of<IProduct[]>([]);
+          }),
+        ),
+    );
+
+    this.subscription = forkJoin(requests)
+      .pipe(
+        map((results) => this.mergeUniqueProducts(results.flat())),
+        map((products) => this.filterProductsByTerms(products, terms)),
+      )
       .subscribe({
-        next: (page) => { this.productList = page.content; this.loading = false; },
-        error: (err) => { console.error(err); this.loading = false; },
+        next: (products) => {
+          this.productList = products;
+          this.loading = false;
+        },
+        error: (err) => {
+          console.error(err);
+          this.loading = false;
+        },
       });
+  }
+
+  private tokenizeSearchTerm(term: string): string[] {
+    return term
+      .toLowerCase()
+      .trim()
+      .split(/\s+/)
+      .filter((token) => token.length > 0);
+  }
+
+  private mergeUniqueProducts(products: IProduct[]): IProduct[] {
+    const uniqueById = new Map<string, IProduct>();
+    products.forEach((product) => {
+      uniqueById.set(product.id, product);
+    });
+    return Array.from(uniqueById.values());
+  }
+
+  private filterProductsByTerms(products: IProduct[], terms: string[]): IProduct[] {
+    if (terms.length === 0) {
+      return products;
+    }
+
+    return products.filter((product) => {
+      const searchableText = `${product.brandName ?? ""} ${product.model ?? ""} ${product.description ?? ""}`
+        .toLowerCase();
+
+      return terms.every((term) => searchableText.includes(term));
+    });
   }
 
   private loadVisibleColumns(): ProductColumnKey[] {
