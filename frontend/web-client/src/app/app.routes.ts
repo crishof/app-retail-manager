@@ -21,6 +21,7 @@ import { CustomerInvoiceComponent } from './pages/customer/customer-invoice/cust
 import { CustomerComponent } from './pages/customer/customer/customer.component';
 import { CashComponent } from './pages/cash/cash.component';
 import { BranchesComponent } from './pages/settings/branches/branches.component';
+import { CompaniesComponent } from './pages/settings/companies/companies.component';
 import { EnConstruccionComponent } from './shared/en-construccion/en-construccion.component';
 
 export const routes: Routes = [
@@ -91,6 +92,7 @@ export const routes: Routes = [
 
   // ── Configuración ──────────────────────────────────
   { path: 'configuracion/general',              component: EnConstruccionComponent, data: { titulo: 'Configuración General' } },
+  { path: 'configuracion/general/empresas',     component: CompaniesComponent },
   { path: 'configuracion/general/sucursales',   component: BranchesComponent },
   { path: 'configuracion/usuarios',             component: EnConstruccionComponent, data: { titulo: 'Usuarios' } },
   { path: 'configuracion/archivos',             component: EnConstruccionComponent, data: { titulo: 'Archivos Maestros' } },
