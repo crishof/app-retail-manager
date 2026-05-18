@@ -40,7 +40,7 @@
               class="sidebar__item"
               [routerLink]="item.route"
               routerLinkActive="sidebar__item--active"
-              [routerLinkActiveOptions]="{ exact: item.route === '/' }"
+              [routerLinkActiveOptions]="{ exact: true }"
               [title]="collapsed ? item.label : ''"
             >
               <span class="material-icons sidebar__item-icon">{{ item.icon }}</span>

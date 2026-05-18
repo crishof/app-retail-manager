@@ -1,0 +1,171 @@
+<section class="companies">
+  <header class="companies__header">
+    <div>
+      <p class="companies__kicker">Gestión maestra</p>
+      <h1 class="companies__title">Empresas</h1>
+      <p class="companies__subtitle">Alta y edición centralizadas en una sola vista, con foco operativo.</p>
+    </div>
+    <div class="companies__header-actions">
+      <button class="btn btn--ghost" type="button" (click)="startCreateCompany()">
+        <span class="material-icons">add_business</span>
+        Nueva empresa
+      </button>
+      <button class="btn btn--primary" type="button" [disabled]="!canNavigateToBranches" (click)="goToBranches(selectedCompany!)">
+        <span class="material-icons">store</span>
+        Ver sucursales
+      </button>
+    </div>
+  </header>
+
+  @if (successMessage) {
+    <div class="alert alert--success">{{ successMessage }}</div>
+  }
+  @if (errorMessage) {
+    <div class="alert alert--error">{{ errorMessage }}</div>
+  }
+
+  <div class="companies__workspace">
+    <aside class="company-list">
+      <div class="company-list__head">
+        <h2>Empresas registradas</h2>
+        <span class="company-list__count">{{ companies.length }}</span>
+      </div>
+
+      @if (loading) {
+        <p class="company-list__empty">Cargando empresas...</p>
+      } @else if (!companies.length) {
+        <p class="company-list__empty">Sin registros. Creá la primera empresa desde el panel derecho.</p>
+      } @else {
+        <ul class="company-list__items">
+          @for (company of companies; track company.id) {
+            <li
+              class="company-list__item"
+              [class.company-list__item--active]="selectedCompany?.id === company.id"
+              (click)="selectCompany(company)"
+            >
+              <div class="company-list__item-main">
+                <span class="company-list__item-name">{{ company.legalName || company.name }}</span>
+                <span class="company-list__item-cuit">CUIT {{ company.cuit }}</span>
+              </div>
+              <div class="company-list__item-actions">
+                <button class="icon-btn" title="Editar" (click)="selectCompany(company); $event.stopPropagation()">
+                  <span class="material-icons">edit</span>
+                </button>
+                <button class="icon-btn icon-btn--danger" title="Eliminar" (click)="confirmDelete(company); $event.stopPropagation()">
+                  <span class="material-icons">delete</span>
+                </button>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </aside>
+
+    <main class="company-editor">
+      <div class="company-editor__head">
+        <div>
+          <p class="company-editor__mode">{{ editorMode === 'create' ? 'Alta' : 'Edición' }}</p>
+          <h2>{{ editorTitle }}</h2>
+        </div>
+        @if (editorMode === 'edit') {
+          <button class="btn btn--ghost btn--sm" type="button" (click)="startCreateCompany()">Limpiar</button>
+        }
+      </div>
+
+      <form class="company-form" [formGroup]="form" (ngSubmit)="save()">
+        <div class="company-form__grid">
+          <label class="field">
+            <span class="field__label">Nombre comercial *</span>
+            <input type="text" formControlName="name" class="field__input" placeholder="Ej: Retail Norte" />
+          </label>
+
+          <label class="field">
+            <span class="field__label">Razón social *</span>
+            <input type="text" formControlName="legalName" class="field__input" placeholder="Retail Norte S.A." />
+          </label>
+
+          <label class="field">
+            <span class="field__label">Posición IVA *</span>
+            <select formControlName="ivaStatus" class="field__input">
+              <option value="">Seleccionar posición IVA...</option>
+              @for (option of ivaOptions; track option) {
+                <option [value]="option">{{ option }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="field">
+            <span class="field__label">CUIT *</span>
+            <input
+              type="text"
+              formControlName="cuit"
+              class="field__input"
+              placeholder="30-12345678-9"
+              maxlength="13"
+              (input)="onCuitInput($event)"
+            />
+          </label>
+
+          <label class="field">
+            <span class="field__label">Inicio de actividades</span>
+            <input type="date" formControlName="startOfActivities" class="field__input" />
+          </label>
+
+          <label class="field">
+            <span class="field__label">Nro. ingresos brutos</span>
+            <input type="text" formControlName="grossIncomeNumber" class="field__input" placeholder="901-784512-3" />
+          </label>
+
+          <label class="field">
+            <span class="field__label">Email</span>
+            <input type="email" formControlName="email" class="field__input" placeholder="administracion@empresa.com" />
+          </label>
+
+          <label class="field">
+            <span class="field__label">Teléfono</span>
+            <input type="tel" formControlName="phone" class="field__input" placeholder="+54 11 5555 0000" />
+          </label>
+
+          <label class="field field--full">
+            <span class="field__label">Sitio web</span>
+            <input type="url" formControlName="website" class="field__input" placeholder="https://empresa.com" />
+          </label>
+        </div>
+
+        <label class="field field--checkbox">
+          <input type="checkbox" formControlName="active" />
+          <span class="field__label">Empresa activa</span>
+        </label>
+
+        <footer class="company-form__footer">
+          <button type="button" class="btn btn--ghost" (click)="startCreateCompany()">Nueva</button>
+          <button type="submit" class="btn btn--primary" [disabled]="saving">
+            {{ saving ? 'Guardando...' : (editorMode === 'create' ? 'Crear empresa' : 'Guardar cambios') }}
+          </button>
+        </footer>
+      </form>
+    </main>
+  </div>
+</section>
+
+<!-- ── Modal: Confirmación de eliminación ────────────────────────── -->
+@if (deleting) {
+  <div class="modal-overlay" (click)="cancelDelete()">
+    <div class="modal modal--small" (click)="$event.stopPropagation()">
+      <header class="modal__header">
+        <h3>Confirmar eliminación</h3>
+        <button class="icon-btn" (click)="cancelDelete()">
+          <span class="material-icons">close</span>
+        </button>
+      </header>
+      <div class="modal__body">
+        <p>¿Estás seguro de que deseas eliminar la empresa <strong>{{ deleting.name }}</strong>?</p>
+        <p class="text-sm text-gray-600">Esta acción no se puede deshacer.</p>
+      </div>
+      <footer class="modal__footer">
+        <button type="button" class="btn btn--ghost" (click)="cancelDelete()">Cancelar</button>
+        <button type="button" class="btn btn--danger" (click)="delete()">Eliminar</button>
+      </footer>
+    </div>
+  </div>
+}

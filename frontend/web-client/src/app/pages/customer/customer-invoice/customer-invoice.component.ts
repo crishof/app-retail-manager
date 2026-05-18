@@ -1,6 +1,6 @@
 import { CommonModule } from "@angular/common";
 import { Component, OnDestroy, OnInit, inject } from "@angular/core";
-import { RouterLink } from "@angular/router";
+import { ActivatedRoute, RouterLink } from "@angular/router";
 import {
   FormBuilder,
   FormControl,
@@ -29,6 +29,10 @@ import { CashService, ICashSessionResponse } from "../../../services/cash.servic
 })
 export class CustomerInvoiceComponent implements OnInit, OnDestroy {
   private subscription?: Subscription;
+  private routeSubscription?: Subscription;
+  private invoicePrefillSubscription?: Subscription;
+  private lastPrefilledProductId: string | null = null;
+  private readonly _route = inject(ActivatedRoute);
   private readonly _productService = inject(ProductService);
   private readonly _customerInvoiceService = inject(CustomerInvoiceService);
   private readonly _branchService = inject(BranchService);
@@ -89,10 +93,30 @@ export class CustomerInvoiceComponent implements OnInit, OnDestroy {
     this.dateControl.setValue(new Date());
     this.initForm();
     this.initCustomerForm();
+
+    this.routeSubscription = this._route.queryParamMap.subscribe((params) => {
+      const productId = (params.get("productId") ?? "").trim();
+      if (!productId || productId === this.lastPrefilledProductId) {
+        return;
+      }
+
+      this.invoicePrefillSubscription?.unsubscribe();
+      this.invoicePrefillSubscription = this._productService.getProduct(productId).subscribe({
+        next: (product) => {
+          this.selectProduct(product);
+          this.lastPrefilledProductId = productId;
+        },
+        error: (err) => {
+          console.error("Failed to prefill invoice product", err);
+        },
+      });
+    });
   }
 
   ngOnDestroy(): void {
     this.subscription?.unsubscribe();
+    this.routeSubscription?.unsubscribe();
+    this.invoicePrefillSubscription?.unsubscribe();
   }
 
 initForm(): void {

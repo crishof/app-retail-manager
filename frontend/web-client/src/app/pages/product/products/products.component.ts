@@ -1,7 +1,7 @@
-import { Component, HostListener, inject, OnDestroy } from "@angular/core";
+import { Component, HostListener, inject, OnDestroy, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
-import { Router } from "@angular/router";
+import { ActivatedRoute, Router } from "@angular/router";
 import { forkJoin, of, Subscription } from "rxjs";
 import { catchError, map } from "rxjs/operators";
 
@@ -40,11 +40,13 @@ interface ProductColumnOption {
   templateUrl: "./products.component.html",
   styleUrl: "./products.component.css",
 })
-export class ProductsComponent implements OnDestroy {
+export class ProductsComponent implements OnDestroy, OnInit {
   private static readonly COLUMNS_STORAGE_KEY = "products.visible-columns";
   private readonly _productService = inject(ProductService);
   private readonly _router = inject(Router);
+  private readonly _route = inject(ActivatedRoute);
   private subscription?: Subscription;
+  private routeSubscription?: Subscription;
 
   productList: IProduct[] = [];
   selectedProduct: IProduct | null = null;
@@ -253,14 +255,42 @@ export class ProductsComponent implements OnDestroy {
     }
   }
 
+  navigateInvoiceWithProduct(product?: IProduct): void {
+    const targetProduct = product ?? this.selectedProduct;
+    if (!targetProduct) {
+      return;
+    }
+
+    this._router.navigate(["/customerInvoice"], {
+      queryParams: { productId: targetProduct.id },
+    });
+  }
+
   confirmDelete(): void {
     if (!this.selectedProduct) return;
     // Placeholder — integrar con dialog de confirmación
     console.warn("Delete product:", this.selectedProduct.id);
   }
 
+  ngOnInit(): void {
+    this.routeSubscription = this._route.queryParamMap.subscribe((params) => {
+      const query = (params.get("q") ?? "").trim();
+      if (!query) {
+        return;
+      }
+
+      if (query === this.searchTerm && this.isFormSubmitted) {
+        return;
+      }
+
+      this.searchTerm = query;
+      this.handleSearch(query);
+    });
+  }
+
   ngOnDestroy(): void {
     this.subscription?.unsubscribe();
+    this.routeSubscription?.unsubscribe();
   }
 
   @HostListener("document:click")

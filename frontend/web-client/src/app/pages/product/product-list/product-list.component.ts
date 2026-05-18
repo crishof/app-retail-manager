@@ -38,11 +38,16 @@ export class ProductListComponent {
     'stock',
   ];
   @Output() selectProduct = new EventEmitter<IProduct>();
+  @Output() openInvoiceForProduct = new EventEmitter<IProduct>();
 
   trackByProductId(_: number, p: IProduct): string { return p.id; }
 
   onProductInteract(product: IProduct): void {
     this.selectProduct.emit(product);
+  }
+
+  onProductDoubleClick(product: IProduct): void {
+    this.openInvoiceForProduct.emit(product);
   }
 
   isColumnVisible(column: ProductColumnKey): boolean {

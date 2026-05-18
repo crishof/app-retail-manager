@@ -13,6 +13,7 @@ export class ProductNavbarComponent {
     @Output() newProduct    = new EventEmitter<void>();
     @Output() editProduct   = new EventEmitter<void>();
     @Output() deleteProduct = new EventEmitter<void>();
+    @Output() billProduct   = new EventEmitter<void>();
 
     openMenu: string | null = null;
 

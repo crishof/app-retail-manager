@@ -41,7 +41,7 @@
         class="plist__row"
         [class.plist__row--selected]="product.id === selectedProductId"
         (click)="selectionMode === 'click' ? onProductInteract(product) : null"
-        (dblclick)="selectionMode === 'dblclick' ? onProductInteract(product) : null"
+        (dblclick)="onProductDoubleClick(product)"
         tabindex="0"
         (keydown.enter)="onProductInteract(product)"
       >

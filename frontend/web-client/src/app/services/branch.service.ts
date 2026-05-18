@@ -20,8 +20,16 @@ export class BranchService {
     return this._http.get<IBranch>(`${this._urlBase}/${id}`);
   }
 
+  getBranchesByCompany(companyId: string): Observable<IBranch[]> {
+    return this._http.get<IBranch[]>(`${environment.gatewayUrl}/api/v1/companies/${companyId}/branches`);
+  }
+
   createBranch(request: IBranchRequest): Observable<IBranch> {
     return this._http.post<IBranch>(this._urlBase, request);
+  }
+
+  createBranchForCompany(companyId: string, request: IBranchRequest): Observable<IBranch> {
+    return this._http.post<IBranch>(`${environment.gatewayUrl}/api/v1/companies/${companyId}/branches`, request);
   }
 
   updateBranch(id: string, request: IBranchRequest): Observable<IBranch> {
