@@ -4,6 +4,7 @@ import com.crishof.branchsv.dto.BranchRequest;
 import com.crishof.branchsv.dto.BranchResponse;
 import com.crishof.branchsv.dto.LocationRequest;
 import com.crishof.branchsv.exception.BranchNotFoundException;
+import com.crishof.branchsv.exception.CompanyNotFoundException;
 import com.crishof.branchsv.service.BranchService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,14 +33,14 @@ public class BranchController {
     }
 
     @PostMapping
-    public ResponseEntity<BranchResponse> createBranch(@Valid @RequestBody BranchRequest branchRequest) {
+    public ResponseEntity<BranchResponse> createBranch(@Valid @RequestBody BranchRequest branchRequest) throws CompanyNotFoundException {
         return ResponseEntity.status(HttpStatus.CREATED).body(branchService.createBranch(branchRequest));
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity<BranchResponse> updateBranch(
             @PathVariable UUID id,
-            @Valid @RequestBody BranchRequest branchRequest) throws BranchNotFoundException {
+            @Valid @RequestBody BranchRequest branchRequest) throws BranchNotFoundException, CompanyNotFoundException {
         return ResponseEntity.ok(branchService.updateBranch(id, branchRequest));
     }
 
@@ -68,6 +69,30 @@ public class BranchController {
 
     @DeleteMapping("/{branchId}/locations/{locationId}")
     public ResponseEntity<BranchResponse> deleteLocation(
+            @PathVariable UUID branchId,
+            @PathVariable UUID locationId) throws BranchNotFoundException {
+        return ResponseEntity.ok(branchService.deleteLocation(branchId, locationId));
+    }
+
+    // Alias: depósitos
+
+    @PostMapping("/{branchId}/deposits")
+    public ResponseEntity<BranchResponse> createDeposit(
+            @PathVariable UUID branchId,
+            @Valid @RequestBody LocationRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(branchService.createLocation(branchId, request));
+    }
+
+    @PatchMapping("/{branchId}/deposits/{locationId}")
+    public ResponseEntity<BranchResponse> updateDeposit(
+            @PathVariable UUID branchId,
+            @PathVariable UUID locationId,
+            @Valid @RequestBody LocationRequest request) throws BranchNotFoundException {
+        return ResponseEntity.ok(branchService.updateLocation(branchId, locationId, request));
+    }
+
+    @DeleteMapping("/{branchId}/deposits/{locationId}")
+    public ResponseEntity<BranchResponse> deleteDeposit(
             @PathVariable UUID branchId,
             @PathVariable UUID locationId) throws BranchNotFoundException {
         return ResponseEntity.ok(branchService.deleteLocation(branchId, locationId));

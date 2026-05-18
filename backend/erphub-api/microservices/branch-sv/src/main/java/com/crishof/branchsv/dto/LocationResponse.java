@@ -17,6 +17,7 @@ public class LocationResponse {
     private UUID id;
     private String code;
     private String name;
+    private String address;
     private StockLocation.LocationType locationType;
     private boolean active;
 }

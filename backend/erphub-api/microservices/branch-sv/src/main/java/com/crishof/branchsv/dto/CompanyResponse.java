@@ -5,31 +5,27 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class BranchResponse {
+public class CompanyResponse {
 
     private UUID id;
-    private UUID companyId;
-    private String code;
     private String name;
-    private String address;
-    private String locality;
-    private String postalCode;
-    private String country;
-    private String phone;
+    private String cuit;
+    private String ivaStatus;
+    private LocalDate startOfActivities;
+    private String grossIncomeNumber;
+    private String legalName;
     private String email;
+    private String phone;
     private String website;
-    private Integer pointOfSale;
     private boolean active;
-    private List<LocationResponse> locations;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
-

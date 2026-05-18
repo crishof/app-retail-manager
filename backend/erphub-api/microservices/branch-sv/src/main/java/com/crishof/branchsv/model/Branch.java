@@ -25,6 +25,10 @@ public class Branch {
     @Column(name = "branch_id")
     private UUID id;
 
+    @ManyToOne
+    @JoinColumn(name = "company_id", nullable = false)
+    private Company company;
+
     @Column(nullable = false, unique = true, length = 20)
     private String code;
 
@@ -32,6 +36,28 @@ public class Branch {
     private String name;
 
     private String address;
+
+    @Column(length = 100)
+    private String locality;
+
+    @Column(length = 10)
+    private String postalCode;
+
+    @Column(length = 100)
+    private String country;
+
+    @Column(length = 20)
+    private String phone;
+
+    @Column(length = 150)
+    private String email;
+
+    @Column(length = 255)
+    private String website;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer pointOfSale = 1;  // Obligatorio, numérico, prefijo para facturas
 
     @Column(nullable = false)
     @Builder.Default
