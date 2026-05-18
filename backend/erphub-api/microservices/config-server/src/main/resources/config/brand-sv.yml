@@ -98,6 +98,15 @@ resilience4j:
       supplier-sv:
         timeoutDuration: 2s
         cancelRunningFuture: true
+      ImageFeignClientuploadImageMultipartFileString:
+        timeoutDuration: 30s
+        cancelRunningFuture: true
+      ImageFeignClientreplaceImageMultipartFileStringString:
+        timeoutDuration: 30s
+        cancelRunningFuture: true
+      ImageFeignClientdeleteImageStringString:
+        timeoutDuration: 15s
+        cancelRunningFuture: true
 
   bulkhead:
     metrics:
