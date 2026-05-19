@@ -2,13 +2,15 @@ package com.crishof.exchangesv.service;
 
 import com.crishof.exchangesv.dto.CurrencyLatestResponse;
 import com.crishof.exchangesv.exception.ExternalServiceException;
+import io.github.cdimascio.dotenv.Dotenv;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
@@ -24,15 +26,19 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
     private final String apiKey;
     private final Duration timeout;
 
-    public ExchangeRateServiceImpl(
-            WebClient.Builder webClientBuilder,
-            @Value("${app.free-currency.base-url:https://api.freecurrencyapi.com/v1}") String baseUrl,
-            @Value("${app.free-currency.api-key:}") String apiKey,
-            @Value("${app.free-currency.timeout:5s}") Duration timeout
-    ) {
+    private final Environment environment;
+    private final Dotenv dotenv;
+
+
+    public ExchangeRateServiceImpl(WebClient.Builder webClientBuilder,
+                                   @Value("${app.free-currency.base-url:https://api.freecurrencyapi.com/v1}") String baseUrl,
+                                   @Value("${app.free-currency.api-key:}") String apiKey,
+                                   @Value("${app.free-currency.timeout:5s}") Duration timeout, Environment environment) {
         this.webClient = webClientBuilder.baseUrl(baseUrl).build();
         this.apiKey = apiKey;
         this.timeout = timeout;
+        this.environment = environment;
+        this.dotenv = Dotenv.configure().ignoreIfMissing().load();
     }
 
     @Override
@@ -42,31 +48,52 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
 
         log.info("Fetching exchange rate from {} to {}", baseCurrency, targetCurrency);
 
-        if (!StringUtils.hasText(apiKey)) {
+        String resolvedApiKey = resolveApiKey();
+
+        if (!StringUtils.hasText(resolvedApiKey)) {
             throw new ExternalServiceException("Exchange rate API key is not configured");
         }
 
         return webClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/latest")
-                        .queryParam("apikey", apiKey)
+                .uri(uriBuilder -> uriBuilder.path("/latest")
+                        .queryParam("apikey", resolvedApiKey)
                         .queryParam("base_currency", baseCurrency)
                         .queryParam("currencies", targetCurrency)
                         .build())
                 .retrieve()
                 .bodyToMono(CurrencyLatestResponse.class)
-                .timeout(timeout)
-                .map(response -> extractRate(response, targetCurrency))
+                .timeout(timeout).map(response -> extractRate(response, targetCurrency))
                 .onErrorMap(WebClientResponseException.class, ex -> {
-                    log.error("Exchange rate API responded with status {} for {} -> {}", ex.getStatusCode(), baseCurrency, targetCurrency);
-                    return new ExternalServiceException("Exchange rate provider returned an error response");
-                })
-                .onErrorMap(WebClientRequestException.class, ex -> {
-                    log.error("Exchange rate API request failed for {} -> {}", baseCurrency, targetCurrency, ex);
-                    return new ExternalServiceException("Exchange rate provider is unavailable");
-                })
-                .onErrorMap(java.util.concurrent.TimeoutException.class,
-                        ex -> new ExternalServiceException("Exchange rate provider timed out"));
+            log.error("Exchange rate API responded with status {} for {} -> {}", ex.getStatusCode(), baseCurrency, targetCurrency);
+            return new ExternalServiceException("Exchange rate provider returned an error response");
+        }).onErrorMap(WebClientRequestException.class, ex -> {
+            log.error("Exchange rate API request failed for {} -> {}", baseCurrency, targetCurrency, ex);
+            return new ExternalServiceException("Exchange rate provider is unavailable");
+        }).onErrorMap(java.util.concurrent.TimeoutException.class, ex ->
+                        new ExternalServiceException("Exchange rate provider timed out"));
+    }
+
+    private String resolveApiKey() {
+        if (StringUtils.hasText(apiKey)) {
+            return apiKey;
+        }
+
+        String envApiKey = environment.getProperty("FREE_CURRENCY_API_KEY");
+        if (StringUtils.hasText(envApiKey)) {
+            return envApiKey;
+        }
+
+        String legacyEnvApiKey = environment.getProperty("FREE_CURRENCY_APIKEY");
+        if (StringUtils.hasText(legacyEnvApiKey)) {
+            return legacyEnvApiKey;
+        }
+
+        String dotenvApiKey = dotenv.get("FREE_CURRENCY_API_KEY", "");
+        if (StringUtils.hasText(dotenvApiKey)) {
+            return dotenvApiKey;
+        }
+
+        return dotenv.get("FREE_CURRENCY_APIKEY", "");
     }
 
 
