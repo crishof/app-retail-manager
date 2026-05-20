@@ -10,6 +10,26 @@ import {
 } from '../../services/cash.service';
 import { BranchService } from '../../services/branch.service';
 import { IBranch } from '../../model/branch.model';
+import { ICustomerInvoice } from '../../model/customer-invoice.model';
+import { CustomerInvoiceService } from '../../services/customer-invoice.service';
+import { ProductService } from '../../services/product.service';
+import { CompanyService } from '../../services/company.service';
+import { CustomerService } from '../../services/customer.service';
+import { ICompany } from '../../model/company.model';
+import { ICustomer } from '../../model/customer.model';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+
+interface IVoucherPreviewItem {
+  id: string;
+  brandName: string;
+  model: string;
+  description: string;
+  quantity: number;
+  price: number;
+  taxRate: number;
+  discountRate: number;
+}
 
 @Component({
   selector: 'app-cash',
@@ -21,6 +41,10 @@ import { IBranch } from '../../model/branch.model';
 export class CashComponent implements OnInit {
   private readonly cashService = inject(CashService);
   private readonly branchService = inject(BranchService);
+  private readonly customerInvoiceService = inject(CustomerInvoiceService);
+  private readonly productService = inject(ProductService);
+  private readonly companyService = inject(CompanyService);
+  private readonly customerService = inject(CustomerService);
   private readonly fb = inject(FormBuilder);
 
   branches: IBranch[] = [];
@@ -35,6 +59,13 @@ export class CashComponent implements OnInit {
 
   loading = false;
   errorMessage = '';
+  showVoucherModal = false;
+  loadingVoucher = false;
+  selectedVoucher: ICustomerInvoice | null = null;
+  selectedVoucherItems: IVoucherPreviewItem[] = [];
+  selectedVoucherBranch: IBranch | null = null;
+  selectedVoucherCompany: ICompany | null = null;
+  selectedVoucherCustomer: ICustomer | null = null;
 
   // Open session form
   showOpenForm = false;
@@ -318,6 +349,125 @@ export class CashComponent implements OnInit {
 
   trackById(_: number, item: { id: string }): string {
     return item.id;
+  }
+
+  canOpenVoucher(type: string, reference: string | null): boolean {
+    return type === 'SALE' && !!reference;
+  }
+
+  openVoucher(reference: string | null): void {
+    if (!reference) {
+      return;
+    }
+
+    this.showVoucherModal = true;
+    this.loadingVoucher = true;
+    this.selectedVoucher = null;
+
+    this.customerInvoiceService.getById(reference).subscribe({
+      next: (voucher) => {
+        this.selectedVoucher = voucher;
+        this.loadVoucherContext(voucher);
+      },
+      error: () => {
+        this.loadingVoucher = false;
+      },
+    });
+  }
+
+  closeVoucherModal(): void {
+    this.showVoucherModal = false;
+    this.loadingVoucher = false;
+    this.selectedVoucher = null;
+    this.selectedVoucherItems = [];
+    this.selectedVoucherBranch = null;
+    this.selectedVoucherCompany = null;
+    this.selectedVoucherCustomer = null;
+  }
+
+  getVoucherTypeLabel(type: string): string {
+    const normalized = (type || '').toUpperCase().trim();
+    const labels: Record<string, string> = {
+      FACTURA_A: 'Factura A',
+      FACTURA_B: 'Factura B',
+      FACTURA_C: 'Factura C',
+      NC_A: 'Nota de credito A',
+      NC_B: 'Nota de credito B',
+      NC_C: 'Nota de credito C',
+      ND_A: 'Nota de debito A',
+      ND_B: 'Nota de debito B',
+      ND_C: 'Nota de debito C',
+      PRESUPUESTO: 'Presupuesto',
+      A: 'Factura A',
+      B: 'Factura B',
+      C: 'Factura C',
+    };
+
+    return labels[normalized] ?? normalized;
+  }
+
+  getFormattedVoucherNumber(voucher: ICustomerInvoice | null): string {
+    const raw = String(voucher?.saleNumber ?? voucher?.invoiceNumber ?? '');
+    const match = /^(\d+)-(\d+)$/.exec(raw);
+    if (!match) {
+      return raw || '-';
+    }
+
+    return `${match[1].padStart(3, '0')} - ${match[2].padStart(6, '0')}`;
+  }
+
+  getVoucherLineSubtotal(item: { price: number; quantity: number; discountRate: number }): number {
+    return item.price * item.quantity * ((100 - item.discountRate) / 100);
+  }
+
+  private loadVoucherContext(voucher: ICustomerInvoice): void {
+    const itemRequests = (voucher.items ?? []).map((item: any) =>
+      this.productService.getProduct(String(item.productId || item.id)).pipe(catchError(() => of(null)))
+    );
+
+    forkJoin({
+      products: itemRequests.length ? forkJoin(itemRequests) : of([]),
+      branch: voucher.branchId ? this.branchService.getBranch(voucher.branchId).pipe(catchError(() => of(null))) : of(null),
+      customer: voucher.customerId ? this.customerService.getById(voucher.customerId).pipe(catchError(() => of(null))) : of(null),
+    }).subscribe({
+      next: ({ products, branch, customer }) => {
+        this.selectedVoucherItems = (voucher.items ?? []).map((item: any, index) => {
+          const product = products[index];
+          return {
+            id: String(item.productId || item.id),
+            brandName: product?.brandName ?? item.brandName ?? '-',
+            model: product?.model ?? item.model ?? '-',
+            description: product?.description ?? item.description ?? '-',
+            quantity: item.quantity,
+            price: item.price,
+            taxRate: item.taxRate,
+            discountRate: item.discountRate,
+          };
+        });
+
+        this.selectedVoucherBranch = branch;
+        this.selectedVoucherCustomer = customer;
+
+        if (branch?.companyId) {
+          this.companyService.getCompany(branch.companyId).pipe(catchError(() => of(null))).subscribe({
+            next: (company) => {
+              this.selectedVoucherCompany = company;
+              this.loadingVoucher = false;
+            },
+            error: () => {
+              this.loadingVoucher = false;
+            },
+          });
+          return;
+        }
+
+        this.selectedVoucherCompany = null;
+        this.loadingVoucher = false;
+      },
+      error: () => {
+        this.loadingVoucher = false;
+      },
+    });
   }
 
   onMovementCurrencyChange(event: Event): void {

@@ -28,6 +28,19 @@ import { CashService, ICashSessionResponse } from "../../../services/cash.servic
   styleUrl: "./customer-invoice.component.css",
 })
 export class CustomerInvoiceComponent implements OnInit, OnDestroy {
+  readonly voucherTypeOptions: Array<{ value: string; label: string }> = [
+    { value: 'FACTURA_A', label: 'Factura A' },
+    { value: 'FACTURA_B', label: 'Factura B' },
+    { value: 'FACTURA_C', label: 'Factura C' },
+    { value: 'NC_A', label: 'Nota de credito A' },
+    { value: 'NC_B', label: 'Nota de credito B' },
+    { value: 'NC_C', label: 'Nota de credito C' },
+    { value: 'ND_A', label: 'Nota de debito A' },
+    { value: 'ND_B', label: 'Nota de debito B' },
+    { value: 'ND_C', label: 'Nota de debito C' },
+    { value: 'PRESUPUESTO', label: 'Presupuesto' },
+  ];
+
   private subscription?: Subscription;
   private routeSubscription?: Subscription;
   private invoicePrefillSubscription?: Subscription;
@@ -77,11 +90,8 @@ export class CustomerInvoiceComponent implements OnInit, OnDestroy {
   isCheckingCash = false;
   noCashOpen = false;
 
-  nextInvoiceNumbers: Record<string, { prefix: number; number: number }> = {
-    A: { prefix: 1, number: 1 },
-    B: { prefix: 1, number: 1 },
-    C: { prefix: 1, number: 1 },
-  };
+  defaultVoucherType = 'FACTURA_B';
+  nextInvoiceNumbers: Record<string, { prefix: number; number: number }> = this.buildDefaultVoucherNumbers();
 
   vat21: number = 0.21;
   vat105: number = 0.105;
@@ -93,8 +103,14 @@ export class CustomerInvoiceComponent implements OnInit, OnDestroy {
     this.initCustomerForm();
     this.loadBranches();
     this.dateControl.setValue(new Date());
+    this.applyDefaultVoucherType();
 
     this.routeSubscription = this._route.queryParamMap.subscribe((params) => {
+      const voucherType = params.get('voucherType')?.trim();
+      if (voucherType) {
+        this.applyVoucherType(voucherType);
+      }
+
       const productId = (params.get("productId") ?? "").trim();
       if (!productId || productId === this.lastPrefilledProductId) {
         return;
@@ -144,11 +160,11 @@ initForm(): void {
 
       invoiceDate: [new Date().toISOString().split('T')[0], Validators.required],
 
-      invoiceType: ["B", Validators.required],
+      invoiceType: [this.defaultVoucherType, Validators.required],
       packingListPrefix: [0],
       packingListNumber: [0],
       invoicePrefix: [{ value: 1, disabled: true }],
-      invoiceNumber: [{ value: this.nextInvoiceNumbers['B'].number, disabled: true }],
+      invoiceNumber: [{ value: this.nextInvoiceNumbers[this.defaultVoucherType].number, disabled: true }],
 
       taxSave: true,
 
@@ -184,14 +200,14 @@ initForm(): void {
     });
 
     this.invoiceForm.get("invoiceType")!.valueChanges.subscribe((type) => {
-      this.updateInvoiceNumber(type ?? 'B');
+      this.updateInvoiceNumber(type ?? this.defaultVoucherType);
     });
 
-    this.updateInvoiceNumber('B');
+    this.updateInvoiceNumber(this.defaultVoucherType);
   }
 
   updateInvoiceNumber(type: string): void {
-    const normalizedType = (type || 'B').toUpperCase();
+    const normalizedType = this.normalizeVoucherType(type || this.defaultVoucherType);
     const next = this.nextInvoiceNumbers[normalizedType] || { prefix: 1, number: 1 };
     this.invoiceForm.patchValue({
       invoicePrefix: next.prefix,
@@ -371,7 +387,7 @@ initForm(): void {
     this.saveSuccess = false;
 
     const rawForm = this.invoiceForm.getRawValue();
-    const currentInvoiceType = (rawForm.invoiceType ?? 'B').toUpperCase();
+    const currentInvoiceType = this.normalizeVoucherType(rawForm.invoiceType ?? this.defaultVoucherType);
 
     const totalAmount = this.getInvoiceTotal();
     const invoiceNumber = `${rawForm.invoicePrefix}-${rawForm.invoiceNumber}`;
@@ -400,7 +416,7 @@ initForm(): void {
         this.invoiceForm.reset();
         this.initForm();
         if (branchId) {
-          this.invoiceForm.patchValue({ branchId });
+          this.invoiceForm.patchValue({ branchId, invoiceType: currentInvoiceType });
         }
         // Refrescar productos para mostrar stock actualizado (incluyendo negativos)
         if (this.productSearchQuery.length >= 2) {
@@ -548,7 +564,7 @@ initForm(): void {
 
     this.selectedBranchId = branchId;
     this.syncPrefixFromBranch(branchId);
-    this.updateInvoiceNumber((this.invoiceForm.get('invoiceType')?.value ?? 'B').toUpperCase());
+    this.updateInvoiceNumber(this.invoiceForm.get('invoiceType')?.value ?? this.defaultVoucherType);
     this.getLocations(branchId);
     this.invoiceForm.get("locationId")!.setValue("");
     this.refreshNextInvoiceNumbers(branchId);
@@ -585,9 +601,9 @@ initForm(): void {
     const branch = this.branches.find((item) => item.id === branchId);
     const prefix = branch?.pointOfSale ?? 1;
 
-    this.nextInvoiceNumbers['A'].prefix = prefix;
-    this.nextInvoiceNumbers['B'].prefix = prefix;
-    this.nextInvoiceNumbers['C'].prefix = prefix;
+    this.voucherTypeOptions.forEach((option) => {
+      this.nextInvoiceNumbers[option.value].prefix = prefix;
+    });
   }
 
   private refreshNextInvoiceNumbers(branchId: string): void {
@@ -596,26 +612,20 @@ initForm(): void {
 
     this._customerInvoiceService.getByBranchId(branchId).subscribe({
       next: (sales) => {
-        this.nextInvoiceNumbers['A'] = {
-          prefix,
-          number: this.calculateNextInvoiceNumber(sales, 'A', prefix),
-        };
-        this.nextInvoiceNumbers['B'] = {
-          prefix,
-          number: this.calculateNextInvoiceNumber(sales, 'B', prefix),
-        };
-        this.nextInvoiceNumbers['C'] = {
-          prefix,
-          number: this.calculateNextInvoiceNumber(sales, 'C', prefix),
-        };
+        this.voucherTypeOptions.forEach((option) => {
+          this.nextInvoiceNumbers[option.value] = {
+            prefix,
+            number: this.calculateNextInvoiceNumber(sales, option.value, prefix),
+          };
+        });
 
-        this.updateInvoiceNumber((this.invoiceForm.get('invoiceType')?.value ?? 'B').toUpperCase());
+        this.updateInvoiceNumber(this.invoiceForm.get('invoiceType')?.value ?? this.defaultVoucherType);
       },
       error: () => {
-        this.nextInvoiceNumbers['A'] = { prefix, number: 1 };
-        this.nextInvoiceNumbers['B'] = { prefix, number: 1 };
-        this.nextInvoiceNumbers['C'] = { prefix, number: 1 };
-        this.updateInvoiceNumber((this.invoiceForm.get('invoiceType')?.value ?? 'B').toUpperCase());
+        this.voucherTypeOptions.forEach((option) => {
+          this.nextInvoiceNumbers[option.value] = { prefix, number: 1 };
+        });
+        this.updateInvoiceNumber(this.invoiceForm.get('invoiceType')?.value ?? this.defaultVoucherType);
       },
     });
   }
@@ -625,8 +635,9 @@ initForm(): void {
     type: string,
     expectedPrefix: number,
   ): number {
+    const expectedType = this.normalizeVoucherType(type);
     const matches = sales
-      .filter((sale) => (sale.saleType ?? sale.invoiceType ?? '').toUpperCase() === type)
+      .filter((sale) => this.normalizeVoucherType(sale.saleType ?? sale.invoiceType ?? '') === expectedType)
       .map((sale) => this.extractPrefixAndNumber(String(sale.saleNumber ?? sale.invoiceNumber ?? '')))
       .filter((value): value is { prefix: number; number: number } => value !== null)
       .filter((value) => value.prefix === expectedPrefix)
@@ -655,12 +666,62 @@ initForm(): void {
   }
 
   private incrementNextInvoiceNumber(type: string): void {
-    const normalizedType = (type || 'B').toUpperCase();
+    const normalizedType = this.normalizeVoucherType(type || this.defaultVoucherType);
     const current = this.nextInvoiceNumbers[normalizedType] ?? { prefix: 1, number: 1 };
     this.nextInvoiceNumbers[normalizedType] = {
       prefix: current.prefix,
       number: current.number + 1,
     };
+  }
+
+  get currentVoucherLabel(): string {
+    const selectedType = this.normalizeVoucherType(this.invoiceForm?.get('invoiceType')?.value ?? this.defaultVoucherType);
+    return this.voucherTypeOptions.find((option) => option.value === selectedType)?.label ?? 'Comprobante';
+  }
+
+  get formattedCurrentVoucherNumber(): string {
+    const prefix = Number(this.invoiceForm?.get('invoicePrefix')?.value ?? 1);
+    const number = Number(this.invoiceForm?.get('invoiceNumber')?.value ?? 1);
+    return `${String(Number.isFinite(prefix) ? prefix : 1).padStart(3, '0')} - ${String(Number.isFinite(number) ? number : 1).padStart(6, '0')}`;
+  }
+
+  private buildDefaultVoucherNumbers(): Record<string, { prefix: number; number: number }> {
+    return this.voucherTypeOptions.reduce((acc, option) => {
+      acc[option.value] = { prefix: 1, number: 1 };
+      return acc;
+    }, {} as Record<string, { prefix: number; number: number }>);
+  }
+
+  private applyDefaultVoucherType(): void {
+    const routeType = this.normalizeVoucherType(String(this._route.snapshot.data['voucherType'] ?? ''));
+    if (routeType) {
+      this.defaultVoucherType = routeType;
+    }
+    this.applyVoucherType(this.defaultVoucherType);
+  }
+
+  private applyVoucherType(type: string): void {
+    const normalizedType = this.normalizeVoucherType(type);
+    if (!normalizedType || !this.invoiceForm) {
+      return;
+    }
+    this.invoiceForm.patchValue({ invoiceType: normalizedType }, { emitEvent: true });
+  }
+
+  private normalizeVoucherType(type: string): string {
+    const normalized = (type || '').toUpperCase().trim();
+    switch (normalized) {
+      case 'A':
+        return 'FACTURA_A';
+      case 'B':
+        return 'FACTURA_B';
+      case 'C':
+        return 'FACTURA_C';
+      default:
+        return this.voucherTypeOptions.some((option) => option.value === normalized)
+          ? normalized
+          : 'FACTURA_B';
+    }
   }
 
   // setFormDisabled ya no es necesario, la lógica se maneja con enable()/disable() del formGroup completo
@@ -785,7 +846,16 @@ initForm(): void {
     this.isSavingCustomer = true;
     this.customerSaveError = '';
 
-    this._customerService.create(this.customerForm.value).subscribe({
+    const rawValue = this.customerForm.value;
+    const payload = {
+      ...rawValue,
+      dni: this.normalizeNullableText(rawValue.dni),
+      taxId: this.normalizeNullableText(rawValue.taxId),
+      email: this.normalizeNullableText(rawValue.email),
+      phone: this.normalizeNullableText(rawValue.phone),
+    };
+
+    this._customerService.create(payload).subscribe({
       next: (customer) => {
         this.isSavingCustomer = false;
         this.showCustomerForm = false;
@@ -798,5 +868,13 @@ initForm(): void {
         this.customerSaveError = err?.error?.message ?? 'Error al guardar el cliente.';
       },
     });
+  }
+
+  private normalizeNullableText(value: unknown): string | null {
+    if (typeof value !== 'string') {
+      return null;
+    }
+    const trimmed = value.trim();
+    return trimmed.length ? trimmed : null;
   }
 }

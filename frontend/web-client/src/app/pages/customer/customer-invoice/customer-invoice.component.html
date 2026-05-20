@@ -2,7 +2,7 @@
   <div class="sticky top-0 z-30 bg-white border-b border-gray-200 shadow-sm">
     <div class="max-w-screen-xl mx-auto px-6 py-3 flex items-center justify-between">
       <div>
-        <h1 class="text-lg font-semibold text-gray-800">Nueva Factura de Venta</h1>
+        <h1 class="text-lg font-semibold text-gray-800">Nuevo {{ currentVoucherLabel }}</h1>
         <p class="text-xs text-gray-400">Cargue cliente, items y totales para emitir el comprobante</p>
       </div>
       <div class="flex items-center gap-4">
@@ -32,7 +32,7 @@
           [disabled]="isSaving || isCheckingCash || !!cashSessionError"
           class="px-5 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 active:scale-95 transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {{ isSaving ? 'Guardando...' : (isCheckingCash ? 'Verificando...' : 'Guardar factura') }}
+          {{ isSaving ? 'Guardando...' : (isCheckingCash ? 'Verificando...' : ('Guardar ' + currentVoucherLabel)) }}
         </button>
       </div>
     </div>
@@ -150,42 +150,21 @@
               <select
                 id="invoiceType"
                 formControlName="invoiceType"
-                class="border border-gray-300 rounded-lg px-2 py-2 text-sm focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition w-28"
+                class="border border-gray-300 rounded-lg px-2 py-2 text-sm focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition w-48"
               >
-                <option [value]="'A'">Factura A</option>
-                <option [value]="'B'">Factura B</option>
-                <option [value]="'C'">Factura C</option>
+                @for (option of voucherTypeOptions; track option.value) {
+                  <option [value]="option.value">{{ option.label }}</option>
+                }
               </select>
             </div>
 
             <span class="text-gray-300 font-light text-lg pb-1.5 select-none">-</span>
 
-            <div class="flex flex-col gap-0.5">
-              <label for="invoicePrefix" class="text-[10px] text-gray-400 font-medium leading-none">Pref.</label>
-              <input
-                id="invoicePrefix"
-                type="text"
-                formControlName="invoicePrefix"
-                readonly
-                class="w-16 text-center border border-gray-300 rounded-lg px-2 py-2 text-sm bg-gray-50 font-mono"
-                placeholder="0001"
-              />
-            </div>
-
-            <span class="text-gray-300 font-light text-lg pb-1.5 select-none">-</span>
-
             <div class="flex flex-col gap-0.5 flex-1">
-              <label for="invoiceNumber" class="text-[10px] text-gray-400 font-medium leading-none">Numero</label>
-              <input
-                id="invoiceNumber"
-                type="text"
-                formControlName="invoiceNumber"
-                readonly
-                class="w-full text-center border rounded-lg px-2 py-2 text-sm bg-gray-50 font-mono"
-                [class.border-red-400]="invoiceForm.get('invoiceNumber')?.invalid && (invoiceForm.get('invoiceNumber')?.touched || isFormSubmitted)"
-                [class.border-gray-300]="!(invoiceForm.get('invoiceNumber')?.invalid && (invoiceForm.get('invoiceNumber')?.touched || isFormSubmitted))"
-                placeholder="00000001"
-              />
+              <p class="text-[10px] text-gray-400 font-medium leading-none">Numero</p>
+              <p class="w-full text-center border border-gray-300 rounded-lg px-2 py-2 text-sm bg-gray-50 font-mono">
+                {{ formattedCurrentVoucherNumber }}
+              </p>
             </div>
           </div>
         </div>

@@ -2,9 +2,9 @@ export interface ICustomer {
   id?: string;
   name: string;
   lastname: string;
-  dni: string;
-  taxId: string;
-  email: string;
-  phone: string;
+  dni?: string | null;
+  taxId?: string | null;
+  email?: string | null;
+  phone?: string | null;
   deleted?: boolean;
 }

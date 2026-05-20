@@ -1,0 +1,243 @@
+<div class="min-h-screen bg-gray-50">
+  <div class="sticky top-0 z-20 bg-white border-b border-gray-200">
+    <div class="max-w-screen-xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
+      <div>
+        <h1 class="text-lg font-semibold text-gray-800">Ver comprobantes</h1>
+        <p class="text-xs text-gray-500">Listado de comprobantes con filtros por tipo y fecha</p>
+      </div>
+      <a
+        routerLink="/customerInvoice"
+        class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+      >
+        Nuevo comprobante
+      </a>
+    </div>
+  </div>
+
+  <div class="max-w-screen-xl mx-auto px-4 md:px-6 py-6 space-y-4">
+    <section class="bg-white border border-gray-200 rounded-xl p-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <div>
+          <label for="voucherFilterType" class="block text-xs font-medium text-gray-600 mb-1">Tipo</label>
+          <select
+            id="voucherFilterType"
+            [(ngModel)]="filterType"
+            (change)="applyFilters()"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+          >
+            @for (option of typeOptions; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label for="voucherFilterFrom" class="block text-xs font-medium text-gray-600 mb-1">Desde</label>
+          <input
+            id="voucherFilterFrom"
+            type="date"
+            [(ngModel)]="filterFrom"
+            (change)="applyFilters()"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+          />
+        </div>
+
+        <div>
+          <label for="voucherFilterTo" class="block text-xs font-medium text-gray-600 mb-1">Hasta</label>
+          <input
+            id="voucherFilterTo"
+            type="date"
+            [(ngModel)]="filterTo"
+            (change)="applyFilters()"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+          />
+        </div>
+
+        <div>
+          <label for="voucherFilterSearch" class="block text-xs font-medium text-gray-600 mb-1">Buscar</label>
+          <input
+            id="voucherFilterSearch"
+            type="text"
+            [(ngModel)]="filterSearch"
+            (input)="applyFilters()"
+            placeholder="Numero, tipo, observaciones..."
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+          />
+        </div>
+      </div>
+    </section>
+
+    <section class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+      @if (loading) {
+        <div class="p-10 text-center text-sm text-gray-500">Cargando comprobantes...</div>
+      } @else if (errorMessage) {
+        <div class="p-6 text-sm text-red-600">{{ errorMessage }}</div>
+      } @else if (filteredVouchers.length === 0) {
+        <div class="p-10 text-center text-sm text-gray-500">No hay comprobantes para los filtros seleccionados.</div>
+      } @else {
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-sm">
+            <thead class="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th class="text-left px-4 py-3 font-semibold text-gray-600">Fecha</th>
+                <th class="text-left px-4 py-3 font-semibold text-gray-600">Tipo</th>
+                <th class="text-left px-4 py-3 font-semibold text-gray-600">Numero</th>
+                <th class="text-right px-4 py-3 font-semibold text-gray-600">Importe</th>
+                <th class="text-left px-4 py-3 font-semibold text-gray-600">Observaciones</th>
+                <th class="text-right px-4 py-3 font-semibold text-gray-600">Accion</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (voucher of filteredVouchers; track voucher.id) {
+                <tr class="border-b border-gray-100 hover:bg-gray-50">
+                  <td class="px-4 py-3">{{ (voucher.saleDate ?? voucher.invoiceDate) | date:'dd/MM/yyyy' }}</td>
+                  <td class="px-4 py-3">{{ getVoucherTypeLabel(voucher.saleType || '') }}</td>
+                  <td class="px-4 py-3 font-mono">{{ getFormattedVoucherNumber(voucher) }}</td>
+                  <td class="px-4 py-3 text-right font-semibold">{{ voucher.totalPrice | currency:'ARS':'symbol':'1.2-2' }}</td>
+                  <td class="px-4 py-3 max-w-[320px] truncate">{{ voucher.observations || '-' }}</td>
+                  <td class="px-4 py-3 text-right">
+                    <button
+                      type="button"
+                      (click)="openVoucher(voucher.id)"
+                      class="inline-flex items-center rounded-md border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-100"
+                    >
+                      Ver
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  </div>
+
+  @if (showVoucherModal) {
+    <div class="cc-modal-overlay">
+      <div class="cc-modal cc-modal--lg">
+        @if (loadingVoucher) {
+          <div class="cc-modal__loading">
+            <div class="cc-spinner"></div>
+            <span>Cargando comprobante...</span>
+          </div>
+        } @else if (selectedVoucher) {
+          <div class="cc-modal__header">
+            <h3 class="cc-modal__title">Detalle del comprobante</h3>
+            <button class="cc-modal__close" (click)="closeVoucherModal()">✕</button>
+          </div>
+
+          <div class="cc-invoice">
+            <div class="cc-invoice__header">
+              <div class="cc-invoice__meta">
+                <span class="cc-invoice__type">{{ getVoucherTypeLabel(selectedVoucher.saleType || '') }}</span>
+                <span class="cc-invoice__num">{{ getFormattedVoucherNumber(selectedVoucher) }}</span>
+              </div>
+              <div class="cc-invoice__dates">
+                <div class="cc-invoice__date-item">
+                  <span class="cc-invoice__date-label">Emision</span>
+                  <span class="cc-invoice__date-value">{{ (selectedVoucher.saleDate ?? selectedVoucher.invoiceDate) | date:'dd/MM/yyyy' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="cc-invoice__section">
+              <h4 class="cc-invoice__section-title">Datos Fiscales</h4>
+              <div class="cc-invoice__party-grid">
+                <div class="cc-invoice__party-card">
+                  <p class="cc-invoice__party-title">Emisor</p>
+                  <p><strong>Empresa:</strong> {{ selectedVoucherCompany?.legalName || selectedVoucherCompany?.name || '-' }}</p>
+                  <p><strong>CUIT:</strong> {{ selectedVoucherCompany?.cuit || '-' }}</p>
+                  <p><strong>IVA:</strong> {{ selectedVoucherCompany?.ivaStatus || '-' }}</p>
+                  <p><strong>Sucursal:</strong> {{ selectedVoucherBranch?.name || '-' }}</p>
+                  <p><strong>Punto de venta:</strong> {{ selectedVoucherBranch?.pointOfSale ?? '-' }}</p>
+                </div>
+                <div class="cc-invoice__party-card">
+                  <p class="cc-invoice__party-title">Receptor</p>
+                  <p><strong>Cliente:</strong> {{ (selectedVoucherCustomer?.name || '-') + ' ' + (selectedVoucherCustomer?.lastname || '') }}</p>
+                  <p><strong>DNI:</strong> {{ selectedVoucherCustomer?.dni || '-' }}</p>
+                  <p><strong>CUIT:</strong> {{ selectedVoucherCustomer?.taxId || '-' }}</p>
+                  <p><strong>Email:</strong> {{ selectedVoucherCustomer?.email || '-' }}</p>
+                  <p><strong>Telefono:</strong> {{ selectedVoucherCustomer?.phone || '-' }}</p>
+                </div>
+              </div>
+            </div>
+
+            @if (selectedVoucherItems.length > 0) {
+              <div class="cc-invoice__section">
+                <h4 class="cc-invoice__section-title">Items</h4>
+                <table class="cc-invoice__table">
+                  <thead>
+                    <tr>
+                      <th class="cc-invoice__th--num">#</th>
+                      <th>Marca</th>
+                      <th>Modelo</th>
+                      <th>Descripcion</th>
+                      <th class="cc-invoice__th--num">Cantidad</th>
+                      <th class="cc-invoice__th--num">Precio unitario</th>
+                      <th class="cc-invoice__th--num">IVA %</th>
+                      <th class="cc-invoice__th--num">Desc. %</th>
+                      <th class="cc-invoice__th--num">Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (item of selectedVoucherItems; track item.id; let i = $index) {
+                      <tr>
+                        <td class="cc-invoice__td--num">{{ i + 1 }}</td>
+                        <td>{{ item.brandName || '-' }}</td>
+                        <td>{{ item.model || '-' }}</td>
+                        <td class="cc-invoice__td--truncate" [title]="item.description || '-'">{{ item.description || '-' }}</td>
+                        <td class="cc-invoice__td--num">{{ item.quantity }}</td>
+                        <td class="cc-invoice__td--num">{{ item.price | number:'1.2-2' }}</td>
+                        <td class="cc-invoice__td--num">{{ (item.taxRate * 100) | number:'1.0-1' }}%</td>
+                        <td class="cc-invoice__td--num">{{ item.discountRate | number:'1.2-2' }}%</td>
+                        <td class="cc-invoice__td--num cc-invoice__td--bold">{{ getVoucherLineSubtotal(item) | number:'1.2-2' }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+
+            <div class="cc-invoice__totals">
+              <div class="cc-invoice__totals-grid">
+                <div class="cc-invoice__total-row"><span>Subtotal bruto</span><span>{{ selectedVoucher.subtotal1 | number:'1.2-2' }}</span></div>
+                @if (selectedVoucher.discount > 0) { <div class="cc-invoice__total-row"><span>Descuento</span><span>- {{ selectedVoucher.discount | number:'1.2-2' }}</span></div> }
+                @if (selectedVoucher.interest > 0) { <div class="cc-invoice__total-row"><span>Interes</span><span>+ {{ selectedVoucher.interest | number:'1.2-2' }}</span></div> }
+                <div class="cc-invoice__total-row"><span>Subtotal</span><span>{{ selectedVoucher.subtotal2 | number:'1.2-2' }}</span></div>
+                @if (selectedVoucher.netValue21 > 0) { <div class="cc-invoice__total-row"><span>Base IVA 21%</span><span>{{ selectedVoucher.netValue21 | number:'1.2-2' }}</span></div> }
+                @if (selectedVoucher.netValue105 > 0) { <div class="cc-invoice__total-row"><span>Base IVA 10.5%</span><span>{{ selectedVoucher.netValue105 | number:'1.2-2' }}</span></div> }
+                @if (selectedVoucher.netValue27 > 0) { <div class="cc-invoice__total-row"><span>Base IVA 27%</span><span>{{ selectedVoucher.netValue27 | number:'1.2-2' }}</span></div> }
+                @if (selectedVoucher.netValue0 > 0) { <div class="cc-invoice__total-row"><span>Exento</span><span>{{ selectedVoucher.netValue0 | number:'1.2-2' }}</span></div> }
+                @if (selectedVoucher.vat21 > 0) { <div class="cc-invoice__total-row"><span>IVA 21%</span><span>{{ selectedVoucher.vat21 | number:'1.2-2' }}</span></div> }
+                @if (selectedVoucher.vat105 > 0) { <div class="cc-invoice__total-row"><span>IVA 10.5%</span><span>{{ selectedVoucher.vat105 | number:'1.2-2' }}</span></div> }
+                @if (selectedVoucher.vat27 > 0) { <div class="cc-invoice__total-row"><span>IVA 27%</span><span>{{ selectedVoucher.vat27 | number:'1.2-2' }}</span></div> }
+                @if (selectedVoucher.internalTax > 0) { <div class="cc-invoice__total-row"><span>Imp. interno</span><span>{{ selectedVoucher.internalTax | number:'1.2-2' }}</span></div> }
+                @if (selectedVoucher.withholdingVat > 0) { <div class="cc-invoice__total-row"><span>Percep. IVA</span><span>{{ selectedVoucher.withholdingVat | number:'1.2-2' }}</span></div> }
+                @if (selectedVoucher.withholdingSuss > 0) { <div class="cc-invoice__total-row"><span>Percep. SUSS</span><span>{{ selectedVoucher.withholdingSuss | number:'1.2-2' }}</span></div> }
+                @if (selectedVoucher.withholdingGrossReceiptsTax > 0) { <div class="cc-invoice__total-row"><span>Percep. IIBB</span><span>{{ selectedVoucher.withholdingGrossReceiptsTax | number:'1.2-2' }}</span></div> }
+                @if (selectedVoucher.withholdingIncome > 0) { <div class="cc-invoice__total-row"><span>Percep. Ganancias</span><span>{{ selectedVoucher.withholdingIncome | number:'1.2-2' }}</span></div> }
+                @if (selectedVoucher.stateTax > 0) { <div class="cc-invoice__total-row"><span>Imp. provincial</span><span>{{ selectedVoucher.stateTax | number:'1.2-2' }}</span></div> }
+                @if (selectedVoucher.localTax > 0) { <div class="cc-invoice__total-row"><span>Imp. municipal</span><span>{{ selectedVoucher.localTax | number:'1.2-2' }}</span></div> }
+                @if (selectedVoucher.rounding !== 0) { <div class="cc-invoice__total-row"><span>Redondeo</span><span>{{ selectedVoucher.rounding | number:'1.2-2' }}</span></div> }
+                <div class="cc-invoice__total-row cc-invoice__total-row--grand"><span>Total ARS</span><span>{{ selectedVoucher.totalPrice | number:'1.2-2' }}</span></div>
+              </div>
+            </div>
+
+            @if (selectedVoucher.observations) {
+              <div class="cc-invoice__observations">
+                <span class="cc-invoice__obs-label">Observaciones</span>
+                <p>{{ selectedVoucher.observations }}</p>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="cc-modal__loading cc-modal__loading--error">
+            <span>No se pudo cargar el comprobante.</span>
+            <button class="cc-btn cc-btn--ghost cc-btn--sm" (click)="closeVoucherModal()">Cerrar</button>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

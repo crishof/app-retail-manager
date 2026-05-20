@@ -18,6 +18,8 @@ import { StatementOfAccountComponent } from './pages/supplier/statement-of-accou
 import { SupplierPriceListComponent } from './pages/supplier-price-list/supplier-price-list.component';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { CustomerInvoiceComponent } from './pages/customer/customer-invoice/customer-invoice.component';
+import { CustomerVoucherListComponent } from './pages/customer/customer-voucher-list/customer-voucher-list.component';
+import { CustomerVoucherDetailComponent } from './pages/customer/customer-voucher-detail/customer-voucher-detail.component';
 import { CustomerComponent } from './pages/customer/customer/customer.component';
 import { CashComponent } from './pages/cash/cash.component';
 import { BranchesComponent } from './pages/settings/branches/branches.component';
@@ -42,11 +44,12 @@ export const routes: Routes = [
   { path: 'category/:id',      component: CategoryDetailsComponent },
 
   // ── Ventas / Comprobantes ──────────────────────────
-  { path: 'customerInvoice',             component: CustomerInvoiceComponent },
-  { path: 'comprobantes/nota-credito',   component: EnConstruccionComponent, data: { titulo: 'Nota de Crédito' } },
-  { path: 'comprobantes/nota-debito',    component: EnConstruccionComponent, data: { titulo: 'Nota de Débito' } },
-  { path: 'comprobantes/presupuesto',    component: EnConstruccionComponent, data: { titulo: 'Presupuesto' } },
-  { path: 'comprobantes/ver',            component: EnConstruccionComponent, data: { titulo: 'Ver Comprobantes' } },
+  { path: 'customerInvoice',             component: CustomerInvoiceComponent, data: { voucherType: 'FACTURA_B' } },
+  { path: 'comprobantes/nota-credito',   component: CustomerInvoiceComponent, data: { voucherType: 'NC_B' } },
+  { path: 'comprobantes/nota-debito',    component: CustomerInvoiceComponent, data: { voucherType: 'ND_B' } },
+  { path: 'comprobantes/presupuesto',    component: CustomerInvoiceComponent, data: { voucherType: 'PRESUPUESTO' } },
+  { path: 'comprobantes/ver',            component: CustomerVoucherListComponent },
+  { path: 'comprobantes/ver/:id',        component: CustomerVoucherDetailComponent },
   { path: 'comprobantes/recibos',        component: EnConstruccionComponent, data: { titulo: 'Recibos' } },
   { path: 'comprobantes/pagos',          component: EnConstruccionComponent, data: { titulo: 'Pagos' } },
 

@@ -158,25 +158,52 @@
               </div>
             </div>
 
+            <div class="cc-invoice__section">
+              <h4 class="cc-invoice__section-title">Datos Fiscales</h4>
+              <div class="cc-invoice__party-grid">
+                <div class="cc-invoice__party-card">
+                  <p class="cc-invoice__party-title">Emisor</p>
+                  <p><strong>Empresa:</strong> {{ previewCompany?.legalName || previewCompany?.name || '-' }}</p>
+                  <p><strong>CUIT:</strong> {{ previewCompany?.cuit || '-' }}</p>
+                  <p><strong>IVA:</strong> {{ previewCompany?.ivaStatus || '-' }}</p>
+                  <p><strong>Sucursal:</strong> {{ previewBranch?.name || '-' }}</p>
+                  <p><strong>Punto de venta:</strong> {{ previewBranch?.pointOfSale ?? '-' }}</p>
+                </div>
+                <div class="cc-invoice__party-card">
+                  <p class="cc-invoice__party-title">Proveedor</p>
+                  <p><strong>Nombre:</strong> {{ previewSupplier?.legalName || previewSupplier?.name || '-' }}</p>
+                  <p><strong>CUIT:</strong> {{ previewSupplier?.taxId || '-' }}</p>
+                  <p><strong>ID proveedor:</strong> {{ invoiceDetail.supplierId || '-' }}</p>
+                  <p><strong>ID sucursal:</strong> {{ invoiceDetail.branchId || '-' }}</p>
+                </div>
+              </div>
+            </div>
+
             <!-- Items table -->
-            @if (invoiceDetail.invoiceItems && invoiceDetail.invoiceItems.length > 0) {
+            @if (previewItems.length > 0) {
               <div class="cc-invoice__section">
                 <h4 class="cc-invoice__section-title">Ítems</h4>
                 <table class="cc-invoice__table">
                   <thead>
                     <tr>
-                      <th>#</th>
-                      <th>Cantidad</th>
-                      <th>Precio unitario</th>
-                      <th>IVA %</th>
-                      <th>Desc. %</th>
-                      <th>Subtotal</th>
+                      <th class="cc-invoice__th--num">#</th>
+                      <th>Marca</th>
+                      <th>Modelo</th>
+                      <th>Descripcion</th>
+                      <th class="cc-invoice__th--num">Cantidad</th>
+                      <th class="cc-invoice__th--num">Precio unitario</th>
+                      <th class="cc-invoice__th--num">IVA %</th>
+                      <th class="cc-invoice__th--num">Desc. %</th>
+                      <th class="cc-invoice__th--num">Subtotal</th>
                     </tr>
                   </thead>
                   <tbody>
-                    @for (item of invoiceDetail.invoiceItems; track item.productId; let i = $index) {
+                    @for (item of previewItems; track item.productId; let i = $index) {
                       <tr>
                         <td class="cc-invoice__td--num">{{ i + 1 }}</td>
+                        <td>{{ item.brandName || '-' }}</td>
+                        <td>{{ item.model || '-' }}</td>
+                        <td class="cc-invoice__td--truncate" [title]="item.description || '-'">{{ item.description || '-' }}</td>
                         <td class="cc-invoice__td--num">{{ item.quantity }}</td>
                         <td class="cc-invoice__td--num">{{ item.price | number:'1.2-2' }}</td>
                         <td class="cc-invoice__td--num">{{ (item.taxRate * 100) | number:'1.0-1' }}%</td>
@@ -192,6 +219,10 @@
             <!-- Totals -->
             <div class="cc-invoice__totals">
               <div class="cc-invoice__totals-grid">
+                <div class="cc-invoice__total-row">
+                  <span>Subtotal bruto</span>
+                  <span>{{ invoiceDetail.subtotal1 | number:'1.2-2' }}</span>
+                </div>
                 <div class="cc-invoice__total-row">
                   <span>Subtotal</span>
                   <span>{{ invoiceSubtotal | number:'1.2-2' }}</span>
@@ -230,6 +261,42 @@
                   <div class="cc-invoice__total-row">
                     <span>Impuesto interno</span>
                     <span>{{ invoiceDetail.internalTax | number:'1.2-2' }}</span>
+                  </div>
+                }
+                @if (invoiceDetail.withholdingVat && invoiceDetail.withholdingVat > 0) {
+                  <div class="cc-invoice__total-row">
+                    <span>Percep. IVA</span>
+                    <span>{{ invoiceDetail.withholdingVat | number:'1.2-2' }}</span>
+                  </div>
+                }
+                @if (invoiceDetail.withholdingSuss && invoiceDetail.withholdingSuss > 0) {
+                  <div class="cc-invoice__total-row">
+                    <span>Percep. SUSS</span>
+                    <span>{{ invoiceDetail.withholdingSuss | number:'1.2-2' }}</span>
+                  </div>
+                }
+                @if (invoiceDetail.withholdingGrossReceiptsTax && invoiceDetail.withholdingGrossReceiptsTax > 0) {
+                  <div class="cc-invoice__total-row">
+                    <span>Percep. IIBB</span>
+                    <span>{{ invoiceDetail.withholdingGrossReceiptsTax | number:'1.2-2' }}</span>
+                  </div>
+                }
+                @if (invoiceDetail.withholdingIncome && invoiceDetail.withholdingIncome > 0) {
+                  <div class="cc-invoice__total-row">
+                    <span>Percep. Ganancias</span>
+                    <span>{{ invoiceDetail.withholdingIncome | number:'1.2-2' }}</span>
+                  </div>
+                }
+                @if (invoiceDetail.stateTax && invoiceDetail.stateTax > 0) {
+                  <div class="cc-invoice__total-row">
+                    <span>Imp. provincial</span>
+                    <span>{{ invoiceDetail.stateTax | number:'1.2-2' }}</span>
+                  </div>
+                }
+                @if (invoiceDetail.localTax && invoiceDetail.localTax > 0) {
+                  <div class="cc-invoice__total-row">
+                    <span>Imp. municipal</span>
+                    <span>{{ invoiceDetail.localTax | number:'1.2-2' }}</span>
                   </div>
                 }
                 @if (invoiceDetail.rounding && invoiceDetail.rounding !== 0) {

@@ -40,21 +40,29 @@ public class SaleServiceImpl implements SaleService {
         sale.getItems().forEach(item -> item.setSale(sale));
         Sale saved = saleRepository.save(sale);
 
-        // Descontar stock en inventario para cada item de la venta.
-        if (request.getInvoiceItemsRequest() != null) {
-            request.getInvoiceItemsRequest().forEach(item -> {
-                inventoryClient.registerMovement(StockMovementRequest.builder()
-                        .productId(item.getId())
-                        .branchId(request.getBranchId())
-                        .locationId(request.getLocationId())
-                        .quantity(-item.getQuantity())
-                        .reason("INVOICE") // Debe coincidir con el enum de inventory-sv
-                        .referenceId(saved.getId())
-                        .build());
-            });
+        // Presupuesto no impacta stock; el resto de comprobantes sí.
+        if (!isBudgetVoucher(request.getInvoiceType()) && request.getInvoiceItemsRequest() != null) {
+            request.getInvoiceItemsRequest().forEach(item ->
+                    inventoryClient.registerMovement(StockMovementRequest.builder()
+                            .productId(item.getId())
+                            .branchId(request.getBranchId())
+                            .locationId(request.getLocationId())
+                            .quantity(-item.getQuantity())
+                            .reason("INVOICE") // Debe coincidir con el enum de inventory-sv
+                            .referenceId(saved.getId())
+                            .build()));
         }
 
         return toResponse(saved);
+    }
+
+    private boolean isBudgetVoucher(String voucherType) {
+        if (voucherType == null) {
+            return false;
+        }
+        return "PRESUPUESTO".equalsIgnoreCase(voucherType)
+                || "BUDGET".equalsIgnoreCase(voucherType)
+                || "QUOTE".equalsIgnoreCase(voucherType);
     }
 
     @Override

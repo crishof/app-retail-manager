@@ -1,0 +1,80 @@
+<div class="min-h-screen bg-gray-50">
+  <div class="max-w-screen-xl mx-auto px-4 md:px-6 py-6 space-y-4">
+    <div class="flex items-center justify-between">
+      <h1 class="text-lg font-semibold text-gray-800">Detalle de comprobante</h1>
+      <a
+        routerLink="/comprobantes/ver"
+        class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+      >
+        Volver al listado
+      </a>
+    </div>
+
+    @if (loading) {
+      <div class="bg-white border border-gray-200 rounded-xl p-8 text-center text-sm text-gray-500">Cargando comprobante...</div>
+    } @else if (errorMessage) {
+      <div class="bg-white border border-red-200 rounded-xl p-6 text-sm text-red-600">{{ errorMessage }}</div>
+    } @else if (voucher) {
+      <section class="bg-white border border-gray-200 rounded-xl p-5">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <p class="text-xs text-gray-500">Tipo</p>
+            <p class="font-semibold text-gray-800">{{ getVoucherTypeLabel(voucher.saleType || '') }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-500">Numero</p>
+            <p class="font-semibold font-mono text-gray-800">{{ formatVoucherNumber(voucher) }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-500">Fecha</p>
+            <p class="font-semibold text-gray-800">{{ (voucher.saleDate ?? voucher.invoiceDate) | date:'dd/MM/yyyy' }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-500">Importe</p>
+            <p class="font-semibold text-gray-800">{{ voucher.totalPrice | currency:'ARS':'symbol':'1.2-2' }}</p>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <p class="text-xs text-gray-500">Observaciones</p>
+          <p class="text-sm text-gray-700">{{ voucher.observations || '-' }}</p>
+        </div>
+      </section>
+
+      <section class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <div class="px-5 py-3 border-b border-gray-200">
+          <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">Items</h2>
+        </div>
+
+        @if (!voucher.items || voucher.items.length === 0) {
+          <div class="p-6 text-sm text-gray-500">Este comprobante no tiene items.</div>
+        } @else {
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+              <thead class="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th class="text-left px-4 py-3 font-semibold text-gray-600">Producto</th>
+                  <th class="text-right px-4 py-3 font-semibold text-gray-600">Cantidad</th>
+                  <th class="text-right px-4 py-3 font-semibold text-gray-600">Precio</th>
+                  <th class="text-right px-4 py-3 font-semibold text-gray-600">Desc.</th>
+                  <th class="text-right px-4 py-3 font-semibold text-gray-600">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of voucher.items; track item.id) {
+                  <tr class="border-b border-gray-100">
+                    <td class="px-4 py-3 font-mono text-xs">{{ item.id }}</td>
+                    <td class="px-4 py-3 text-right">{{ item.quantity }}</td>
+                    <td class="px-4 py-3 text-right">{{ item.price | number:'1.2-2' }}</td>
+                    <td class="px-4 py-3 text-right">{{ item.discountRate }}%</td>
+                    <td class="px-4 py-3 text-right font-semibold">{{ getLineTotal(item) | number:'1.2-2' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+    }
+  </div>
+</div>
