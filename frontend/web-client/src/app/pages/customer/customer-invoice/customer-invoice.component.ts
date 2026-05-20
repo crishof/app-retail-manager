@@ -89,10 +89,10 @@ export class CustomerInvoiceComponent implements OnInit, OnDestroy {
   vat0: number = 0;
 
   ngOnInit(): void {
-    this.loadBranches();
-    this.dateControl.setValue(new Date());
     this.initForm();
     this.initCustomerForm();
+    this.loadBranches();
+    this.dateControl.setValue(new Date());
 
     this.routeSubscription = this._route.queryParamMap.subscribe((params) => {
       const productId = (params.get("productId") ?? "").trim();
@@ -120,7 +120,6 @@ export class CustomerInvoiceComponent implements OnInit, OnDestroy {
   }
 
 initForm(): void {
-    const currentYear = new Date().getFullYear();
     this.invoiceForm = this.formBuilder.group({
       customerId: "",
 
@@ -145,11 +144,11 @@ initForm(): void {
 
       invoiceDate: [new Date().toISOString().split('T')[0], Validators.required],
 
-      invoiceType: ["A", Validators.required],
+      invoiceType: ["B", Validators.required],
       packingListPrefix: [0],
       packingListNumber: [0],
       invoicePrefix: [{ value: 1, disabled: true }],
-      invoiceNumber: [{ value: this.nextInvoiceNumbers['A'].number, disabled: true }],
+      invoiceNumber: [{ value: this.nextInvoiceNumbers['B'].number, disabled: true }],
 
       taxSave: true,
 
@@ -185,12 +184,15 @@ initForm(): void {
     });
 
     this.invoiceForm.get("invoiceType")!.valueChanges.subscribe((type) => {
-      this.updateInvoiceNumber(type);
+      this.updateInvoiceNumber(type ?? 'B');
     });
+
+    this.updateInvoiceNumber('B');
   }
 
   updateInvoiceNumber(type: string): void {
-    const next = this.nextInvoiceNumbers[type] || { prefix: 1, number: 1 };
+    const normalizedType = (type || 'B').toUpperCase();
+    const next = this.nextInvoiceNumbers[normalizedType] || { prefix: 1, number: 1 };
     this.invoiceForm.patchValue({
       invoicePrefix: next.prefix,
       invoiceNumber: next.number
@@ -368,13 +370,16 @@ initForm(): void {
     this.saveError = '';
     this.saveSuccess = false;
 
+    const rawForm = this.invoiceForm.getRawValue();
+    const currentInvoiceType = (rawForm.invoiceType ?? 'B').toUpperCase();
+
     const totalAmount = this.getInvoiceTotal();
-    const invoiceNumber = `${this.invoiceForm.value.invoicePrefix}-${this.invoiceForm.value.invoiceNumber}`;
-    const customerName = this.invoiceForm.value.customerRequest?.name 
-      ? `${this.invoiceForm.value.customerRequest.name} ${this.invoiceForm.value.customerRequest.lastname}`
+    const invoiceNumber = `${rawForm.invoicePrefix}-${rawForm.invoiceNumber}`;
+    const customerName = rawForm.customerRequest?.name
+      ? `${rawForm.customerRequest.name} ${rawForm.customerRequest.lastname}`
       : 'Venta';
 
-    const formData = { ...this.invoiceForm.value, invoiceItemsRequest: this.invoiceItems };
+    const formData = { ...rawForm, invoiceItemsRequest: this.invoiceItems };
     this._customerInvoiceService.saveInvoice(formData).subscribe({
       next: (invoice) => {
         this._cashService.addMovement(this.currentCashSession!.id, {
@@ -390,8 +395,17 @@ initForm(): void {
         this.isSaving = false;
         this.saveSuccess = true;
         this.invoiceItems = [];
+        this.incrementNextInvoiceNumber(currentInvoiceType);
+        const branchId = this.selectedBranchId;
         this.invoiceForm.reset();
         this.initForm();
+        if (branchId) {
+          this.invoiceForm.patchValue({ branchId });
+        }
+        // Refrescar productos para mostrar stock actualizado (incluyendo negativos)
+        if (this.productSearchQuery.length >= 2) {
+          this.searchProductsWithStock(this.productSearchQuery);
+        }
         setTimeout(() => (this.saveSuccess = false), 4000);
       },
       error: (err) => {
@@ -487,7 +501,6 @@ initForm(): void {
       .getProducts({
         search: searchTerm,
         supplierId: supplierId,
-        inStock: true,
         page: 0,
         size: 20,
       })
@@ -501,14 +514,21 @@ initForm(): void {
       });
   }
 
+  getProductTotalStock(product: IProduct): number {
+    return product.stockResponses?.reduce((acc, stock) => acc + stock.quantity, 0) ?? 0;
+  }
+
+  isNegativeStock(product: IProduct): boolean {
+    return this.getProductTotalStock(product) < 0;
+  }
+
   loadBranches() {
     this._branchService.getBranches().subscribe({
       next: (branches: IBranch[]) => {
-        this.branches = branches;
+        this.branches = branches.filter((branch) => branch.active);
         if (this.branches.length > 0) {
           const firstBranchId = this.branches[0].id;
           this.invoiceForm.patchValue({ branchId: firstBranchId });
-          this.checkCashSession(firstBranchId);
         }
       },
       error: (error) => {
@@ -522,24 +542,30 @@ initForm(): void {
       this.locations = [];
       this.currentCashSession = null;
       this.cashSessionError = '';
+      this.noCashOpen = false;
       return;
     }
 
     this.selectedBranchId = branchId;
+    this.syncPrefixFromBranch(branchId);
+    this.updateInvoiceNumber((this.invoiceForm.get('invoiceType')?.value ?? 'B').toUpperCase());
     this.getLocations(branchId);
     this.invoiceForm.get("locationId")!.setValue("");
+    this.refreshNextInvoiceNumbers(branchId);
     this.checkCashSession(branchId);
   }
 
   checkCashSession(branchId: string): void {
+    this.isCheckingCash = true;
     this.cashSessionError = '';
     this.currentCashSession = null;
-    this.noCashOpen = true;
+    this.noCashOpen = false;
     this.invoiceForm.disable({ emitEvent: false });
 
     this._cashService.getCurrentSession({ branchId, central: false }).subscribe({
       next: (session) => {
         this.currentCashSession = session;
+        this.isCheckingCash = false;
         this.noCashOpen = false;
         this.invoiceForm.enable({ emitEvent: false });
         // Siempre mantener invoicePrefix y invoiceNumber deshabilitados
@@ -547,11 +573,94 @@ initForm(): void {
         this.invoiceForm.get('invoiceNumber')?.disable({ emitEvent: false });
       },
       error: () => {
+        this.isCheckingCash = false;
         this.cashSessionError = '⚠️ Debe abrir la caja diaria para poder crear facturas';
         this.noCashOpen = true;
         this.invoiceForm.disable({ emitEvent: false });
       }
     });
+  }
+
+  private syncPrefixFromBranch(branchId: string): void {
+    const branch = this.branches.find((item) => item.id === branchId);
+    const prefix = branch?.pointOfSale ?? 1;
+
+    this.nextInvoiceNumbers['A'].prefix = prefix;
+    this.nextInvoiceNumbers['B'].prefix = prefix;
+    this.nextInvoiceNumbers['C'].prefix = prefix;
+  }
+
+  private refreshNextInvoiceNumbers(branchId: string): void {
+    const branch = this.branches.find((item) => item.id === branchId);
+    const prefix = branch?.pointOfSale ?? 1;
+
+    this._customerInvoiceService.getByBranchId(branchId).subscribe({
+      next: (sales) => {
+        this.nextInvoiceNumbers['A'] = {
+          prefix,
+          number: this.calculateNextInvoiceNumber(sales, 'A', prefix),
+        };
+        this.nextInvoiceNumbers['B'] = {
+          prefix,
+          number: this.calculateNextInvoiceNumber(sales, 'B', prefix),
+        };
+        this.nextInvoiceNumbers['C'] = {
+          prefix,
+          number: this.calculateNextInvoiceNumber(sales, 'C', prefix),
+        };
+
+        this.updateInvoiceNumber((this.invoiceForm.get('invoiceType')?.value ?? 'B').toUpperCase());
+      },
+      error: () => {
+        this.nextInvoiceNumbers['A'] = { prefix, number: 1 };
+        this.nextInvoiceNumbers['B'] = { prefix, number: 1 };
+        this.nextInvoiceNumbers['C'] = { prefix, number: 1 };
+        this.updateInvoiceNumber((this.invoiceForm.get('invoiceType')?.value ?? 'B').toUpperCase());
+      },
+    });
+  }
+
+  private calculateNextInvoiceNumber(
+    sales: Array<{ saleType?: string; saleNumber?: string; invoiceType?: string; invoiceNumber?: string | number }>,
+    type: string,
+    expectedPrefix: number,
+  ): number {
+    const matches = sales
+      .filter((sale) => (sale.saleType ?? sale.invoiceType ?? '').toUpperCase() === type)
+      .map((sale) => this.extractPrefixAndNumber(String(sale.saleNumber ?? sale.invoiceNumber ?? '')))
+      .filter((value): value is { prefix: number; number: number } => value !== null)
+      .filter((value) => value.prefix === expectedPrefix)
+      .map((value) => value.number);
+
+    if (!matches.length) {
+      return 1;
+    }
+
+    return Math.max(...matches) + 1;
+  }
+
+  private extractPrefixAndNumber(rawSaleNumber: string): { prefix: number; number: number } | null {
+    const match = /^(\d+)-(\d+)$/.exec(rawSaleNumber);
+    if (!match) {
+      return null;
+    }
+
+    const prefix = Number.parseInt(match[1], 10);
+    const number = Number.parseInt(match[2], 10);
+    if (!Number.isFinite(prefix) || !Number.isFinite(number)) {
+      return null;
+    }
+
+    return { prefix, number };
+  }
+
+  private incrementNextInvoiceNumber(type: string): void {
+    const normalizedType = (type || 'B').toUpperCase();
+    const current = this.nextInvoiceNumbers[normalizedType] ?? { prefix: 1, number: 1 };
+    this.nextInvoiceNumbers[normalizedType] = {
+      prefix: current.prefix,
+      number: current.number + 1,
+    };
   }
 
   // setFormDisabled ya no es necesario, la lógica se maneja con enable()/disable() del formGroup completo

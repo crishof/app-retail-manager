@@ -25,7 +25,7 @@ export class CashComponent implements OnInit {
 
   branches: IBranch[] = [];
   selectedBranchId: string = '';
-  selectedCashType: 'CENTRAL' | 'BRANCH' = 'CENTRAL';
+  selectedCashType: 'CENTRAL' | 'BRANCH' = 'BRANCH';
 
   currentSession: ICashSessionResponse | null = null;
   movements: ICashMovementResponse[] = [];

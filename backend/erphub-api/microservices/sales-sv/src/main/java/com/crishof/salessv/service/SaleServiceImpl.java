@@ -8,7 +8,6 @@ import com.crishof.salessv.model.Sale;
 import com.crishof.salessv.model.SaleItem;
 import com.crishof.salessv.repository.SaleRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,7 +16,6 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class SaleServiceImpl implements SaleService {
 
     private final SaleRepository saleRepository;
@@ -42,21 +40,17 @@ public class SaleServiceImpl implements SaleService {
         sale.getItems().forEach(item -> item.setSale(sale));
         Sale saved = saleRepository.save(sale);
 
-        // Descontar stock (best-effort, no falla la venta)
+        // Descontar stock en inventario para cada item de la venta.
         if (request.getInvoiceItemsRequest() != null) {
             request.getInvoiceItemsRequest().forEach(item -> {
-                try {
-                    inventoryClient.registerMovement(StockMovementRequest.builder()
-                            .productId(item.getId())
-                            .branchId(request.getBranchId())
-                            .locationId(request.getLocationId())
-                            .quantity(-item.getQuantity())   // negativo = salida
-                            .reason("SALE")
-                            .referenceId(saved.getId())
-                            .build());
-                } catch (Exception ex) {
-                    log.warn("Could not register stock deduction for product={}: {}", item.getId(), ex.getMessage());
-                }
+                inventoryClient.registerMovement(StockMovementRequest.builder()
+                        .productId(item.getId())
+                        .branchId(request.getBranchId())
+                        .locationId(request.getLocationId())
+                        .quantity(-item.getQuantity())
+                        .reason("INVOICE") // Debe coincidir con el enum de inventory-sv
+                        .referenceId(saved.getId())
+                        .build());
             });
         }
 
