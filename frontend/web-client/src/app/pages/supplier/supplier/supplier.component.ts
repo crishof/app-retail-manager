@@ -1,7 +1,7 @@
 import { CommonModule, NgClass } from "@angular/common";
 import { Component, HostListener, OnDestroy, OnInit, inject } from "@angular/core";
 import { ISupplier } from "../../../model/supplier.model";
-import { Router } from "@angular/router";
+import { ActivatedRoute, Router } from "@angular/router";
 import { SupplierService } from "../../../services/supplier.service";
 import { SupplierNavbarComponent } from "../supplier-navbar/supplier-navbar.component";
 import { SupplierDetailsComponent } from "../supplier-details/supplier-details.component";
@@ -33,6 +33,7 @@ type SupplierTab = "supplier" | "margenes" | "contactos" | "inscripciones" | "co
 export class SupplierComponent implements OnInit, OnDestroy {
   private readonly supplierService = inject(SupplierService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   supplierList: ISupplier[] = [];
   currentSupplier: ISupplier | null = null;
@@ -65,9 +66,15 @@ export class SupplierComponent implements OnInit, OnDestroy {
   };
 
   private subscription?: Subscription;
+  private routeSubscription?: Subscription;
 
   ngOnInit(): void {
     this.loadAllSuppliers();
+    this.routeSubscription = this.route.data.subscribe((data) => {
+      if (data['defaultTab'] === 'cuenta-corriente') {
+        this.activateAccountStatementTab();
+      }
+    });
   }
 
   loadAllSuppliers(): void {
@@ -178,7 +185,12 @@ export class SupplierComponent implements OnInit, OnDestroy {
     this.router.navigate(["/supplier", id]);
   }
 
+  activateAccountStatementTab(): void {
+    this.selectedComponent = 'cuenta-corriente';
+  }
+
   ngOnDestroy(): void {
     this.subscription?.unsubscribe();
+    this.routeSubscription?.unsubscribe();
   }
 }

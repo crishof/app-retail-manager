@@ -1,5 +1,4 @@
 <div class="cc-container">
-
   <!-- ── TOOLBAR ───────────────────────────────────────────────────── -->
   <div class="cc-toolbar">
     <div class="cc-filters">
@@ -42,8 +41,8 @@
 
   <!-- ── PAYMENT FORM ─────────────────────────────────────────────── -->
   @if (showPaymentForm) {
-    <div class="cc-modal-overlay" (click)="cancelPayment()">
-      <div class="cc-modal cc-modal--sm" (click)="$event.stopPropagation()">
+    <div class="cc-modal-overlay">
+      <div class="cc-modal cc-modal--sm">
         <div class="cc-modal__header">
           <h3 class="cc-modal__title">
             <svg xmlns="http://www.w3.org/2000/svg" class="cc-modal__icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -60,16 +59,16 @@
         <form [formGroup]="paymentForm" (ngSubmit)="submitPayment()">
           <div class="cc-form-grid">
             <div class="cc-field">
-              <label>Fecha <span class="req">*</span></label>
-              <input type="date" formControlName="paymentDate" class="cc-input" />
+              <label for="supplier-payment-date">Fecha *</label>
+              <input id="supplier-payment-date" aria-label="Fecha de pago" type="date" formControlName="paymentDate" class="cc-input" />
             </div>
             <div class="cc-field">
-              <label>Importe <span class="req">*</span></label>
-              <input type="number" step="0.01" min="0" formControlName="amount" class="cc-input" placeholder="0.00" />
+              <label for="supplier-payment-amount">Importe *</label>
+              <input id="supplier-payment-amount" aria-label="Importe de pago" type="number" step="0.01" min="0" formControlName="amount" class="cc-input" placeholder="0.00" />
             </div>
             <div class="cc-field">
-              <label>Medio de pago <span class="req">*</span></label>
-              <select formControlName="paymentMethod" class="cc-select">
+              <label for="supplier-payment-method">Medio de pago *</label>
+              <select id="supplier-payment-method" aria-label="Medio de pago" formControlName="paymentMethod" class="cc-select">
                 <option value="">-- Seleccionar --</option>
                 <option value="CASH">Efectivo</option>
                 <option value="TRANSFER">Transferencia</option>
@@ -79,12 +78,12 @@
               </select>
             </div>
             <div class="cc-field">
-              <label>Referencia</label>
-              <input type="text" formControlName="reference" class="cc-input" placeholder="N° transferencia, cheque..." />
+              <label for="supplier-payment-reference">Referencia</label>
+              <input id="supplier-payment-reference" aria-label="Referencia de pago" type="text" formControlName="reference" class="cc-input" placeholder="N° transferencia, cheque..." />
             </div>
             <div class="cc-field cc-field--full">
-              <label>Descripción</label>
-              <input type="text" formControlName="description" class="cc-input" placeholder="Notas adicionales..." />
+              <label for="supplier-payment-description">Descripción</label>
+              <input id="supplier-payment-description" aria-label="Descripción del pago" type="text" formControlName="description" class="cc-input" placeholder="Notas adicionales..." />
             </div>
           </div>
           @if (saveError) {
@@ -108,8 +107,8 @@
 
   <!-- ── INVOICE MODAL ────────────────────────────────────────────── -->
   @if (showInvoiceModal) {
-    <div class="cc-modal-overlay" (click)="closeInvoice()">
-      <div class="cc-modal cc-modal--lg" (click)="$event.stopPropagation()">
+    <div class="cc-modal-overlay">
+      <div class="cc-modal cc-modal--lg">
 
         @if (loadingInvoice) {
           <div class="cc-modal__loading">
@@ -371,8 +370,7 @@
             <tr class="cc-table__row"
                 [class.cc-table__row--invoice]="m.type === 'INVOICE'"
                 [class.cc-table__row--payment]="m.type === 'PAYMENT'"
-                [class.cc-table__row--clickable]="m.type === 'INVOICE'"
-                (click)="m.type === 'INVOICE' ? openInvoice(m.id) : null">
+                [class.cc-table__row--clickable]="m.type === 'INVOICE'">
               <td class="cc-td--date">{{ m.date | date:'dd/MM/yyyy' }}</td>
               <td>
                 @if (m.type === 'INVOICE') {
@@ -391,7 +389,13 @@
                   </span>
                 }
               </td>
-              <td class="cc-td--mono">{{ m.reference ?? '—' }}</td>
+              <td class="cc-td--mono">
+                @if (m.type === 'INVOICE') {
+                  <button type="button" class="cc-btn cc-btn--ghost cc-btn--sm" (click)="openInvoice(m.id)">Ver factura</button>
+                } @else {
+                  {{ m.reference ?? '—' }}
+                }
+              </td>
               <td class="cc-td--desc">{{ m.description ?? '—' }}</td>
               <td class="cc-td--num cc-td--debit">
                 @if (m.amount > 0) {

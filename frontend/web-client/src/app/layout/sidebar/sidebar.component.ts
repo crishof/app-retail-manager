@@ -61,7 +61,7 @@ export class SidebarComponent {
         { label: 'Listado',          icon: 'storefront',    route: '/supplier'           },
         { label: 'Factura proveedor',icon: 'description',   route: '/supplierInvoice'    },
         { label: 'Lista de precios', icon: 'price_check',   route: '/supplierPriceList'  },
-        { label: 'Cuenta corriente', icon: 'account_balance',route: '/statementAccount'  },
+        { label: 'Cuenta corriente', icon: 'account_balance',route: '/supplier/cuenta-corriente'  },
       ],
     },
     {

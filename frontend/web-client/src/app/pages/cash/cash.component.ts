@@ -186,7 +186,10 @@ export class CashComponent implements OnInit {
 
   loadMovements(sessionId: string): void {
     this.cashService.getMovements(sessionId).subscribe({
-      next: (mvs) => (this.movements = mvs),
+      next: (mvs) => {
+        this.movements = mvs;
+        this.hydrateSaleMovementDescriptions(this.movements);
+      },
     });
   }
 
@@ -210,7 +213,10 @@ export class CashComponent implements OnInit {
   selectHistorySession(session: ICashSessionResponse): void {
     this.selectedHistorySession = session;
     this.cashService.getMovements(session.id).subscribe({
-      next: (mvs) => (this.historyMovements = mvs),
+      next: (mvs) => {
+        this.historyMovements = mvs;
+        this.hydrateSaleMovementDescriptions(this.historyMovements);
+      },
     });
   }
 
@@ -468,6 +474,82 @@ export class CashComponent implements OnInit {
         this.loadingVoucher = false;
       },
     });
+  }
+
+  private hydrateSaleMovementDescriptions(movements: ICashMovementResponse[]): void {
+    const saleMovements = movements.filter((mv) => mv.type === 'SALE' && !!mv.reference);
+    if (saleMovements.length === 0) {
+      return;
+    }
+
+    const requests = saleMovements.map((mv) =>
+      this.customerInvoiceService.getById(mv.reference!).pipe(catchError(() => of(null)))
+    );
+
+    forkJoin(requests).subscribe({
+      next: (vouchers) => {
+        saleMovements.forEach((movement, index) => {
+          const voucher = vouchers[index];
+          if (!voucher) {
+            return;
+          }
+
+          const customerName = this.extractCustomerNameFromMovementDescription(movement.description);
+          const formattedRef = this.buildSaleReferenceForMovement(voucher);
+          movement.description = customerName ? `${formattedRef} - ${customerName}` : formattedRef;
+        });
+      },
+    });
+  }
+
+  private buildSaleReferenceForMovement(voucher: ICustomerInvoice): string {
+    const voucherType = String(voucher.saleType ?? voucher.invoiceType ?? '').toUpperCase();
+    const saleNumberRaw = String(voucher.saleNumber ?? voucher.invoiceNumber ?? '');
+    const voucherNumber = this.extractVoucherCorrelative(saleNumberRaw).padStart(6, '0');
+    return `${this.getVoucherAbbreviation(voucherType)}${voucherNumber}`;
+  }
+
+  private extractVoucherCorrelative(raw: string): string {
+    const value = String(raw ?? '').trim();
+    if (!value) {
+      return '000001';
+    }
+
+    const parts = value.split('-');
+    const lastPart = (parts.at(-1) ?? value).trim();
+    const digits = lastPart.replace(/\D/g, '');
+    return digits || '000001';
+  }
+
+  private extractCustomerNameFromMovementDescription(description: string): string {
+    const raw = String(description ?? '').trim();
+    if (!raw) {
+      return '';
+    }
+
+    const segments = raw.split(' - ');
+    if (segments.length < 2) {
+      return '';
+    }
+
+    return segments.slice(1).join(' - ').trim();
+  }
+
+  private getVoucherAbbreviation(voucherType: string): string {
+    const map: Record<string, string> = {
+      FACTURA_A: 'FA',
+      FACTURA_B: 'FB',
+      FACTURA_C: 'FC',
+      NC_A: 'NCA',
+      NC_B: 'NCB',
+      NC_C: 'NCC',
+      ND_A: 'NDA',
+      ND_B: 'NDB',
+      ND_C: 'NDC',
+      PRESUPUESTO: 'PRES',
+    };
+
+    return map[voucherType] ?? 'COMP';
   }
 
   onMovementCurrencyChange(event: Event): void {

@@ -14,7 +14,6 @@ import { SupplierComponent } from './pages/supplier/supplier/supplier.component'
 import { SupplierDetailsComponent } from './pages/supplier/supplier-details/supplier-details.component';
 import { SupplierFormComponent } from './pages/supplier/supplier-form/supplier-form.component';
 import { SupplierInvoiceComponent } from './pages/supplier/supplier-invoice/supplier-invoice.component';
-import { StatementOfAccountComponent } from './pages/supplier/statement-of-account/statement-of-account.component';
 import { SupplierPriceListComponent } from './pages/supplier-price-list/supplier-price-list.component';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { CustomerInvoiceComponent } from './pages/customer/customer-invoice/customer-invoice.component';
@@ -60,8 +59,9 @@ export const routes: Routes = [
   { path: 'supplier/:id',         component: SupplierDetailsComponent },
   { path: 'supplierInvoice',      component: SupplierInvoiceComponent },
   { path: 'supplierPriceList',    component: SupplierPriceListComponent },
-  { path: 'statementAccount',     component: StatementOfAccountComponent },
-  { path: 'statementAccount/:id', component: StatementOfAccountComponent },
+  { path: 'supplier/cuenta-corriente', component: SupplierComponent, data: { defaultTab: 'cuenta-corriente' } },
+  { path: 'statementAccount',          redirectTo: 'supplier/cuenta-corriente', pathMatch: 'full' },
+  { path: 'statementAccount/:id',      redirectTo: 'supplier/cuenta-corriente', pathMatch: 'full' },
 
   // ── Clientes ───────────────────────────────────────
   { path: 'clientes', component: CustomerComponent },

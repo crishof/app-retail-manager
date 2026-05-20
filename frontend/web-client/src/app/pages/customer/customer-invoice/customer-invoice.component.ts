@@ -390,7 +390,7 @@ initForm(): void {
     const currentInvoiceType = this.normalizeVoucherType(rawForm.invoiceType ?? this.defaultVoucherType);
 
     const totalAmount = this.getInvoiceTotal();
-    const invoiceNumber = `${rawForm.invoicePrefix}-${rawForm.invoiceNumber}`;
+    const movementReference = this.buildCashMovementReference(currentInvoiceType, rawForm.invoiceNumber);
     const customerName = rawForm.customerRequest?.name
       ? `${rawForm.customerRequest.name} ${rawForm.customerRequest.lastname}`
       : 'Venta';
@@ -401,7 +401,7 @@ initForm(): void {
         this._cashService.addMovement(this.currentCashSession!.id, {
           type: 'SALE',
           amount: totalAmount,
-          description: `Venta ${invoiceNumber} - ${customerName}`,
+          description: `${movementReference} - ${customerName}`,
           reference: invoice.id
         }).subscribe({
           next: () => {},
@@ -429,6 +429,42 @@ initForm(): void {
         this.saveError = err?.error?.message ?? 'Error al guardar la venta.';
       }
     });
+  }
+
+  private buildCashMovementReference(voucherType: string, invoiceNumber: number | string): string {
+    const abbreviation = this.getVoucherAbbreviation(voucherType);
+    const number = this.extractInvoiceNumberWithoutPrefix(invoiceNumber).padStart(6, '0');
+    return `${abbreviation}${number}`;
+  }
+
+  private extractInvoiceNumberWithoutPrefix(invoiceNumber: number | string): string {
+    const normalized = String(invoiceNumber ?? '').trim();
+    if (!normalized) {
+      return '000001';
+    }
+
+    const segments = normalized.split('-');
+    const lastSegment = (segments.at(-1) ?? normalized).trim();
+    const digitsOnly = lastSegment.replace(/\D/g, '');
+    return digitsOnly || '000001';
+  }
+
+  private getVoucherAbbreviation(voucherType: string): string {
+    const normalized = this.normalizeVoucherType(voucherType);
+    const abbreviations: Record<string, string> = {
+      FACTURA_A: 'FA',
+      FACTURA_B: 'FB',
+      FACTURA_C: 'FC',
+      NC_A: 'NCA',
+      NC_B: 'NCB',
+      NC_C: 'NCC',
+      ND_A: 'NDA',
+      ND_B: 'NDB',
+      ND_C: 'NDC',
+      PRESUPUESTO: 'PRES',
+    };
+
+    return abbreviations[normalized] ?? 'COMP';
   }
 
   selectProduct(product: IProduct): void {
