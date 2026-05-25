@@ -2,7 +2,8 @@
 <app-product-navbar
   (newProduct)="navigateNew()"
   (editProduct)="navigateEdit()"
-  (deleteProduct)="confirmDelete()">
+  (deleteProduct)="confirmDelete()"
+  (billProduct)="navigateInvoiceWithProduct()">
 </app-product-navbar>
 
 <!-- ── Workspace ───────────────────────────────────────── -->
@@ -118,7 +119,8 @@
           [selectedProductId]="selectedProduct?.id ?? null"
           [visibleColumns]="visibleColumns"
           selectionMode="click"
-          (selectProduct)="selectProduct($event)">
+          (selectProduct)="selectProduct($event)"
+          (openInvoiceForProduct)="navigateInvoiceWithProduct($event)">
         </app-product-list>
       }
     </div>

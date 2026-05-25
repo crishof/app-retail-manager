@@ -1,6 +1,7 @@
 <app-supplier-navbar
   (newSupplier)="navigateNewSupplier()"
   (editSupplier)="navigateEditSupplier()"
+  (openAccountStatement)="activateAccountStatementTab()"
 ></app-supplier-navbar>
 
 <section class="sup">
@@ -111,7 +112,14 @@
             <app-supplier-purchase-history [supplierId]="currentSupplier?.id ?? null"></app-supplier-purchase-history>
           }
           @case ("cuenta-corriente") {
-            <app-supplier-account-statement [supplierId]="currentSupplier?.id ?? null"></app-supplier-account-statement>
+            @if (currentSupplier?.id) {
+              <app-supplier-account-statement [supplierId]="currentSupplier?.id ?? null"></app-supplier-account-statement>
+            } @else {
+              <div class="sup-placeholder">
+                <span class="material-icons">account_balance</span>
+                <p>Seleccioná un proveedor del listado para ver su cuenta corriente.</p>
+              </div>
+            }
           }
           @case ("margenes") {
             <div class="sup-placeholder">

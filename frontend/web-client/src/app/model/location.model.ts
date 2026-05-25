@@ -4,6 +4,7 @@ export interface ILocation {
   id: string;
   code: string;
   name: string;
+  address?: string;
   locationType: LocationType;
   active: boolean;
 }
@@ -11,6 +12,7 @@ export interface ILocation {
 export interface ILocationRequest {
   code: string;
   name: string;
+  address?: string;
   locationType: LocationType;
   active: boolean;
 }

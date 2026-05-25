@@ -91,6 +91,15 @@ resilience4j:
       department-service:
         timeoutDuration: 2s
         cancelRunningFuture: true
+      ImageClientuploadMultipartFileString:
+        timeoutDuration: 30s
+        cancelRunningFuture: true
+      ImageClientreplaceMultipartFileStringString:
+        timeoutDuration: 30s
+        cancelRunningFuture: true
+      ImageClientdeleteStringString:
+        timeoutDuration: 15s
+        cancelRunningFuture: true
   bulkhead:
     instances:
       department-service:

@@ -16,11 +16,20 @@ import java.util.UUID;
 public class BranchResponse {
 
     private UUID id;
+    private UUID companyId;
     private String code;
     private String name;
     private String address;
+    private String locality;
+    private String postalCode;
+    private String country;
+    private String phone;
+    private String email;
+    private String website;
+    private Integer pointOfSale;
     private boolean active;
     private List<LocationResponse> locations;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
+

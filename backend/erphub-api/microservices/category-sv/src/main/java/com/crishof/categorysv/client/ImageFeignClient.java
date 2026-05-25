@@ -7,14 +7,11 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-@FeignClient(
-        name = "image-sv",
-        url = "http://image-sv:8080"
-)
+@FeignClient(name = "image-sv", path = "/internal/images")
 public interface ImageFeignClient {
 
     @PostMapping(
-            value = "/internal/images/upload",
+            value = "/upload",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
     ImageResponse uploadImage(
@@ -23,7 +20,7 @@ public interface ImageFeignClient {
     );
 
     @PutMapping(
-            value = "/internal/images/replace",
+            value = "/replace",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
     ImageResponse replaceImage(
@@ -32,7 +29,7 @@ public interface ImageFeignClient {
             @RequestPart("oldUrl") String oldUrl
     );
 
-    @DeleteMapping("/internal/images/delete")
+    @DeleteMapping("/delete")
     void deleteImage(
             @RequestParam("url") String url,
             @RequestParam("entityName") String entityName

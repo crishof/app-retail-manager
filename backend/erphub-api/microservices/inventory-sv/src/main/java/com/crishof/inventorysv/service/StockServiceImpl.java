@@ -2,7 +2,6 @@ package com.crishof.inventorysv.service;
 
 import com.crishof.inventorysv.dto.StockMovementRequest;
 import com.crishof.inventorysv.dto.StockMovementResponse;
-import com.crishof.inventorysv.exception.BusinessException;
 import com.crishof.inventorysv.model.Stock;
 import com.crishof.inventorysv.model.StockMovement;
 import com.crishof.inventorysv.repository.StockMovementRepository;
@@ -31,11 +30,6 @@ public class StockServiceImpl implements StockService {
         log.info("Registering stock movement | product={} qty={} reason={}", req.getProductId(), req.getQuantity(), req.getReason());
 
         Stock stock = stockRepository.findByProductIdAndBranchIdAndLocationId(req.getProductId(), req.getBranchId(), req.getLocationId()).orElseGet(() -> createStock(req));
-
-        int newQty = stock.getQuantity() + req.getQuantity();
-        if (newQty < 0) {
-            throw new BusinessException("Insufficient stock");
-        }
 
         stock.applyMovement(req.getQuantity());
         stockRepository.save(stock);

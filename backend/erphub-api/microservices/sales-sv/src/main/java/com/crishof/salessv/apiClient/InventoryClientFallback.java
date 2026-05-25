@@ -10,5 +10,6 @@ public class InventoryClientFallback implements InventoryClient {
     @Override
     public void registerMovement(StockMovementRequest request) {
         log.warn("inventory-sv unavailable — stock movement not registered for product={}", request.getProductId());
+        throw new IllegalStateException("No se pudo registrar el movimiento de stock. Intente nuevamente.");
     }
 }

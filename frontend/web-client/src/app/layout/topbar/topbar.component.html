@@ -5,7 +5,7 @@
   </button>
 
   <!-- Brand (visible solo en mobile) -->
-  <a class="topbar__brand" [routerLink]="['/']">RetailManager</a>
+  <a class="topbar__brand" [routerLink]="['/inicio']">RetailManager</a>
 
   <div class="topbar__spacer"></div>
 
@@ -13,9 +13,23 @@
   <div class="topbar__actions">
 
     <!-- Búsqueda rápida -->
-    <button class="topbar__icon-btn" aria-label="Buscar">
+    <button class="topbar__icon-btn" aria-label="Buscar" (click)="onSearchButtonClick()">
       <span class="material-icons">search</span>
     </button>
+
+    @if (showSearchInput) {
+      <form class="topbar__search-wrap" (ngSubmit)="submitQuickSearch()">
+        <input
+          type="text"
+          class="topbar__search-input"
+          placeholder="Buscar..."
+          [(ngModel)]="quickSearchTerm"
+          name="quickSearchTerm"
+          autofocus
+          (keydown.escape)="toggleSearchInput()"
+        />
+      </form>
+    }
 
     <!-- Notificaciones -->
     <button class="topbar__icon-btn topbar__icon-btn--notif" aria-label="Notificaciones">

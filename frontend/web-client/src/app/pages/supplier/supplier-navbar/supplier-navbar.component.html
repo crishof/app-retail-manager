@@ -40,12 +40,12 @@
     </button>
     <div class="snav__menu">
       @if (selectedSupplier) {
-        <button class="snav__menu-item" type="button" (click)="toStatementAccount(selectedSupplier.id)">
-          Statement of Account
+        <button class="snav__menu-item" type="button" (click)="onOpenStatementClick($event)">
+          Cuenta corriente del proveedor
         </button>
       } @else {
         <button class="snav__menu-item" type="button" disabled>
-          Statement of Account (seleccioná proveedor)
+          Cuenta corriente (seleccioná proveedor)
         </button>
       }
       <button class="snav__menu-item" type="button">Cheques entregados al proveedor</button>

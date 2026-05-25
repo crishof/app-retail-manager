@@ -24,7 +24,7 @@ public class Customer {
     private String name;
     @Column(nullable = false, length = 100)
     private String lastname;
-    @Column(nullable = false, unique = true, length = 20)
+    @Column(unique = true, length = 20)
     private String dni;
     @Column(length = 20)
     private String taxId;

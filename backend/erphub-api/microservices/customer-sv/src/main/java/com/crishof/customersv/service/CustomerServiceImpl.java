@@ -39,17 +39,23 @@ public class CustomerServiceImpl implements CustomerService {
 
         log.info("Creating customer | lastname={} | name={}", customerRequest.getLastname(), customerRequest.getName());
 
-        Optional<Customer> existing = customerRepository.findByDniIncludingDeleted(customerRequest.getDni());
+        String normalizedDni = normalizeNullable(customerRequest.getDni());
+        customerRequest.setDni(normalizedDni);
 
-        if (existing.isPresent()) {
-            Customer customer = existing.get();
-            if (customerRepository.existsDeletedById(customer.getId())) {
-                log.info("Restoring previously deleted customer | id={} | dni={}", customer.getId(), customerRequest.getDni());
-                customerRepository.restoreById(customer.getId());
-                return customerMapper.toDto(customerRepository.save(customer));
+        if (normalizedDni != null) {
+            Optional<Customer> existing = customerRepository.findByDniIncludingDeleted(normalizedDni);
+
+            if (existing.isPresent()) {
+                Customer customer = existing.get();
+                if (customerRepository.existsDeletedById(customer.getId())) {
+                    log.info("Restoring previously deleted customer | id={} | dni={}", customer.getId(), normalizedDni);
+                    customerRepository.restoreById(customer.getId());
+                    return customerMapper.toDto(customerRepository.save(customer));
+                }
+                throw new IllegalArgumentException("Customer with DNI '" + normalizedDni + "' already exists.");
             }
-            throw new IllegalArgumentException("Customer with DNI '" + customerRequest.getDni() + "' already exists.");
         }
+
         Customer customer = customerMapper.toEntity(customerRequest);
 
         Customer saved = customerRepository.save(customer);
@@ -62,7 +68,6 @@ public class CustomerServiceImpl implements CustomerService {
 
         log.debug("Fetching customers | page={} size={}", pageable.getPageNumber(), pageable.getPageSize());
 
-        //TODO Sort customers by name
         return customerRepository.findAll(pageable).map(customerMapper::toDto);
     }
 
@@ -194,5 +199,18 @@ public class CustomerServiceImpl implements CustomerService {
         } else {
             log.info(DELETED, id);
         }
+    }
+
+    private String normalizeNullable(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String trimmed = value.trim();
+        if (trimmed.isEmpty()) {
+            return null;
+        }
+
+        return trimmed;
     }
 }

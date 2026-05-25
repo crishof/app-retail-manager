@@ -21,6 +21,8 @@ public class LocationRequest {
     @NotBlank
     private String name;
 
+    private String address;
+
     @Builder.Default
     private StockLocation.LocationType locationType = StockLocation.LocationType.SALES;
 

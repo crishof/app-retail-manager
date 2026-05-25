@@ -26,6 +26,8 @@ public class StockLocation {
     @Column(nullable = false)
     private String name;
 
+    private String address;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default

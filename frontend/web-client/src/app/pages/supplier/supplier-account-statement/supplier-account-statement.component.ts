@@ -1,12 +1,22 @@
 import { Component, Input, OnChanges, SimpleChanges, inject, OnDestroy } from '@angular/core';
-import { CommonModule, DecimalPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Subject } from 'rxjs';
+import { Subject, forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { SupplierInvoiceService, IAccountMovement, ISupplierPaymentRequest } from '../../../services/supplier-invoice.service';
+import { SupplierService } from '../../../services/supplier.service';
+import { BranchService } from '../../../services/branch.service';
+import { CompanyService } from '../../../services/company.service';
+import { ProductService } from '../../../services/product.service';
+import { ISupplier } from '../../../model/supplier.model';
+import { IBranch } from '../../../model/branch.model';
+import { ICompany } from '../../../model/company.model';
 
 interface IInvoiceDetail {
   id: string;
   supplierId: string;
+  branchId?: string;
+  locationId?: string;
   invoiceType: string;
   invoiceDate: string;
   dueDate: string;
@@ -28,6 +38,12 @@ interface IInvoiceDetail {
   vat27: number;
   netValue0: number;
   internalTax: number;
+  withholdingVat?: number;
+  withholdingSuss?: number;
+  withholdingGrossReceiptsTax?: number;
+  withholdingIncome?: number;
+  stateTax?: number;
+  localTax?: number;
   rounding: number;
   totalPrice: number;
   invoiceItems: Array<{
@@ -37,6 +53,17 @@ interface IInvoiceDetail {
     taxRate: number;
     discountRate: number;
   }>;
+}
+
+interface ISupplierPreviewItem {
+  productId: string;
+  brandName: string;
+  model: string;
+  description: string;
+  quantity: number;
+  price: number;
+  taxRate: number;
+  discountRate: number;
 }
 
 @Component({
@@ -50,6 +77,10 @@ export class SupplierAccountStatementComponent implements OnChanges, OnDestroy {
   @Input() supplierId: string | null = null;
 
   private readonly svc = inject(SupplierInvoiceService);
+  private readonly supplierService = inject(SupplierService);
+  private readonly branchService = inject(BranchService);
+  private readonly companyService = inject(CompanyService);
+  private readonly productService = inject(ProductService);
   private readonly fb = inject(FormBuilder);
   private readonly destroy$ = new Subject<void>();
 
@@ -70,9 +101,13 @@ export class SupplierAccountStatementComponent implements OnChanges, OnDestroy {
   invoiceDetail: IInvoiceDetail | null = null;
   showInvoiceModal = false;
   loadingInvoice = false;
+  previewItems: ISupplierPreviewItem[] = [];
+  previewSupplier: ISupplier | null = null;
+  previewBranch: IBranch | null = null;
+  previewCompany: ICompany | null = null;
 
   get balance(): number {
-    return this.movements.length > 0 ? this.movements[this.movements.length - 1].balance : 0;
+    return this.movements.at(-1)?.balance ?? 0;
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -163,7 +198,7 @@ export class SupplierAccountStatementComponent implements OnChanges, OnDestroy {
     this.svc.getInvoiceById(invoiceId).subscribe({
       next: (data: any) => {
         this.invoiceDetail = data;
-        this.loadingInvoice = false;
+        this.loadInvoiceContext(data as IInvoiceDetail);
       },
       error: () => {
         this.loadingInvoice = false;
@@ -174,6 +209,10 @@ export class SupplierAccountStatementComponent implements OnChanges, OnDestroy {
   closeInvoice(): void {
     this.showInvoiceModal = false;
     this.invoiceDetail = null;
+    this.previewItems = [];
+    this.previewSupplier = null;
+    this.previewBranch = null;
+    this.previewCompany = null;
   }
 
   formatInvoiceNumber(num: string): string {
@@ -195,6 +234,56 @@ export class SupplierAccountStatementComponent implements OnChanges, OnDestroy {
 
   get invoiceCurrency(): string {
     return this.invoiceDetail?.currency || 'ARS';
+  }
+
+  private loadInvoiceContext(invoice: IInvoiceDetail): void {
+    const itemRequests = (invoice.invoiceItems ?? []).map((item: any) =>
+      this.productService.getProduct(String(item.productId || item.id)).pipe(catchError(() => of(null)))
+    );
+
+    forkJoin({
+      products: itemRequests.length ? forkJoin(itemRequests) : of([]),
+      supplier: invoice.supplierId ? this.supplierService.getSupplierById(invoice.supplierId).pipe(catchError(() => of(null))) : of(null),
+      branch: invoice.branchId ? this.branchService.getBranch(invoice.branchId).pipe(catchError(() => of(null))) : of(null),
+    }).subscribe({
+      next: ({ products, supplier, branch }) => {
+        this.previewItems = (invoice.invoiceItems ?? []).map((item, index) => {
+          const product = products[index];
+          return {
+            productId: item.productId,
+            brandName: product?.brandName ?? '-',
+            model: product?.model ?? '-',
+            description: product?.description ?? '-',
+            quantity: item.quantity,
+            price: item.price,
+            taxRate: item.taxRate,
+            discountRate: item.discountRate,
+          };
+        });
+
+        this.previewSupplier = supplier;
+        this.previewBranch = branch;
+
+        if (branch?.companyId) {
+          this.companyService.getCompany(branch.companyId).pipe(catchError(() => of(null))).subscribe({
+            next: (company) => {
+              this.previewCompany = company;
+              this.loadingInvoice = false;
+            },
+            error: () => {
+              this.loadingInvoice = false;
+            },
+          });
+          return;
+        }
+
+        this.previewCompany = null;
+        this.loadingInvoice = false;
+      },
+      error: () => {
+        this.loadingInvoice = false;
+      },
+    });
   }
 
   trackByMovementId(_: number, m: IAccountMovement): string {

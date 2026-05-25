@@ -454,6 +454,30 @@
   flex-direction: column;
   gap: 0.75rem;
 }
+.cc-invoice__party-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+.cc-invoice__party-card {
+  border: 1px solid var(--cc-gray-200);
+  border-radius: var(--cc-radius);
+  background: var(--cc-gray-50);
+  padding: 0.75rem;
+  font-size: 0.78rem;
+  color: var(--cc-gray-600);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.cc-invoice__party-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--cc-gray-700);
+  margin: 0 0 0.2rem;
+}
 .cc-invoice__section-title {
   font-size: 0.7rem;
   font-weight: 700;
@@ -494,6 +518,12 @@
 .cc-invoice__table tr:last-child td { border-bottom: none; }
 .cc-invoice__td--num { text-align: right; }
 .cc-invoice__td--bold { font-weight: 700; color: var(--cc-gray-800); }
+.cc-invoice__td--truncate {
+  max-width: 260px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 .cc-invoice__totals {
   display: flex;
@@ -552,6 +582,12 @@
   margin: 0;
   font-size: 0.85rem;
   color: var(--cc-gray-600);
+}
+
+@media (max-width: 900px) {
+  .cc-invoice__party-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .req { color: #ef4444; }

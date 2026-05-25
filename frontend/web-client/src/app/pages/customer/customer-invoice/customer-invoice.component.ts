@@ -1,6 +1,6 @@
 import { CommonModule } from "@angular/common";
 import { Component, OnDestroy, OnInit, inject } from "@angular/core";
-import { RouterLink } from "@angular/router";
+import { ActivatedRoute, RouterLink } from "@angular/router";
 import {
   FormBuilder,
   FormControl,
@@ -28,7 +28,24 @@ import { CashService, ICashSessionResponse } from "../../../services/cash.servic
   styleUrl: "./customer-invoice.component.css",
 })
 export class CustomerInvoiceComponent implements OnInit, OnDestroy {
+  readonly voucherTypeOptions: Array<{ value: string; label: string }> = [
+    { value: 'FACTURA_A', label: 'Factura A' },
+    { value: 'FACTURA_B', label: 'Factura B' },
+    { value: 'FACTURA_C', label: 'Factura C' },
+    { value: 'NC_A', label: 'Nota de credito A' },
+    { value: 'NC_B', label: 'Nota de credito B' },
+    { value: 'NC_C', label: 'Nota de credito C' },
+    { value: 'ND_A', label: 'Nota de debito A' },
+    { value: 'ND_B', label: 'Nota de debito B' },
+    { value: 'ND_C', label: 'Nota de debito C' },
+    { value: 'PRESUPUESTO', label: 'Presupuesto' },
+  ];
+
   private subscription?: Subscription;
+  private routeSubscription?: Subscription;
+  private invoicePrefillSubscription?: Subscription;
+  private lastPrefilledProductId: string | null = null;
+  private readonly _route = inject(ActivatedRoute);
   private readonly _productService = inject(ProductService);
   private readonly _customerInvoiceService = inject(CustomerInvoiceService);
   private readonly _branchService = inject(BranchService);
@@ -73,11 +90,8 @@ export class CustomerInvoiceComponent implements OnInit, OnDestroy {
   isCheckingCash = false;
   noCashOpen = false;
 
-  nextInvoiceNumbers: Record<string, { prefix: number; number: number }> = {
-    A: { prefix: 1, number: 1 },
-    B: { prefix: 1, number: 1 },
-    C: { prefix: 1, number: 1 },
-  };
+  defaultVoucherType = 'FACTURA_B';
+  nextInvoiceNumbers: Record<string, { prefix: number; number: number }> = this.buildDefaultVoucherNumbers();
 
   vat21: number = 0.21;
   vat105: number = 0.105;
@@ -85,18 +99,43 @@ export class CustomerInvoiceComponent implements OnInit, OnDestroy {
   vat0: number = 0;
 
   ngOnInit(): void {
-    this.loadBranches();
-    this.dateControl.setValue(new Date());
     this.initForm();
     this.initCustomerForm();
+    this.loadBranches();
+    this.dateControl.setValue(new Date());
+    this.applyDefaultVoucherType();
+
+    this.routeSubscription = this._route.queryParamMap.subscribe((params) => {
+      const voucherType = params.get('voucherType')?.trim();
+      if (voucherType) {
+        this.applyVoucherType(voucherType);
+      }
+
+      const productId = (params.get("productId") ?? "").trim();
+      if (!productId || productId === this.lastPrefilledProductId) {
+        return;
+      }
+
+      this.invoicePrefillSubscription?.unsubscribe();
+      this.invoicePrefillSubscription = this._productService.getProduct(productId).subscribe({
+        next: (product) => {
+          this.selectProduct(product);
+          this.lastPrefilledProductId = productId;
+        },
+        error: (err) => {
+          console.error("Failed to prefill invoice product", err);
+        },
+      });
+    });
   }
 
   ngOnDestroy(): void {
     this.subscription?.unsubscribe();
+    this.routeSubscription?.unsubscribe();
+    this.invoicePrefillSubscription?.unsubscribe();
   }
 
 initForm(): void {
-    const currentYear = new Date().getFullYear();
     this.invoiceForm = this.formBuilder.group({
       customerId: "",
 
@@ -121,11 +160,11 @@ initForm(): void {
 
       invoiceDate: [new Date().toISOString().split('T')[0], Validators.required],
 
-      invoiceType: ["A", Validators.required],
+      invoiceType: [this.defaultVoucherType, Validators.required],
       packingListPrefix: [0],
       packingListNumber: [0],
       invoicePrefix: [{ value: 1, disabled: true }],
-      invoiceNumber: [{ value: this.nextInvoiceNumbers['A'].number, disabled: true }],
+      invoiceNumber: [{ value: this.nextInvoiceNumbers[this.defaultVoucherType].number, disabled: true }],
 
       taxSave: true,
 
@@ -161,12 +200,15 @@ initForm(): void {
     });
 
     this.invoiceForm.get("invoiceType")!.valueChanges.subscribe((type) => {
-      this.updateInvoiceNumber(type);
+      this.updateInvoiceNumber(type ?? this.defaultVoucherType);
     });
+
+    this.updateInvoiceNumber(this.defaultVoucherType);
   }
 
   updateInvoiceNumber(type: string): void {
-    const next = this.nextInvoiceNumbers[type] || { prefix: 1, number: 1 };
+    const normalizedType = this.normalizeVoucherType(type || this.defaultVoucherType);
+    const next = this.nextInvoiceNumbers[normalizedType] || { prefix: 1, number: 1 };
     this.invoiceForm.patchValue({
       invoicePrefix: next.prefix,
       invoiceNumber: next.number
@@ -344,19 +386,22 @@ initForm(): void {
     this.saveError = '';
     this.saveSuccess = false;
 
+    const rawForm = this.invoiceForm.getRawValue();
+    const currentInvoiceType = this.normalizeVoucherType(rawForm.invoiceType ?? this.defaultVoucherType);
+
     const totalAmount = this.getInvoiceTotal();
-    const invoiceNumber = `${this.invoiceForm.value.invoicePrefix}-${this.invoiceForm.value.invoiceNumber}`;
-    const customerName = this.invoiceForm.value.customerRequest?.name 
-      ? `${this.invoiceForm.value.customerRequest.name} ${this.invoiceForm.value.customerRequest.lastname}`
+    const movementReference = this.buildCashMovementReference(currentInvoiceType, rawForm.invoiceNumber);
+    const customerName = rawForm.customerRequest?.name
+      ? `${rawForm.customerRequest.name} ${rawForm.customerRequest.lastname}`
       : 'Venta';
 
-    const formData = { ...this.invoiceForm.value, invoiceItemsRequest: this.invoiceItems };
+    const formData = { ...rawForm, invoiceItemsRequest: this.invoiceItems };
     this._customerInvoiceService.saveInvoice(formData).subscribe({
       next: (invoice) => {
         this._cashService.addMovement(this.currentCashSession!.id, {
           type: 'SALE',
           amount: totalAmount,
-          description: `Venta ${invoiceNumber} - ${customerName}`,
+          description: `${movementReference} - ${customerName}`,
           reference: invoice.id
         }).subscribe({
           next: () => {},
@@ -366,8 +411,17 @@ initForm(): void {
         this.isSaving = false;
         this.saveSuccess = true;
         this.invoiceItems = [];
+        this.incrementNextInvoiceNumber(currentInvoiceType);
+        const branchId = this.selectedBranchId;
         this.invoiceForm.reset();
         this.initForm();
+        if (branchId) {
+          this.invoiceForm.patchValue({ branchId, invoiceType: currentInvoiceType });
+        }
+        // Refrescar productos para mostrar stock actualizado (incluyendo negativos)
+        if (this.productSearchQuery.length >= 2) {
+          this.searchProductsWithStock(this.productSearchQuery);
+        }
         setTimeout(() => (this.saveSuccess = false), 4000);
       },
       error: (err) => {
@@ -375,6 +429,42 @@ initForm(): void {
         this.saveError = err?.error?.message ?? 'Error al guardar la venta.';
       }
     });
+  }
+
+  private buildCashMovementReference(voucherType: string, invoiceNumber: number | string): string {
+    const abbreviation = this.getVoucherAbbreviation(voucherType);
+    const number = this.extractInvoiceNumberWithoutPrefix(invoiceNumber).padStart(6, '0');
+    return `${abbreviation}${number}`;
+  }
+
+  private extractInvoiceNumberWithoutPrefix(invoiceNumber: number | string): string {
+    const normalized = String(invoiceNumber ?? '').trim();
+    if (!normalized) {
+      return '000001';
+    }
+
+    const segments = normalized.split('-');
+    const lastSegment = (segments.at(-1) ?? normalized).trim();
+    const digitsOnly = lastSegment.replace(/\D/g, '');
+    return digitsOnly || '000001';
+  }
+
+  private getVoucherAbbreviation(voucherType: string): string {
+    const normalized = this.normalizeVoucherType(voucherType);
+    const abbreviations: Record<string, string> = {
+      FACTURA_A: 'FA',
+      FACTURA_B: 'FB',
+      FACTURA_C: 'FC',
+      NC_A: 'NCA',
+      NC_B: 'NCB',
+      NC_C: 'NCC',
+      ND_A: 'NDA',
+      ND_B: 'NDB',
+      ND_C: 'NDC',
+      PRESUPUESTO: 'PRES',
+    };
+
+    return abbreviations[normalized] ?? 'COMP';
   }
 
   selectProduct(product: IProduct): void {
@@ -463,7 +553,6 @@ initForm(): void {
       .getProducts({
         search: searchTerm,
         supplierId: supplierId,
-        inStock: true,
         page: 0,
         size: 20,
       })
@@ -477,14 +566,21 @@ initForm(): void {
       });
   }
 
+  getProductTotalStock(product: IProduct): number {
+    return product.stockResponses?.reduce((acc, stock) => acc + stock.quantity, 0) ?? 0;
+  }
+
+  isNegativeStock(product: IProduct): boolean {
+    return this.getProductTotalStock(product) < 0;
+  }
+
   loadBranches() {
     this._branchService.getBranches().subscribe({
       next: (branches: IBranch[]) => {
-        this.branches = branches;
+        this.branches = branches.filter((branch) => branch.active);
         if (this.branches.length > 0) {
           const firstBranchId = this.branches[0].id;
           this.invoiceForm.patchValue({ branchId: firstBranchId });
-          this.checkCashSession(firstBranchId);
         }
       },
       error: (error) => {
@@ -498,24 +594,30 @@ initForm(): void {
       this.locations = [];
       this.currentCashSession = null;
       this.cashSessionError = '';
+      this.noCashOpen = false;
       return;
     }
 
     this.selectedBranchId = branchId;
+    this.syncPrefixFromBranch(branchId);
+    this.updateInvoiceNumber(this.invoiceForm.get('invoiceType')?.value ?? this.defaultVoucherType);
     this.getLocations(branchId);
     this.invoiceForm.get("locationId")!.setValue("");
+    this.refreshNextInvoiceNumbers(branchId);
     this.checkCashSession(branchId);
   }
 
   checkCashSession(branchId: string): void {
+    this.isCheckingCash = true;
     this.cashSessionError = '';
     this.currentCashSession = null;
-    this.noCashOpen = true;
+    this.noCashOpen = false;
     this.invoiceForm.disable({ emitEvent: false });
 
     this._cashService.getCurrentSession({ branchId, central: false }).subscribe({
       next: (session) => {
         this.currentCashSession = session;
+        this.isCheckingCash = false;
         this.noCashOpen = false;
         this.invoiceForm.enable({ emitEvent: false });
         // Siempre mantener invoicePrefix y invoiceNumber deshabilitados
@@ -523,11 +625,139 @@ initForm(): void {
         this.invoiceForm.get('invoiceNumber')?.disable({ emitEvent: false });
       },
       error: () => {
+        this.isCheckingCash = false;
         this.cashSessionError = '⚠️ Debe abrir la caja diaria para poder crear facturas';
         this.noCashOpen = true;
         this.invoiceForm.disable({ emitEvent: false });
       }
     });
+  }
+
+  private syncPrefixFromBranch(branchId: string): void {
+    const branch = this.branches.find((item) => item.id === branchId);
+    const prefix = branch?.pointOfSale ?? 1;
+
+    this.voucherTypeOptions.forEach((option) => {
+      this.nextInvoiceNumbers[option.value].prefix = prefix;
+    });
+  }
+
+  private refreshNextInvoiceNumbers(branchId: string): void {
+    const branch = this.branches.find((item) => item.id === branchId);
+    const prefix = branch?.pointOfSale ?? 1;
+
+    this._customerInvoiceService.getByBranchId(branchId).subscribe({
+      next: (sales) => {
+        this.voucherTypeOptions.forEach((option) => {
+          this.nextInvoiceNumbers[option.value] = {
+            prefix,
+            number: this.calculateNextInvoiceNumber(sales, option.value, prefix),
+          };
+        });
+
+        this.updateInvoiceNumber(this.invoiceForm.get('invoiceType')?.value ?? this.defaultVoucherType);
+      },
+      error: () => {
+        this.voucherTypeOptions.forEach((option) => {
+          this.nextInvoiceNumbers[option.value] = { prefix, number: 1 };
+        });
+        this.updateInvoiceNumber(this.invoiceForm.get('invoiceType')?.value ?? this.defaultVoucherType);
+      },
+    });
+  }
+
+  private calculateNextInvoiceNumber(
+    sales: Array<{ saleType?: string; saleNumber?: string; invoiceType?: string; invoiceNumber?: string | number }>,
+    type: string,
+    expectedPrefix: number,
+  ): number {
+    const expectedType = this.normalizeVoucherType(type);
+    const matches = sales
+      .filter((sale) => this.normalizeVoucherType(sale.saleType ?? sale.invoiceType ?? '') === expectedType)
+      .map((sale) => this.extractPrefixAndNumber(String(sale.saleNumber ?? sale.invoiceNumber ?? '')))
+      .filter((value): value is { prefix: number; number: number } => value !== null)
+      .filter((value) => value.prefix === expectedPrefix)
+      .map((value) => value.number);
+
+    if (!matches.length) {
+      return 1;
+    }
+
+    return Math.max(...matches) + 1;
+  }
+
+  private extractPrefixAndNumber(rawSaleNumber: string): { prefix: number; number: number } | null {
+    const match = /^(\d+)-(\d+)$/.exec(rawSaleNumber);
+    if (!match) {
+      return null;
+    }
+
+    const prefix = Number.parseInt(match[1], 10);
+    const number = Number.parseInt(match[2], 10);
+    if (!Number.isFinite(prefix) || !Number.isFinite(number)) {
+      return null;
+    }
+
+    return { prefix, number };
+  }
+
+  private incrementNextInvoiceNumber(type: string): void {
+    const normalizedType = this.normalizeVoucherType(type || this.defaultVoucherType);
+    const current = this.nextInvoiceNumbers[normalizedType] ?? { prefix: 1, number: 1 };
+    this.nextInvoiceNumbers[normalizedType] = {
+      prefix: current.prefix,
+      number: current.number + 1,
+    };
+  }
+
+  get currentVoucherLabel(): string {
+    const selectedType = this.normalizeVoucherType(this.invoiceForm?.get('invoiceType')?.value ?? this.defaultVoucherType);
+    return this.voucherTypeOptions.find((option) => option.value === selectedType)?.label ?? 'Comprobante';
+  }
+
+  get formattedCurrentVoucherNumber(): string {
+    const prefix = Number(this.invoiceForm?.get('invoicePrefix')?.value ?? 1);
+    const number = Number(this.invoiceForm?.get('invoiceNumber')?.value ?? 1);
+    return `${String(Number.isFinite(prefix) ? prefix : 1).padStart(3, '0')} - ${String(Number.isFinite(number) ? number : 1).padStart(6, '0')}`;
+  }
+
+  private buildDefaultVoucherNumbers(): Record<string, { prefix: number; number: number }> {
+    return this.voucherTypeOptions.reduce((acc, option) => {
+      acc[option.value] = { prefix: 1, number: 1 };
+      return acc;
+    }, {} as Record<string, { prefix: number; number: number }>);
+  }
+
+  private applyDefaultVoucherType(): void {
+    const routeType = this.normalizeVoucherType(String(this._route.snapshot.data['voucherType'] ?? ''));
+    if (routeType) {
+      this.defaultVoucherType = routeType;
+    }
+    this.applyVoucherType(this.defaultVoucherType);
+  }
+
+  private applyVoucherType(type: string): void {
+    const normalizedType = this.normalizeVoucherType(type);
+    if (!normalizedType || !this.invoiceForm) {
+      return;
+    }
+    this.invoiceForm.patchValue({ invoiceType: normalizedType }, { emitEvent: true });
+  }
+
+  private normalizeVoucherType(type: string): string {
+    const normalized = (type || '').toUpperCase().trim();
+    switch (normalized) {
+      case 'A':
+        return 'FACTURA_A';
+      case 'B':
+        return 'FACTURA_B';
+      case 'C':
+        return 'FACTURA_C';
+      default:
+        return this.voucherTypeOptions.some((option) => option.value === normalized)
+          ? normalized
+          : 'FACTURA_B';
+    }
   }
 
   // setFormDisabled ya no es necesario, la lógica se maneja con enable()/disable() del formGroup completo
@@ -652,7 +882,16 @@ initForm(): void {
     this.isSavingCustomer = true;
     this.customerSaveError = '';
 
-    this._customerService.create(this.customerForm.value).subscribe({
+    const rawValue = this.customerForm.value;
+    const payload = {
+      ...rawValue,
+      dni: this.normalizeNullableText(rawValue.dni),
+      taxId: this.normalizeNullableText(rawValue.taxId),
+      email: this.normalizeNullableText(rawValue.email),
+      phone: this.normalizeNullableText(rawValue.phone),
+    };
+
+    this._customerService.create(payload).subscribe({
       next: (customer) => {
         this.isSavingCustomer = false;
         this.showCustomerForm = false;
@@ -665,5 +904,13 @@ initForm(): void {
         this.customerSaveError = err?.error?.message ?? 'Error al guardar el cliente.';
       },
     });
+  }
+
+  private normalizeNullableText(value: unknown): string | null {
+    if (typeof value !== 'string') {
+      return null;
+    }
+    const trimmed = value.trim();
+    return trimmed.length ? trimmed : null;
   }
 }

@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 import { HomeComponent } from './pages/home/home.component';
-import { LandingComponent } from './pages/landing/landing.component';
 import { ProductsComponent } from './pages/product/products/products.component';
 import { ProductDetailsComponent } from './pages/product/product-details/product-details.component';
 import { ProductEditComponent } from './pages/product/product-edit/product-edit.component';
@@ -14,18 +13,20 @@ import { SupplierComponent } from './pages/supplier/supplier/supplier.component'
 import { SupplierDetailsComponent } from './pages/supplier/supplier-details/supplier-details.component';
 import { SupplierFormComponent } from './pages/supplier/supplier-form/supplier-form.component';
 import { SupplierInvoiceComponent } from './pages/supplier/supplier-invoice/supplier-invoice.component';
-import { StatementOfAccountComponent } from './pages/supplier/statement-of-account/statement-of-account.component';
 import { SupplierPriceListComponent } from './pages/supplier-price-list/supplier-price-list.component';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { CustomerInvoiceComponent } from './pages/customer/customer-invoice/customer-invoice.component';
+import { CustomerVoucherListComponent } from './pages/customer/customer-voucher-list/customer-voucher-list.component';
+import { CustomerVoucherDetailComponent } from './pages/customer/customer-voucher-detail/customer-voucher-detail.component';
 import { CustomerComponent } from './pages/customer/customer/customer.component';
 import { CashComponent } from './pages/cash/cash.component';
 import { BranchesComponent } from './pages/settings/branches/branches.component';
+import { CompaniesComponent } from './pages/settings/companies/companies.component';
 import { EnConstruccionComponent } from './shared/en-construccion/en-construccion.component';
 
 export const routes: Routes = [
   // ── Público ────────────────────────────────────────
-  { path: '',       component: LandingComponent },
+  { path: '', redirectTo: 'inicio', pathMatch: 'full' },
   { path: 'inicio', component: HomeComponent },
   { path: 'dashboard', component: DashboardComponent },
 
@@ -41,11 +42,12 @@ export const routes: Routes = [
   { path: 'category/:id',      component: CategoryDetailsComponent },
 
   // ── Ventas / Comprobantes ──────────────────────────
-  { path: 'customerInvoice',             component: CustomerInvoiceComponent },
-  { path: 'comprobantes/nota-credito',   component: EnConstruccionComponent, data: { titulo: 'Nota de Crédito' } },
-  { path: 'comprobantes/nota-debito',    component: EnConstruccionComponent, data: { titulo: 'Nota de Débito' } },
-  { path: 'comprobantes/presupuesto',    component: EnConstruccionComponent, data: { titulo: 'Presupuesto' } },
-  { path: 'comprobantes/ver',            component: EnConstruccionComponent, data: { titulo: 'Ver Comprobantes' } },
+  { path: 'customerInvoice',             component: CustomerInvoiceComponent, data: { voucherType: 'FACTURA_B' } },
+  { path: 'comprobantes/nota-credito',   component: CustomerInvoiceComponent, data: { voucherType: 'NC_B' } },
+  { path: 'comprobantes/nota-debito',    component: CustomerInvoiceComponent, data: { voucherType: 'ND_B' } },
+  { path: 'comprobantes/presupuesto',    component: CustomerInvoiceComponent, data: { voucherType: 'PRESUPUESTO' } },
+  { path: 'comprobantes/ver',            component: CustomerVoucherListComponent },
+  { path: 'comprobantes/ver/:id',        component: CustomerVoucherDetailComponent },
   { path: 'comprobantes/recibos',        component: EnConstruccionComponent, data: { titulo: 'Recibos' } },
   { path: 'comprobantes/pagos',          component: EnConstruccionComponent, data: { titulo: 'Pagos' } },
 
@@ -56,8 +58,9 @@ export const routes: Routes = [
   { path: 'supplier/:id',         component: SupplierDetailsComponent },
   { path: 'supplierInvoice',      component: SupplierInvoiceComponent },
   { path: 'supplierPriceList',    component: SupplierPriceListComponent },
-  { path: 'statementAccount',     component: StatementOfAccountComponent },
-  { path: 'statementAccount/:id', component: StatementOfAccountComponent },
+  { path: 'supplier/cuenta-corriente', component: SupplierComponent, data: { defaultTab: 'cuenta-corriente' } },
+  { path: 'statementAccount',          redirectTo: 'supplier/cuenta-corriente', pathMatch: 'full' },
+  { path: 'statementAccount/:id',      redirectTo: 'supplier/cuenta-corriente', pathMatch: 'full' },
 
   // ── Clientes ───────────────────────────────────────
   { path: 'clientes', component: CustomerComponent },
@@ -91,11 +94,12 @@ export const routes: Routes = [
 
   // ── Configuración ──────────────────────────────────
   { path: 'configuracion/general',              component: EnConstruccionComponent, data: { titulo: 'Configuración General' } },
+  { path: 'configuracion/general/empresas',     component: CompaniesComponent },
   { path: 'configuracion/general/sucursales',   component: BranchesComponent },
   { path: 'configuracion/usuarios',             component: EnConstruccionComponent, data: { titulo: 'Usuarios' } },
   { path: 'configuracion/archivos',             component: EnConstruccionComponent, data: { titulo: 'Archivos Maestros' } },
   { path: 'importaciones',                      component: EnConstruccionComponent, data: { titulo: 'Importaciones' } },
 
   // ── Fallback ───────────────────────────────────────
-  { path: '**', redirectTo: '', pathMatch: 'full' },
+  { path: '**', redirectTo: 'inicio', pathMatch: 'full' },
 ];

@@ -1,11 +1,13 @@
 import { Component, Input } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { environment } from '../../../environments/environment';
 
 export interface NavItem {
   label: string;
   icon: string;
   route?: string;
+  externalUrl?: string;
   children?: NavItem[];
   expanded?: boolean;
 }
@@ -59,7 +61,7 @@ export class SidebarComponent {
         { label: 'Listado',          icon: 'storefront',    route: '/supplier'           },
         { label: 'Factura proveedor',icon: 'description',   route: '/supplierInvoice'    },
         { label: 'Lista de precios', icon: 'price_check',   route: '/supplierPriceList'  },
-        { label: 'Cuenta corriente', icon: 'account_balance',route: '/statementAccount'  },
+        { label: 'Cuenta corriente', icon: 'account_balance',route: '/supplier/cuenta-corriente'  },
       ],
     },
     {
@@ -84,6 +86,7 @@ export class SidebarComponent {
     {
       title: 'Ecommerce',
       items: [
+        { label: 'Ver tienda',    icon: 'storefront',     externalUrl: environment.ecommerceUrl },
         { label: 'Órdenes',       icon: 'shopping_cart',  route: '/ecommerce/ordenes' },
         { label: 'Configuración', icon: 'tune',           route: '/ecommerce/config'  },
         { label: 'SEO',           icon: 'search',         route: '/ecommerce/seo'     },
@@ -117,6 +120,7 @@ export class SidebarComponent {
       title: 'Configuración',
       items: [
         { label: 'General',             icon: 'settings',        route: '/configuracion/general'           },
+        { label: 'Empresas',            icon: 'business',        route: '/configuracion/general/empresas'  },
         { label: 'Sucursales y Depós.', icon: 'store',           route: '/configuracion/general/sucursales'},
         { label: 'Usuarios',            icon: 'manage_accounts', route: '/configuracion/usuarios'          },
         { label: 'Archivos maestros',   icon: 'folder_open',     route: '/configuracion/archivos'          },

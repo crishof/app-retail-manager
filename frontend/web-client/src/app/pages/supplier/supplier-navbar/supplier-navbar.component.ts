@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, HostListener, Output, inject, OnInit } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { ISupplier } from '../../../model/supplier.model';
 import { SupplierService } from '../../../services/supplier.service';
 
@@ -13,9 +13,9 @@ import { SupplierService } from '../../../services/supplier.service';
 export class SupplierNavbarComponent implements OnInit {
   @Output() newSupplier = new EventEmitter<void>();
   @Output() editSupplier = new EventEmitter<void>();
+  @Output() openAccountStatement = new EventEmitter<void>();
   selectedSupplier: ISupplier | null = null;
   openMenu: 'listados' | 'informes' | 'acciones' | null = null;
-  readonly _router = inject(Router);
   readonly _supplierService = inject(SupplierService);
 
   ngOnInit(): void {
@@ -24,13 +24,13 @@ export class SupplierNavbarComponent implements OnInit {
     });
   }
 
-  toStatementAccount(supplierId: string | null): void {
-    if (supplierId) {
-      this._router.navigate(['/statementAccount', supplierId]);
-    } else {
-      // Manejar el caso cuando no haya un proveedor seleccionado
-      console.warn('No supplier selected');
+  onOpenStatementClick(event: MouseEvent): void {
+    event.stopPropagation();
+    if (!this.selectedSupplier) {
+      return;
     }
+    this.openAccountStatement.emit();
+    this.closeMenu();
   }
 
   toggleMenu(menu: 'listados' | 'informes' | 'acciones'): void {

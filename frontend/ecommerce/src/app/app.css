@@ -1,0 +1,3 @@
+main {
+  min-height: calc(100vh - 30px - 56px - 44px); /* subtract topbar + navbar + megamenu */
+}
