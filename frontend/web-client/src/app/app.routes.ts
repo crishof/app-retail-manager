@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 import { HomeComponent } from './pages/home/home.component';
-import { LandingComponent } from './pages/landing/landing.component';
 import { ProductsComponent } from './pages/product/products/products.component';
 import { ProductDetailsComponent } from './pages/product/product-details/product-details.component';
 import { ProductEditComponent } from './pages/product/product-edit/product-edit.component';
@@ -27,7 +26,7 @@ import { EnConstruccionComponent } from './shared/en-construccion/en-construccio
 
 export const routes: Routes = [
   // ── Público ────────────────────────────────────────
-  { path: '',       component: LandingComponent },
+  { path: '', redirectTo: 'inicio', pathMatch: 'full' },
   { path: 'inicio', component: HomeComponent },
   { path: 'dashboard', component: DashboardComponent },
 
@@ -102,5 +101,5 @@ export const routes: Routes = [
   { path: 'importaciones',                      component: EnConstruccionComponent, data: { titulo: 'Importaciones' } },
 
   // ── Fallback ───────────────────────────────────────
-  { path: '**', redirectTo: '', pathMatch: 'full' },
+  { path: '**', redirectTo: 'inicio', pathMatch: 'full' },
 ];
