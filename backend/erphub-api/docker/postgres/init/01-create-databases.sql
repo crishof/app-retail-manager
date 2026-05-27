@@ -19,6 +19,6 @@ CREATE DATABASE reporting_db;
 CREATE DATABASE sales_db;
 CREATE DATABASE supplier_db;
 CREATE DATABASE supplier_catalog_db;
-CREATE DATABASE tenant_db;
+-- CREATE DATABASE tenant_db;
 CREATE DATABASE retail_db;
 

@@ -21,12 +21,27 @@
          Cada microservicio debe agregarse aquí para ser parte del build
     ========================================================= -->
     <modules>
+
+        <module>retail-api</module>
+
+        <!-- =========================================================
+             Legacy Modules (Infraestructura compartida y API Gateway que se migrarán gradualmente)
+              - Se recomienda migrar cada uno a su propio módulo independiente
+              - Mantenerlos aquí mientras se migran, luego eliminarlos uno por uno
+        ========================================================= -->
         <module>api-gateway</module>
+        <module>config-server</module>
+        <module>service-registry</module>
+
+        <!-- =========================================================
+             Legacy Modules (Microservicios existentes que se migrarán gradualmente)
+              - Se recomienda migrar cada uno a su propio módulo independiente
+              - Mantenerlos aquí mientras se migran, luego eliminarlos uno por uno
+        ========================================================= -->
         <module>branch-sv</module>
         <module>brand-sv</module>
         <module>cash-sv</module>
         <module>category-sv</module>
-        <module>config-server</module>
         <module>customer-sv</module>
         <module>exchange-sv</module>
         <module>identity-sv</module>
@@ -38,11 +53,9 @@
         <module>purchase-sv</module>
         <module>reporting-sv</module>
         <module>sales-sv</module>
-        <module>service-registry</module>
         <module>supplier-catalog-sv</module>
         <module>supplier-sv</module>
-        <module>tenant-sv</module>
-        <module>retail-api</module>
+<!--        <module>tenant-sv</module>-->
     </modules>
 
     <!-- =========================================================
