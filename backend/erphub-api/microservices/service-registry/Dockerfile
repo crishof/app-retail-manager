@@ -30,6 +30,7 @@ COPY service-registry/pom.xml service-registry/pom.xml
 COPY supplier-catalog-sv/pom.xml supplier-catalog-sv/pom.xml
 COPY supplier-sv/pom.xml supplier-sv/pom.xml
 COPY tenant-sv/pom.xml tenant-sv/pom.xml
+COPY retail-api/pom.xml retail-api/pom.xml
 
 RUN chmod +x mvnw && ./mvnw -N install -q
 

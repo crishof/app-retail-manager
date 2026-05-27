@@ -13,6 +13,11 @@ spring:
       server:
         webflux:
           routes:
+            - id: retail-api
+              uri: lb://RETAIL-API
+              predicates:
+                - Path=/api/v1/**
+
             - id: branch-sv
               uri: lb://BRANCH-SV
               predicates:

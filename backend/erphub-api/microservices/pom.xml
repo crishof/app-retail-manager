@@ -42,6 +42,7 @@
         <module>supplier-catalog-sv</module>
         <module>supplier-sv</module>
         <module>tenant-sv</module>
+        <module>retail-api</module>
     </modules>
 
     <!-- =========================================================
