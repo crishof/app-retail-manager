@@ -39,7 +39,6 @@
               - Mantenerlos aquí mientras se migran, luego eliminarlos uno por uno
         ========================================================= -->
         <module>branch-sv</module>
-        <module>brand-sv</module>
         <module>cash-sv</module>
         <module>category-sv</module>
         <module>customer-sv</module>
@@ -55,6 +54,7 @@
         <module>sales-sv</module>
         <module>supplier-catalog-sv</module>
         <module>supplier-sv</module>
+<!--        <module>brand-sv</module>-->
 <!--        <module>tenant-sv</module>-->
     </modules>
 
