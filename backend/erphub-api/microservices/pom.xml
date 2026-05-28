@@ -25,37 +25,14 @@
         <module>retail-api</module>
 
         <!-- =========================================================
-             Legacy Modules (Infraestructura compartida y API Gateway que se migrarán gradualmente)
-              - Se recomienda migrar cada uno a su propio módulo independiente
-              - Mantenerlos aquí mientras se migran, luego eliminarlos uno por uno
+             Legacy Modules
+             - Modulos de infraestructura (Gateway, Config, Service Registry)
+             - No están en uso actualmente, pero se mantienen aquí para referencia y posible reutilización
         ========================================================= -->
         <module>api-gateway</module>
         <module>config-server</module>
         <module>service-registry</module>
 
-        <!-- =========================================================
-             Legacy Modules (Microservicios existentes que se migrarán gradualmente)
-              - Se recomienda migrar cada uno a su propio módulo independiente
-              - Mantenerlos aquí mientras se migran, luego eliminarlos uno por uno
-        ========================================================= -->
-        <module>branch-sv</module>
-        <module>cash-sv</module>
-        <module>category-sv</module>
-        <module>customer-sv</module>
-        <module>exchange-sv</module>
-        <module>identity-sv</module>
-        <module>image-sv</module>
-        <module>inventory-sv</module>
-        <module>location-sv</module>
-        <module>pricing-sv</module>
-        <module>product-sv</module>
-        <module>purchase-sv</module>
-        <module>reporting-sv</module>
-        <module>sales-sv</module>
-        <module>supplier-catalog-sv</module>
-        <module>supplier-sv</module>
-<!--        <module>brand-sv</module>-->
-<!--        <module>tenant-sv</module>-->
     </modules>
 
     <!-- =========================================================
