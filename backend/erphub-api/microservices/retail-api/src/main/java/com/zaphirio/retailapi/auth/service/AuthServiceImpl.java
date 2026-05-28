@@ -9,6 +9,7 @@ import com.zaphirio.retailapi.auth.security.principal.SecurityUser;
 import com.zaphirio.retailapi.auth.util.CodeGeneratorUtil;
 import com.zaphirio.retailapi.auth.util.NormalizationUtil;
 import com.zaphirio.retailapi.shared.exception.BusinessException;
+import com.zaphirio.retailapi.shared.validation.PasswordValidator;
 import io.jsonwebtoken.JwtException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +49,7 @@ public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
     private final EmailService emailService;
     private final JwtService jwtService;
+    private final PasswordValidator passwordValidator;
 
     @Value("${app.email-verification.code-ttl-minutes:10}")
     private long emailVerificationCodeTtlMinutes;
@@ -59,6 +61,12 @@ public class AuthServiceImpl implements AuthService {
     public SignupResponse signup(SignupRequest request) {
         String normalizedEmail = normalizeEmail(request.email());
         log.debug("signup requested for email={}", normalizedEmail);
+
+        // Validate password strength (Day 3, Task 3.3)
+        if (!passwordValidator.isValid(request.password())) {
+            log.debug("signup rejected due to weak password for email={}", normalizedEmail);
+            throw new BusinessException(passwordValidator.getRequirements());
+        }
 
         if (userRepository.existsByEmailIgnoreCase(normalizedEmail)) {
             log.debug("signup rejected because email already exists: {}", normalizedEmail);
@@ -363,6 +371,12 @@ public class AuthServiceImpl implements AuthService {
         if (!request.newPassword().equals(request.confirmPassword())) {
             log.debug("resetPassword rejected because password confirmation does not match");
             throw new BusinessException("Passwords do not match");
+        }
+
+        // Validate password strength (Day 3, Task 3.3)
+        if (!passwordValidator.isValid(request.newPassword())) {
+            log.debug("resetPassword rejected due to weak password");
+            throw new BusinessException(passwordValidator.getRequirements());
         }
 
         PasswordResetToken resetToken = passwordResetTokenRepository.findByTokenAndUsedFalse(request.token())
