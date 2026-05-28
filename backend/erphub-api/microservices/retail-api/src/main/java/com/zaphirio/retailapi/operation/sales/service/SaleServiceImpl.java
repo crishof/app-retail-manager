@@ -1,7 +1,6 @@
 package com.zaphirio.retailapi.operation.sales.service;
 
-import com.zaphirio.retailapi.operation.sales.apiClient.InventoryClient;
-import com.zaphirio.retailapi.operation.sales.apiClient.StockMovementRequest;
+import com.zaphirio.retailapi.shared.client.InventoryClient;
 import com.zaphirio.retailapi.operation.sales.dto.*;
 
 import com.zaphirio.retailapi.operation.sales.exception.SaleNotFoundException;
@@ -44,7 +43,7 @@ public class SaleServiceImpl implements SaleService {
         // Presupuesto no impacta stock; el resto de comprobantes sí.
         if (!isBudgetVoucher(request.getInvoiceType()) && request.getInvoiceItemsRequest() != null) {
             request.getInvoiceItemsRequest().forEach(item ->
-                    inventoryClient.registerMovement(StockMovementRequest.builder()
+                    inventoryClient.registerMovement(SaleStockMovementRequest.builder()
                             .productId(item.getId())
                             .branchId(request.getBranchId())
                             .locationId(request.getLocationId())

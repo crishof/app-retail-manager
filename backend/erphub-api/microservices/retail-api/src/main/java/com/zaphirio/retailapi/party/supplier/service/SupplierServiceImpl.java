@@ -1,6 +1,6 @@
 package com.zaphirio.retailapi.party.supplier.service;
 
-import com.zaphirio.retailapi.party.supplier.client.ProductServiceClient;
+import com.zaphirio.retailapi.shared.client.ProductServiceClient;
 import com.zaphirio.retailapi.party.supplier.dto.SupplierRequest;
 import com.zaphirio.retailapi.party.supplier.dto.SupplierResponse;
 import com.zaphirio.retailapi.shared.exception.BusinessException;

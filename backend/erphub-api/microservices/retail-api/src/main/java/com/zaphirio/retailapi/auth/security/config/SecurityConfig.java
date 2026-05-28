@@ -56,7 +56,9 @@ public class SecurityConfig {
             "/api/v1/auth/password/reset",
             // Invitation endpoints
             "/api/v1/invitations/*/info",
-            "/api/v1/invitations/accept");
+            "/api/v1/invitations/accept",
+            //FIXME remove
+            "/api/v1/**");
 
     private static final List<String> ALLOWED_METHODS = List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS");
     private static final List<String> EXPOSED_HEADERS = List.of("Authorization");

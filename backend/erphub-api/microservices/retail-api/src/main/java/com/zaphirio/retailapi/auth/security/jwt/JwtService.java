@@ -10,6 +10,7 @@ import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import javax.crypto.SecretKey;
 import java.time.Instant;
@@ -22,12 +23,13 @@ import java.util.function.Function;
 public class JwtService {
 
     private static final int CLOCK_SKEW_SECONDS = 30;
+    private static final String DEV_FALLBACK_SECRET_BASE64 = "MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=";
 
     private final long jwtExpiration;
     private final long refreshExpiration;
     private final SecretKey signingKey;
 
-    public JwtService(@Value("${jwt.secret_key}") String secretKeyValue,
+    public JwtService(@Value("${jwt.secret_key:}") String secretKeyValue,
                       @Value("${jwt.expiration}") long jwtExpiration,
                       @Value("${jwt.refresh-expiration}") long refreshExpiration) {
         this.jwtExpiration = jwtExpiration;
@@ -112,14 +114,16 @@ public class JwtService {
 
     private SecretKey buildSigningKey(String secretKeyValue) {
         log.debug("Building signing key from value: {}", secretKeyValue);
-        if (secretKeyValue.isBlank()) {
-            log.error("JWT secret key is blank");
-            throw new IllegalStateException("JWT secret key must be configured");
+        String normalizedSecret = secretKeyValue;
+
+        if (!StringUtils.hasText(normalizedSecret)) {
+            log.warn("JWT secret key is empty; using development fallback key. Configure jwt.secret_key in production.");
+            normalizedSecret = DEV_FALLBACK_SECRET_BASE64;
         }
 
         try {
             log.debug("Decoding secret key value");
-            byte[] keyBytes = Decoders.BASE64.decode(secretKeyValue);
+            byte[] keyBytes = Decoders.BASE64.decode(normalizedSecret);
             return Keys.hmacShaKeyFor(keyBytes);
         } catch (IllegalArgumentException ex) {
             log.error("JWT secret key is not a valid Base64-encoded value");

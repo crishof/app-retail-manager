@@ -1,6 +1,6 @@
 package com.zaphirio.retailapi.catalog.supplierCatalog.importer;
 
-import com.zaphirio.retailapi.catalog.supplierCatalog.client.ProductPriceLinkClient;
+import com.zaphirio.retailapi.shared.client.ProductPriceLinkClient;
 import com.zaphirio.retailapi.catalog.supplierCatalog.dto.ImportResult;
 import com.zaphirio.retailapi.catalog.supplierCatalog.model.SupplierPriceItem;
 import com.zaphirio.retailapi.catalog.supplierCatalog.repository.SupplierPriceItemRepository;

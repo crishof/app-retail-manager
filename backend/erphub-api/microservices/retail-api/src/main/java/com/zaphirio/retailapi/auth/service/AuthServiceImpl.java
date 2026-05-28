@@ -8,6 +8,7 @@ import com.zaphirio.retailapi.auth.security.jwt.JwtService;
 import com.zaphirio.retailapi.auth.security.principal.SecurityUser;
 import com.zaphirio.retailapi.auth.util.CodeGeneratorUtil;
 import com.zaphirio.retailapi.auth.util.NormalizationUtil;
+import com.zaphirio.retailapi.shared.exception.BusinessException;
 import io.jsonwebtoken.JwtException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

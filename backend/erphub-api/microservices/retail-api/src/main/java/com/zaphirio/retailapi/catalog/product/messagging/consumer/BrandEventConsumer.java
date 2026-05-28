@@ -1,6 +1,6 @@
 package com.zaphirio.retailapi.catalog.product.messagging.consumer;
 
-import com.zaphirio.retailapi.catalog.product.config.RabbitMQConfig;
+import com.zaphirio.retailapi.shared.config.RabbitMQConfig;
 import com.zaphirio.retailapi.catalog.product.messagging.event.BrandUpdatedEvent;
 import com.zaphirio.retailapi.catalog.product.service.ProductBrandProjectionService;
 import lombok.RequiredArgsConstructor;

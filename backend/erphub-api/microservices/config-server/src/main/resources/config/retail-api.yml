@@ -8,13 +8,19 @@ spring:
 
   datasource:
     # Prioridad: variables locales (IDE) -> variables Docker -> defaults seguros.
-    url: jdbc:postgresql://${POSTGRES_HOST:${POSTGRES_NETWORK_HOST:${POSTGRES_LOCAL_HOST:localhost}}}:${POSTGRES_PORT:${POSTGRES_CONTAINER_PORT:${POSTGRES_HOST_PORT:5544}}}/${RETAIL_DB:retail_db}
+#    url: jdbc:postgresql://${POSTGRES_HOST:${POSTGRES_NETWORK_HOST:${POSTGRES_LOCAL_HOST:localhost}}}:${POSTGRES_PORT:${POSTGRES_CONTAINER_PORT:${POSTGRES_HOST_PORT:5544}}}/${RETAIL_DB:retail_db}
+    url: jdbc:postgresql://${POSTGRES_HOST:${POSTGRES_LOCAL_HOST:localhost}}:${POSTGRES_HOST_PORT:5544}/${RETAIL_DB:retail_db}
     username: ${POSTGRES_USER:admin}
     password: ${POSTGRES_PASSWORD:root1234}
     driver-class-name: org.postgresql.Driver
-
+    hikari:
+      maximum-pool-size: 3
+      minimum-idle: 1
+      idle-timeout: 30000
+      max-lifetime: 600000
+      connection-timeout: 20000
   rabbitmq:
-    host: ${RABBITMQ_HOST:${RABBITMQ_NETWORK_HOST:${RABBITMQ_LOCAL_HOST:localhost}}}
+    host: ${RABBITMQ_HOST:${RABBITMQ_LOCAL_HOST:localhost}}
     port: ${RABBITMQ_PORT:5672}
     username: ${RABBITMQ_DEFAULT_USER:guest}
     password: ${RABBITMQ_DEFAULT_PASS:guest}
@@ -27,6 +33,17 @@ spring:
       hibernate:
         format_sql: true
 
+  mail:
+    host: ${MAIL_HOST:}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_SMTP_AUTH:true}
+          starttls:
+            enable: ${MAIL_SMTP_STARTTLS_ENABLE:true}
   cloud:
     openfeign:
       circuitbreaker:
@@ -39,7 +56,7 @@ spring:
 eureka:
   client:
     serviceUrl:
-      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:${EUREKA_DEFAULT_ZONE:http://localhost:8761/eureka/}}
+      defaultZone: ${EUREKA_DEFAULT_ZONE:${EUREKA_LOCAL_DEFAULT_ZONE:http://localhost:8761/eureka/}}
     register-with-eureka: true
     fetch-registry: true
 
@@ -55,6 +72,31 @@ management:
 logging:
   level:
     org.springframework: ${LOG_LEVEL_SPRING:INFO}
+# JWT Configuration
+jwt:
+  secret_key: ${BASE64_SECRET_KEY:MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=}
+  expiration: ${JWT_EXPIRATION:900000}
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000}
+
+# Application Configuration
+app:
+  mail:
+    enabled: ${MAIL_ENABLED:false}
+    from: ${MAIL_FROM:${MAIL_USERNAME:no-reply@mail.local}}
+    provider: ${MAIL_PROVIDER:smtp}
+    brevo:
+      api-url: ${BREVO_API_URL:https://api.brevo.com/v3}
+      api-key: ${BREVO_API_KEY:}
+      timeout-seconds: ${BREVO_API_TIMEOUT_SECONDS:15}
+  email-verification:
+    code-ttl-minutes: ${EMAIL_VERIFICATION_CODE_TTL_MINUTES:10}
+  reset-password:
+    base-url: ${RESET_PASSWORD_BASE_URL:http://localhost:5173/reset-password}
+  accept-invite:
+    base-url: ${ACCEPT_INVITE_BASE_URL:http://localhost:5173/accept-invite}
+  security:
+    cors:
+      allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:4200,http://localhost:5173,http://127.0.0.1:3000}
 
 resilience4j:
   circuitbreaker:

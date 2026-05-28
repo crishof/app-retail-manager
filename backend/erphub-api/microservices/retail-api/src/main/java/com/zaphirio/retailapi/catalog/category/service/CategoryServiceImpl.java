@@ -1,7 +1,7 @@
 package com.zaphirio.retailapi.catalog.category.service;
 
-import com.zaphirio.retailapi.catalog.category.client.ImageServiceClient;
-import com.zaphirio.retailapi.catalog.category.client.ProductServiceClient;
+import com.zaphirio.retailapi.shared.client.ImageServiceClient;
+import com.zaphirio.retailapi.shared.client.ProductServiceClient;
 import com.zaphirio.retailapi.catalog.category.dto.CategoryResponse;
 import com.zaphirio.retailapi.catalog.category.dto.CategoryTreeResponse;
 import com.zaphirio.retailapi.shared.exception.BusinessException;

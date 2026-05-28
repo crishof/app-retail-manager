@@ -1,6 +1,6 @@
 package com.zaphirio.retailapi.catalog.brand.service;
 
-import com.zaphirio.retailapi.catalog.brand.client.SupplierClient;
+import com.zaphirio.retailapi.shared.client.SupplierClient;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

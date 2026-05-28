@@ -1,7 +1,7 @@
 package com.zaphirio.retailapi.catalog.brand.service;
 
-import com.zaphirio.retailapi.catalog.brand.client.ImageServiceClient;
-import com.zaphirio.retailapi.catalog.brand.client.ProductServiceClient;
+import com.zaphirio.retailapi.shared.client.ImageServiceClient;
+import com.zaphirio.retailapi.shared.client.ProductServiceClient;
 import com.zaphirio.retailapi.shared.exception.BusinessException;
 import com.zaphirio.retailapi.shared.exception.ResourceNotFoundException;
 import com.zaphirio.retailapi.catalog.brand.model.Brand;

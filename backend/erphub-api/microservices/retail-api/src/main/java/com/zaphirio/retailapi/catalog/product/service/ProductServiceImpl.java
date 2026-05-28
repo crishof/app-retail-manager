@@ -1,10 +1,10 @@
 package com.zaphirio.retailapi.catalog.product.service;
 
-import com.zaphirio.retailapi.catalog.product.client.ImageServiceClient;
-import com.zaphirio.retailapi.catalog.product.client.InventoryServiceClient;
-import com.zaphirio.retailapi.catalog.product.client.InvoiceServiceClient;
-import com.zaphirio.retailapi.catalog.product.client.OrderServiceClient;
-import com.zaphirio.retailapi.catalog.product.client.PricingServiceClient;
+import com.zaphirio.retailapi.shared.client.ImageServiceClient;
+import com.zaphirio.retailapi.shared.client.InventoryServiceClient;
+import com.zaphirio.retailapi.shared.client.InvoiceServiceClient;
+import com.zaphirio.retailapi.shared.client.OrderServiceClient;
+import com.zaphirio.retailapi.shared.client.PricingServiceClient;
 import com.zaphirio.retailapi.catalog.product.dto.PricingPriceResponse;
 import com.zaphirio.retailapi.catalog.product.dto.ProductPriceResponse;
 import com.zaphirio.retailapi.catalog.product.dto.ProductRequest;

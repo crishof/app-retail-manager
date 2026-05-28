@@ -1,6 +1,6 @@
 package com.zaphirio.retailapi.party.customer.service;
 
-import com.zaphirio.retailapi.party.customer.client.OrderClient;
+import com.zaphirio.retailapi.shared.client.OrderClient;
 import com.zaphirio.retailapi.party.customer.dto.CustomerMergeResponse;
 import com.zaphirio.retailapi.party.customer.dto.CustomerRequest;
 import com.zaphirio.retailapi.party.customer.dto.CustomerResponse;

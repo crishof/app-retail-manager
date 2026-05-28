@@ -1,7 +1,7 @@
 package com.zaphirio.retailapi.catalog.brand.service;
 
-import com.zaphirio.retailapi.catalog.brand.client.ImageServiceClient;
-import com.zaphirio.retailapi.catalog.brand.client.ProductServiceClient;
+import com.zaphirio.retailapi.shared.client.ImageServiceClient;
+import com.zaphirio.retailapi.shared.client.ProductServiceClient;
 import com.zaphirio.retailapi.catalog.brand.dto.BrandMergeResponse;
 import com.zaphirio.retailapi.catalog.brand.dto.BrandResponse;
 import com.zaphirio.retailapi.catalog.brand.dto.ReassignBrandResponse;

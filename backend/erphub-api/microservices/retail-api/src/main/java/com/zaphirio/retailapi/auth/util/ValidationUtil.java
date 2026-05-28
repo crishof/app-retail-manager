@@ -1,6 +1,6 @@
 package com.zaphirio.retailapi.auth.util;
 
-import com.zaphirio.retailapi.auth.exception.BusinessException;
+import com.zaphirio.retailapi.shared.exception.BusinessException;
 import lombok.experimental.UtilityClass;
 
 /**

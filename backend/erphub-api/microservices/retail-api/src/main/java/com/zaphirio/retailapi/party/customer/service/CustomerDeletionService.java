@@ -1,6 +1,6 @@
 package com.zaphirio.retailapi.party.customer.service;
 
-import com.zaphirio.retailapi.party.customer.client.OrderClient;
+import com.zaphirio.retailapi.shared.client.OrderClient;
 import com.zaphirio.retailapi.shared.exception.BusinessException;
 import com.zaphirio.retailapi.shared.exception.ResourceNotFoundException;
 import com.zaphirio.retailapi.party.customer.repository.CustomerRepository;

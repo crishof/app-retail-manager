@@ -11,8 +11,7 @@ services:
       - "${POSTGRES_HOST_PORT}:${POSTGRES_CONTAINER_PORT}"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-#      comentado porque estamos usando solo una db
-#      - ../postgres/init:/docker-entrypoint-initdb.d/:ro
+      - ../postgres/init:/docker-entrypoint-initdb.d/:ro
     networks:
       - erphub-net
     healthcheck:
@@ -75,7 +74,7 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: native
       SPRING_CLOUD_CONFIG_ENABLED: "false"
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://service-registry:8761/eureka/
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${DOCKER_EUREKA_DEFAULT_ZONE:-http://service-registry:8761/eureka/}
     ports:
       - "8088:8088"
     depends_on:

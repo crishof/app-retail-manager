@@ -2,7 +2,7 @@ package com.zaphirio.retailapi.operation.cash.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.zaphirio.retailapi.operation.cash.client.ExchangeRateClient;
+import com.zaphirio.retailapi.shared.client.ExchangeRateClient;
 import com.zaphirio.retailapi.operation.cash.dto.*;
 import com.zaphirio.retailapi.operation.cash.model.*;
 import com.zaphirio.retailapi.operation.cash.repository.CashMovementRepository;

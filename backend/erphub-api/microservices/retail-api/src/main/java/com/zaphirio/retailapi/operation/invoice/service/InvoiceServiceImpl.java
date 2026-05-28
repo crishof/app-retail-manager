@@ -1,7 +1,7 @@
 package com.zaphirio.retailapi.operation.invoice.service;
 
-import com.zaphirio.retailapi.operation.invoice.apiClient.InventoryClient;
-import com.zaphirio.retailapi.operation.invoice.apiClient.StockMovementRequest;
+import com.zaphirio.retailapi.shared.client.InventoryClient;
+import com.zaphirio.retailapi.operation.invoice.dto.InvoiceStockMovementRequest;
 import com.zaphirio.retailapi.operation.invoice.dto.*;
 import com.zaphirio.retailapi.operation.invoice.exception.InvoiceNotFoundException;
 import com.zaphirio.retailapi.operation.invoice.model.Invoice;
@@ -64,7 +64,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         if (invoiceRequest.isSaveStocks()) {
             invoiceRequest.getInvoiceItemsRequest().forEach(item -> {
                 try {
-                    inventoryClient.registerMovement(StockMovementRequest.builder()
+                    inventoryClient.registerMovement(InvoiceStockMovementRequest.builder()
                             .productId(item.getId())
                             .branchId(invoiceRequest.getBranchId())
                             .locationId(invoiceRequest.getLocationId())

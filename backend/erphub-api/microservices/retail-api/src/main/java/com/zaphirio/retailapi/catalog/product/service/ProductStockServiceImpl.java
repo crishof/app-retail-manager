@@ -1,7 +1,7 @@
 package com.zaphirio.retailapi.catalog.product.service;
 
-import com.zaphirio.retailapi.catalog.product.client.InventoryServiceClient;
-import com.zaphirio.retailapi.catalog.product.client.PricingServiceClient;
+import com.zaphirio.retailapi.shared.client.InventoryServiceClient;
+import com.zaphirio.retailapi.shared.client.PricingServiceClient;
 import com.zaphirio.retailapi.catalog.product.dto.*;
 import com.zaphirio.retailapi.shared.exception.ResourceNotFoundException;
 import com.zaphirio.retailapi.catalog.product.model.Product;
