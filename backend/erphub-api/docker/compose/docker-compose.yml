@@ -11,7 +11,8 @@ services:
       - "${POSTGRES_HOST_PORT}:${POSTGRES_CONTAINER_PORT}"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ../postgres/init:/docker-entrypoint-initdb.d/:ro
+#      comentado porque estamos usando solo una db
+#      - ../postgres/init:/docker-entrypoint-initdb.d/:ro
     networks:
       - erphub-net
     healthcheck:
