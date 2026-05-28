@@ -1,6 +1,6 @@
-package com.zaphirio.retailapi.catalog.brand.client;
+package com.zaphirio.retailapi.catalog.category.client;
 
-import com.zaphirio.retailapi.catalog.brand.dto.ImageResponse;
+import com.zaphirio.retailapi.catalog.category.dto.ImageResponse;
 import com.zaphirio.retailapi.shared.exception.InvalidImageResponseException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

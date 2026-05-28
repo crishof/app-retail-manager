@@ -1,6 +1,6 @@
-package com.zaphirio.retailapi.catalog.brand.client;
+package com.zaphirio.retailapi.catalog.product.client;
 
-import com.zaphirio.retailapi.catalog.brand.dto.ImageResponse;
+import com.zaphirio.retailapi.catalog.product.dto.ImageResponse;
 import com.zaphirio.retailapi.shared.exception.InvalidImageResponseException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,22 +12,22 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class ImageServiceClient {
 
-    private final ImageFeignClient imageFeignClient;
+    private final ImageClient imageClient;
 
     public String uploadImage(MultipartFile file, String entityName) {
-        ImageResponse response = imageFeignClient.uploadImage(file, entityName);
+        ImageResponse response = imageClient.upload(file, entityName);
         validate(response);
         return response.url();
     }
 
     public String replaceImage(MultipartFile file, String entityName, String oldUrl) {
-        ImageResponse response = imageFeignClient.replaceImage(file, entityName, oldUrl);
+        ImageResponse response = imageClient.replace(file, entityName, oldUrl);
         validate(response);
         return response.url();
     }
 
     public void deleteImageByUrl(String url, String entityName) {
-        imageFeignClient.deleteImage(url, entityName);
+        imageClient.delete(url, entityName);
     }
 
     private void validate(ImageResponse response) {

@@ -1,7 +1,7 @@
 package com.zaphirio.retailapi.catalog.brand.client;
 
 import com.zaphirio.retailapi.catalog.brand.dto.ReassignBrandResponse;
-import com.zaphirio.retailapi.catalog.brand.exception.BusinessException;
+import com.zaphirio.retailapi.shared.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
