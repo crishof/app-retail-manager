@@ -21,6 +21,7 @@ public class SecurityUser implements UserDetails {
     private final String password;
     private final Role role;
     private final UserStatus status;
+    private final Long tenantId;
     private final boolean emailVerified;
     private final boolean enabled;
     private final boolean locked;
@@ -31,6 +32,7 @@ public class SecurityUser implements UserDetails {
         this.password = securityAccount.getPasswordHash();
         this.role = user.getRole();
         this.status = user.getStatus();
+        this.tenantId = user.getTenantId();
         this.emailVerified = securityAccount.isEmailVerified();
         this.enabled = securityAccount.isEnabled();
         this.locked = securityAccount.isLocked();

@@ -1,6 +1,7 @@
 package com.zaphirio.retailapi.auth.security.jwt;
 
 import com.zaphirio.retailapi.auth.security.principal.SecurityUserDetailsService;
+import com.zaphirio.retailapi.shared.security.TenantContext;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -33,15 +34,15 @@ public class JwtFilter extends OncePerRequestFilter {
         log.debug("JWT filter processing request for path {}", request.getRequestURI());
         final String authHeader = request.getHeader("Authorization");
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            log.debug("JWT filter skipping processing for path {}: no JWT token found", request.getRequestURI());
-            return;
-        }
-
-        final String jwt = authHeader.substring(7);
-
         try {
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                filterChain.doFilter(request, response);
+                log.debug("JWT filter skipping processing for path {}: no JWT token found", request.getRequestURI());
+                return;
+            }
+
+            final String jwt = authHeader.substring(7);
+
             final String userEmail = jwtService.getUserName(jwt);
             log.debug("JWT filter processing request for path {}: user email {}", request.getRequestURI(), userEmail);
 
@@ -51,6 +52,15 @@ public class JwtFilter extends OncePerRequestFilter {
 
                 if (jwtService.isTokenValid(jwt) && userEmail.equals(userDetails.getUsername())) {
                     log.debug("JWT filter processing request for path {}: authentication successful", request.getRequestURI());
+                    
+                    // Extract tenant and user IDs from JWT
+                    String tenantId = jwtService.getTenantIdFromJWT(jwt);
+                    String userId = jwtService.getUserIdFromJWT(jwt);
+                    
+                    // Set TenantContext for this request thread
+                    TenantContext.setContext(tenantId, userId);
+                    log.debug("TenantContext set for tenant={}, user={}", tenantId, userId);
+                    
                     UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                             userDetails, null, userDetails.getAuthorities());
 
@@ -62,8 +72,14 @@ public class JwtFilter extends OncePerRequestFilter {
         } catch (JwtException | UsernameNotFoundException | IllegalArgumentException ex) {
             log.warn("JWT authentication failed for path {}: {}", request.getRequestURI(), ex.getMessage());
             SecurityContextHolder.clearContext();
+        } finally {
+            // Clear tenant context after request processing
+            try {
+                filterChain.doFilter(request, response);
+            } finally {
+                TenantContext.clear();
+                log.debug("TenantContext cleared after request");
+            }
         }
-        log.debug("JWT filter processing request for path {}: continuing filter chain", request.getRequestURI());
-        filterChain.doFilter(request, response);
     }
 }
