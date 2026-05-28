@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,6 +40,7 @@ public class CategoryController {
     @ApiResponse(responseCode = "201", description = "Category created successfully")
     @ApiResponse(responseCode = "400", description = "Invalid input")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<CategoryResponse> create(@RequestParam @NotBlank String name,
                                                    @RequestParam(required = false) UUID parentId,
                                                    @RequestPart(required = false) MultipartFile logo) {
@@ -51,6 +53,7 @@ public class CategoryController {
     @Operation(summary = "Get all categories (paginated)")
     @ApiResponse(responseCode = "200", description = "Categories retrieved successfully")
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE')")
     public ResponseEntity<Page<CategoryResponse>> getAll(Pageable pageable) {
         log.info("Fetching all categories with pagination");
         Page<CategoryResponse> page = categoryService.getAll(pageable);
@@ -64,6 +67,7 @@ public class CategoryController {
     @ApiResponse(responseCode = "200", description = "Category retrieved successfully")
     @ApiResponse(responseCode = "400", description = "Category not found")
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE')")
     public ResponseEntity<CategoryResponse> getById(@PathVariable @NotNull UUID id) {
         log.info("Fetching category by id={}", id);
         return ResponseEntity.ok(categoryService.getById(id));
@@ -83,6 +87,7 @@ public class CategoryController {
     @ApiResponse(responseCode = "400", description = "Invalid input")
     @ApiResponse(responseCode = "400", description = "Category not found")
     @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<CategoryResponse> update(@PathVariable @NotNull UUID id,
                                                    @RequestPart(required = false) String name,
                                                    @RequestPart(required = false) MultipartFile logo) {
@@ -97,6 +102,7 @@ public class CategoryController {
     @ApiResponse(responseCode = "204", description = "Category deleted successfully")
     @ApiResponse(responseCode = "404", description = "Category not found")
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable @NotNull UUID id) {
         log.info("Deleting category id={}", id);
         categoryService.delete(id);
@@ -110,6 +116,7 @@ public class CategoryController {
     @ApiResponse(responseCode = "204", description = "Category image deleted successfully")
     @ApiResponse(responseCode = "404", description = "Category not found")
     @PatchMapping("/{id}/image")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Void> deleteImage(@PathVariable @NotNull UUID id) {
         log.info("Deleting category image={}", id);
         categoryService.deleteCategoryImage(id);
@@ -122,6 +129,7 @@ public class CategoryController {
     @Operation(summary = "Get total count of categories")
     @ApiResponse(responseCode = "200", description = "Category count retrieved successfully")
     @GetMapping("/count")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE')")
     public ResponseEntity<Long> getCategoryCount() {
         log.info("Getting total count of categories");
         return ResponseEntity.ok(categoryService.getCategoryCount());
@@ -132,6 +140,7 @@ public class CategoryController {
     // ============================
     @Operation(summary = "Move a category to a new parent")
     @PatchMapping("/{id}/parent")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<CategoryResponse> changeParent(@PathVariable UUID id,
                                                          @RequestParam(required = false) UUID newParentId) {
         log.info("Moving category {} under parent {}", id, newParentId);
@@ -143,6 +152,7 @@ public class CategoryController {
     // ============================
     @Operation(summary = "Get full category tree")
     @GetMapping("/tree")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE')")
     public ResponseEntity<List<CategoryTreeResponse>> getTree() {
         return ResponseEntity.ok(categoryService.getTree());
     }
@@ -152,6 +162,7 @@ public class CategoryController {
     // ============================
     @Operation(summary = "Get category subtree")
     @GetMapping("/{id}/tree")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE')")
     public ResponseEntity<CategoryTreeResponse> getSubTree(@PathVariable UUID id) {
         return ResponseEntity.ok(categoryService.getSubTree(id));
     }

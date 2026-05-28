@@ -7,6 +7,7 @@ import com.zaphirio.retailapi.shared.exception.InvalidRequestException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,6 +20,7 @@ public class ImageInternalController {
     private final CloudinaryService cloudinaryService;
 
     @PostMapping("/upload")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<ImageResponse> uploadImage(@RequestParam MultipartFile file, @RequestParam String entityName) {
         validateFile(file);
         validateEntity(entityName);
@@ -32,6 +34,7 @@ public class ImageInternalController {
     }
 
     @PutMapping("/replace")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ImageResponse replaceImage(@RequestParam MultipartFile file, @RequestParam String entityName, @RequestParam String oldUrl) {
         validateFile(file);
         validateEntity(entityName);
@@ -53,6 +56,7 @@ public class ImageInternalController {
     }
 
     @DeleteMapping("/delete")
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteImage(@RequestParam("url") String url, @RequestParam("entityName") String entityName) {
         if (url == null || url.isBlank()) {
             throw new InvalidRequestException("URL is required");

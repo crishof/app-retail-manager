@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,6 +37,7 @@ public class RegistrationController {
      * @return created user and verification instructions
      */
     @PostMapping("/signup")
+    @PreAuthorize("permitAll()")
     @Operation(
             summary = "Register new user",
             description = "Creates a new user account. Email verification is required before login."
@@ -59,6 +61,7 @@ public class RegistrationController {
      * @return authentication tokens
      */
     @PostMapping("/verify-email")
+    @PreAuthorize("permitAll()")
     @Operation(
             summary = "Verify email address",
             description = "Verifies user's email using a 6-digit code sent to their email address."
@@ -82,6 +85,7 @@ public class RegistrationController {
      * @return confirmation message
      */
     @PostMapping("/resend-verification")
+    @PreAuthorize("permitAll()")
     @Operation(
             summary = "Resend verification code",
             description = "Resends the email verification code to the user's email address."

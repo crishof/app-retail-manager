@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,6 +38,7 @@ public class PasswordRecoveryController {
      * @return confirmation message
      */
     @PostMapping("/forgot")
+    @PreAuthorize("permitAll()")
     @Operation(
             summary = "Request password reset",
             description = "Sends a password reset link to the user's email. Returns success even if email doesn't exist for security."
@@ -59,6 +61,7 @@ public class PasswordRecoveryController {
      * @return confirmation message
      */
     @PostMapping("/reset")
+    @PreAuthorize("permitAll()")
     @Operation(
             summary = "Reset password with token",
             description = "Resets password using a valid reset token. Token must not be expired or already used."

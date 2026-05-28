@@ -6,6 +6,7 @@ import com.zaphirio.retailapi.catalog.product.service.ProductStockService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,6 +24,7 @@ public class ProductStockController {
     // UPDATE FROM INVOICE
     // ============================
     @PutMapping("/from-invoice")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @Operation(summary = "Update product stock and price from supplier invoice")
     public void updateFromInvoice(@RequestBody InvoiceUpdateRequest request) {
         log.info("Updating products from supplier invoice");
@@ -33,6 +35,7 @@ public class ProductStockController {
     // UPDATE FROM ORDER
     // ============================
     @PutMapping("/from-order")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @Operation(summary = "Update product stock from order")
     public void updateFromOrder(@RequestBody OrderUpdateRequest request) {
         log.info("Updating product stock from order");

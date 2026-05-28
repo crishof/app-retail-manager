@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,6 +27,7 @@ import java.util.UUID;
 public class SupplierController {
 
     @GetMapping("/status")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE')")
     public String status() {
         return "Supplier service is running!";
     }
@@ -39,6 +41,7 @@ public class SupplierController {
     @ApiResponse(responseCode = "201", description = "Supplier created successfully")
     @ApiResponse(responseCode = "400", description = "Invalid input")
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<SupplierResponse> create(
             @RequestBody SupplierRequest supplierRequest) {
         log.info("Creating supplier: {}", supplierRequest);
@@ -52,6 +55,7 @@ public class SupplierController {
     @Operation(summary = "Get All Suppliers")
     @ApiResponse(responseCode = "200", description = "Suppliers retrieved successfully")
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE')")
     public ResponseEntity<List<SupplierResponse>> getSuppliers() {
         log.info("Fetching all suppliers");
         return ResponseEntity.ok(supplierService.findAll());
@@ -64,6 +68,7 @@ public class SupplierController {
     @ApiResponse(responseCode = "200", description = "Supplier retrieved successfully")
     @ApiResponse(responseCode = "404", description = "Supplier not found")
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE')")
     public ResponseEntity<SupplierResponse> getSupplierById(@PathVariable UUID id) {
         log.info("Fetching Supplier by ID: {}", id);
         return ResponseEntity.ok(supplierService.findById(id));
@@ -83,6 +88,7 @@ public class SupplierController {
     @ApiResponse(responseCode = "400", description = "Invalid input")
     @ApiResponse(responseCode = "404", description = "Supplier not found")
     @PatchMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<SupplierResponse> updateSupplier(
             @PathVariable UUID id,
             @RequestBody SupplierRequest supplierRequest) {
@@ -97,6 +103,7 @@ public class SupplierController {
     @ApiResponse(responseCode = "204", description = "Brand deleted successfully")
     @ApiResponse(responseCode = "404", description = "Brand not found")
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> softDelete(@PathVariable UUID id) {
         log.info("Soft deleting supplier by ID: {}", id);
         supplierService.delete(id);
@@ -110,6 +117,7 @@ public class SupplierController {
     @ApiResponse(responseCode = "204", description = "Supplier deleted successfully")
     @ApiResponse(responseCode = "404", description = "Supplier not found")
     @DeleteMapping("/{id}/force")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> forceDelete(@PathVariable @NotNull UUID id) {
         log.info("Hard deleting supplier id={}", id);
         supplierService.forceDelete(id);
@@ -123,6 +131,7 @@ public class SupplierController {
     @ApiResponse(responseCode = "200", description = "Supplier restored successfully")
     @ApiResponse(responseCode = "404", description = "Supplier not found")
     @PatchMapping("/{id}/restore")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<SupplierResponse> restore(@PathVariable @NotNull UUID id) {
         log.info("Restoring supplier id={}", id);
         return ResponseEntity.ok(supplierService.restore(id));
@@ -134,6 +143,7 @@ public class SupplierController {
     @Operation(summary = "Get total count of suppliers")
     @ApiResponse(responseCode = "200", description = "Supplier count retrieved successfully")
     @GetMapping("/count")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE')")
     public ResponseEntity<Long> getSupplierCount() {
         log.info("Getting total count of suppliers");
         return ResponseEntity.ok(supplierService.getSupplierCount());

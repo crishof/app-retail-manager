@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,21 +26,25 @@ public class CompanyController {
     private final BranchService branchService;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE')")
     public ResponseEntity<List<CompanyResponse>> getAllCompanies() {
         return ResponseEntity.ok(companyService.getAllCompanies());
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE')")
     public ResponseEntity<CompanyResponse> getCompanyById(@PathVariable UUID id) throws CompanyNotFoundException {
         return ResponseEntity.ok(companyService.getCompanyById(id));
     }
 
     @GetMapping("/{id}/branches")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE')")
     public ResponseEntity<List<BranchResponse>> getBranchesByCompany(@PathVariable UUID id) {
         return ResponseEntity.ok(branchService.getBranchesByCompanyId(id));
     }
 
     @PostMapping("/{id}/branches")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<BranchResponse> createBranchByCompany(
             @PathVariable UUID id,
             @Valid @RequestBody BranchRequest branchRequest) throws CompanyNotFoundException {
@@ -47,11 +52,13 @@ public class CompanyController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<CompanyResponse> createCompany(@Valid @RequestBody CompanyRequest companyRequest) {
         return ResponseEntity.status(HttpStatus.CREATED).body(companyService.createCompany(companyRequest));
     }
 
     @PatchMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<CompanyResponse> updateCompany(
             @PathVariable UUID id,
             @Valid @RequestBody CompanyRequest companyRequest) throws CompanyNotFoundException {
@@ -59,6 +66,7 @@ public class CompanyController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteCompany(@PathVariable UUID id) throws CompanyNotFoundException {
         companyService.deleteCompany(id);
         return ResponseEntity.noContent().build();

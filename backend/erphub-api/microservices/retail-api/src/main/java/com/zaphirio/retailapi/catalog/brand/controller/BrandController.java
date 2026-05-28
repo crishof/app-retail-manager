@@ -7,6 +7,7 @@ import com.zaphirio.retailapi.catalog.brand.service.BrandService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,6 +38,7 @@ public class BrandController {
     private final BaseService baseService;
 
     @GetMapping("/status")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE')")
     public String status() {
         String msg = baseService.getSupplierStatus();
         return "Brand service is running" + " " +  msg;
@@ -51,6 +53,7 @@ public class BrandController {
     @ApiResponse(responseCode = "201", description = "Brand created successfully")
     @ApiResponse(responseCode = "400", description = "Invalid input")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<BrandResponse> create(@RequestParam @NotBlank @Size(max = 100) String name,
                                                 @RequestPart(required = false) MultipartFile logo) {
         log.info("Creating brand | name={} | hasLogo={}", name, logo != null);
@@ -63,6 +66,7 @@ public class BrandController {
     @Operation(summary = "Get all brands (paginated)")
     @ApiResponse(responseCode = "200", description = "Brands retrieved successfully")
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE')")
     public ResponseEntity<Page<BrandResponse>> getAll(Pageable pageable) {
         log.info("Fetching all brands with pagination");
         Page<BrandResponse> page = brandService.getAll(pageable);
@@ -76,6 +80,7 @@ public class BrandController {
     @ApiResponse(responseCode = "200", description = "Brand retrieved successfully")
     @ApiResponse(responseCode = "404", description = "Brand not found")
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE')")
     public ResponseEntity<BrandResponse> getById(@PathVariable @NotNull UUID id) {
         log.info("Fetching brand by id={}", id);
         return ResponseEntity.ok(brandService.getById(id));
@@ -89,6 +94,7 @@ public class BrandController {
     @ApiResponse(responseCode = "400", description = "Invalid input")
     @ApiResponse(responseCode = "404", description = "Brand not found")
     @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<BrandResponse> update(@PathVariable @NotNull UUID id,
                                                 @RequestPart(required = false) String name,
                                                 @RequestPart(required = false) MultipartFile logo) {
@@ -103,6 +109,7 @@ public class BrandController {
     @ApiResponse(responseCode = "204", description = "Brand deleted successfully")
     @ApiResponse(responseCode = "404", description = "Brand not found")
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Void> softDelete(@PathVariable @NotNull UUID id) {
         log.info("Soft deleting brand id={}", id);
         brandService.delete(id);
@@ -116,6 +123,7 @@ public class BrandController {
     @ApiResponse(responseCode = "204", description = "Brand deleted successfully")
     @ApiResponse(responseCode = "404", description = "Brand not found")
     @DeleteMapping("/{id}/force")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> forceDelete(@PathVariable @NotNull UUID id) {
         log.info("Hard deleting brand id={}", id);
         brandService.forceDelete(id);
@@ -129,6 +137,7 @@ public class BrandController {
     @ApiResponse(responseCode = "204", description = "Brand logo deleted successfully")
     @ApiResponse(responseCode = "404", description = "Brand not found")
     @PatchMapping("/{id}/logo")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Void> deleteBrandLogo(@PathVariable @NotNull UUID id) {
         log.info("Deleting logo for brand id={}", id);
         brandService.deleteBrandLogo(id);
@@ -142,6 +151,7 @@ public class BrandController {
     @ApiResponse(responseCode = "200", description = "Brand restored successfully")
     @ApiResponse(responseCode = "404", description = "Brand not found")
     @PatchMapping("/{id}/restore")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<BrandResponse> restore(@PathVariable @NotNull UUID id) {
         log.info("Restoring brand id={}", id);
         return ResponseEntity.ok(brandService.restore(id));
@@ -153,6 +163,7 @@ public class BrandController {
     @Operation(summary = "Get total count of brands")
     @ApiResponse(responseCode = "200", description = "Brand count retrieved successfully")
     @GetMapping("/count")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE')")
     public ResponseEntity<Long> getBrandCount() {
         log.info("Getting total count of brands");
         return ResponseEntity.ok(brandService.getBrandCount());
@@ -168,6 +179,7 @@ public class BrandController {
     @ApiResponse(responseCode = "404", description = "Brand not found")
     @ApiResponse(responseCode = "400", description = "Invalid brand merge request")
     @PutMapping("/{id}/merge")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<BrandMergeResponse> mergeBrandInto(@PathVariable @NotNull UUID id,
                                                              @RequestParam @NotNull UUID targetBrandId) {
         return ResponseEntity.ok(brandService.mergeBrandInto(id, targetBrandId));

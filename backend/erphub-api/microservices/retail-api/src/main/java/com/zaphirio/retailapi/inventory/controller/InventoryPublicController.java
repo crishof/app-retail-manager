@@ -4,6 +4,7 @@ import com.zaphirio.retailapi.inventory.dto.StockMovementResponse;
 import com.zaphirio.retailapi.inventory.model.Stock;
 import com.zaphirio.retailapi.inventory.service.StockService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,11 +18,13 @@ public class InventoryPublicController {
     private final StockService stockService;
 
     @GetMapping("/product/{productId}/stock")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE')")
     public List<Stock> getProductStock(@PathVariable UUID productId) {
         return stockService.getProductStock(productId);
     }
 
     @GetMapping("/movements/reference/{referenceId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE')")
     public List<StockMovementResponse> getMovementsByReference(@PathVariable UUID referenceId) {
         return stockService.getMovementsByReference(referenceId);
     }

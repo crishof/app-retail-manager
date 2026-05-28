@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 import org.springframework.validation.annotation.Validated;
@@ -37,6 +38,7 @@ public class CustomerController {
     @ApiResponse(responseCode = "201", description = "Customer created successfully")
     @ApiResponse(responseCode = "400", description = "Invalid input")
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public CustomerResponse create(@RequestBody CustomerRequest customerRequest) {
         log.info("Creating customer : {}", customerRequest);
         return customerService.create(customerRequest);
@@ -48,6 +50,7 @@ public class CustomerController {
     @Operation(summary = "Search customers by term")
     @ApiResponse(responseCode = "200", description = "Customers found successfully")
     @GetMapping("/search")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE')")
     public ResponseEntity<List<CustomerResponse>> search(@RequestParam String search) {
         log.info("Searching customers with term: {}", search);
         return ResponseEntity.ok(customerService.search(search));
@@ -59,6 +62,7 @@ public class CustomerController {
     @Operation(summary = "Get all customers")
     @ApiResponse(responseCode = "200", description = "Customers retrieved successfully")
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE')")
     public ResponseEntity<Page<CustomerResponse>> getAll(Pageable pageable) {
         log.info("Fetching all customers with pagination");
         Page<CustomerResponse> page = customerService.getAll(pageable);
@@ -72,6 +76,7 @@ public class CustomerController {
     @ApiResponse(responseCode = "200", description = "Customer retrieved successfully")
     @ApiResponse(responseCode = "404", description = "Customer not found")
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE')")
     public ResponseEntity<CustomerResponse> getById(@PathVariable @NotNull UUID id) {
         log.info("Fetching a customer by ID {}", id);
         return ResponseEntity.ok(customerService.getById(id));
@@ -85,6 +90,7 @@ public class CustomerController {
     @ApiResponse(responseCode = "400", description = "Invalid input")
     @ApiResponse(responseCode = "404", description = "Customer not found")
     @PatchMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<CustomerResponse> update(@PathVariable @NotNull UUID id, @RequestBody CustomerRequest customerRequest) {
         return ResponseEntity.ok(customerService.update(id, customerRequest));
     }
@@ -96,6 +102,7 @@ public class CustomerController {
     @ApiResponse(responseCode = "204", description = "Customer deleted successfully")
     @ApiResponse(responseCode = "404", description = "Customer not found")
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable @NotNull UUID id) {
         log.info("Soft deleting a customer by ID {}", id);
         customerService.delete(id);
@@ -109,6 +116,7 @@ public class CustomerController {
     @ApiResponse(responseCode = "204", description = "Customer deleted successfully")
     @ApiResponse(responseCode = "404", description = "Customer not found")
     @DeleteMapping("/{id}/force")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> forceDelete(@PathVariable @NotNull UUID id) {
         log.info("Hard deleting customer id={}", id);
         customerService.forceDelete(id);
@@ -122,6 +130,7 @@ public class CustomerController {
     @ApiResponse(responseCode = "200", description = "Customer restored successfully")
     @ApiResponse(responseCode = "404", description = "Customer not found")
     @PatchMapping("/{id}/restore")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<CustomerResponse> restore(@PathVariable @NotNull UUID id) {
         log.info("Restoring customer id={}", id);
         return ResponseEntity.ok(customerService.restore(id));
@@ -133,6 +142,7 @@ public class CustomerController {
     @Operation(summary = "Get total number of customers")
     @ApiResponse(responseCode = "200", description = "Customer count retrieved successfully")
     @GetMapping("/count")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE')")
     public ResponseEntity<Long> getCustomerCount() {
         log.info("Getting total count of customers");
         return ResponseEntity.ok(customerService.getCustomerCount());
@@ -148,6 +158,7 @@ public class CustomerController {
     @ApiResponse(responseCode = "404", description = "Customer not found")
     @ApiResponse(responseCode = "400", description = "Invalid customer merge request")
     @PutMapping("/{id}/merge")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CustomerMergeResponse> mergeCustomerInto(@PathVariable @NotNull UUID id, @RequestParam @NotNull UUID targetCustomerId) {
 
         //TODO test with orders created

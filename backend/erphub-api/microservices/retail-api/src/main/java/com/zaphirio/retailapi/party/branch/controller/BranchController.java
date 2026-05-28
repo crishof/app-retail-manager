@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,21 +24,25 @@ public class BranchController {
     private final BranchService branchService;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE')")
     public ResponseEntity<List<BranchResponse>> getAllBranches() {
         return ResponseEntity.ok(branchService.getAllBranches());
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE')")
     public ResponseEntity<BranchResponse> getBranchById(@PathVariable UUID id) throws BranchNotFoundException {
         return ResponseEntity.ok(branchService.getBranchResponseById(id));
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<BranchResponse> createBranch(@Valid @RequestBody BranchRequest branchRequest) throws CompanyNotFoundException {
         return ResponseEntity.status(HttpStatus.CREATED).body(branchService.createBranch(branchRequest));
     }
 
     @PatchMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<BranchResponse> updateBranch(
             @PathVariable UUID id,
             @Valid @RequestBody BranchRequest branchRequest) throws BranchNotFoundException, CompanyNotFoundException {
@@ -45,6 +50,7 @@ public class BranchController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteBranch(@PathVariable UUID id) throws BranchNotFoundException {
         branchService.deleteBranch(id);
         return ResponseEntity.noContent().build();
@@ -53,6 +59,7 @@ public class BranchController {
     // ── Locations ────────────────────────────────────────────────────────────
 
     @PostMapping("/{branchId}/locations")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<BranchResponse> createLocation(
             @PathVariable UUID branchId,
             @Valid @RequestBody LocationRequest request) {
@@ -60,6 +67,7 @@ public class BranchController {
     }
 
     @PatchMapping("/{branchId}/locations/{locationId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<BranchResponse> updateLocation(
             @PathVariable UUID branchId,
             @PathVariable UUID locationId,
@@ -68,6 +76,7 @@ public class BranchController {
     }
 
     @DeleteMapping("/{branchId}/locations/{locationId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<BranchResponse> deleteLocation(
             @PathVariable UUID branchId,
             @PathVariable UUID locationId) throws BranchNotFoundException {
@@ -77,6 +86,7 @@ public class BranchController {
     // Alias: depósitos
 
     @PostMapping("/{branchId}/deposits")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<BranchResponse> createDeposit(
             @PathVariable UUID branchId,
             @Valid @RequestBody LocationRequest request) {
@@ -84,6 +94,7 @@ public class BranchController {
     }
 
     @PatchMapping("/{branchId}/deposits/{locationId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<BranchResponse> updateDeposit(
             @PathVariable UUID branchId,
             @PathVariable UUID locationId,
@@ -92,6 +103,7 @@ public class BranchController {
     }
 
     @DeleteMapping("/{branchId}/deposits/{locationId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<BranchResponse> deleteDeposit(
             @PathVariable UUID branchId,
             @PathVariable UUID locationId) throws BranchNotFoundException {

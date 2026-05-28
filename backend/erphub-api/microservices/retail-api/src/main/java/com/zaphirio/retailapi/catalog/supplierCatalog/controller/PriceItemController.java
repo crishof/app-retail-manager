@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,6 +29,7 @@ public class PriceItemController {
     // IMPORT PRICE ITEMS
     // ============================
     @PostMapping("/import")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ImportResult importPriceItems(
             @RequestParam MultipartFile file,
             @RequestParam UUID supplierId,
@@ -42,6 +44,7 @@ public class PriceItemController {
     // PARSE EXCEL HEADERS
     // ============================
     @PostMapping("/parse-headers")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public List<ColumnHeaderSuggestion> parseHeaders(@RequestParam MultipartFile file) {
         return priceItemService.extractHeaders(file);
     }
@@ -50,6 +53,7 @@ public class PriceItemController {
     // SEARCH FILTERED ITEMS
     // ============================
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE')")
     public List<PriceItemResponse> findAll(
             @RequestParam(required = false) UUID supplierId,
             @RequestParam(required = false) String brand,
@@ -62,6 +66,7 @@ public class PriceItemController {
     // GET ITEM BY ID
     // ============================
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE')")
     public PriceItemResponse findById(@PathVariable UUID id) {
         return priceItemService.getById(id);
     }
@@ -70,6 +75,7 @@ public class PriceItemController {
     // GET BRANDS BY SUPPLIER
     // ============================
     @GetMapping("/brands")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE')")
     public List<String> getBrands(
             @RequestParam(required = false) UUID supplierId
     ) {
