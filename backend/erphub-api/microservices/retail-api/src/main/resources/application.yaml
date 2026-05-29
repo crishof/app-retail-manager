@@ -5,6 +5,15 @@ spring:
     active: ${SPRING_PROFILES_ACTIVE:dev}
   
   # ============================
+  # DISABLE SPRING CLOUD CONFIG (Phase 5, Monolith Activation)
+  # ============================
+  cloud:
+    config:
+      enabled: false
+      import-check:
+        enabled: false
+  
+  # ============================
   # FLYWAY MIGRATION CONFIGURATION (Day 9, Phase 3)
   # ============================
 flyway:

@@ -26,7 +26,7 @@ import java.util.UUID;
         @Index(name = "idx_audit_tenant", columnList = "tenant_id"),
         @Index(name = "idx_audit_entity", columnList = "entity_type, entity_id"),
         @Index(name = "idx_audit_timestamp", columnList = "created_at"),
-        @Index(name = "idx_audit_user", columnList = "performed_by_id")
+        @Index(name = "idx_audit_user", columnList = "performed_by_user_id")
 })
 @Getter
 @NoArgsConstructor
