@@ -5,7 +5,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import com.zaphirio.retailapi.shared.fiscal.DocumentFinalizationStatus;
+import com.zaphirio.retailapi.shared.fiscal.ImmutableField;
+import com.zaphirio.retailapi.shared.fiscal.TaxRegime;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -74,5 +78,37 @@ public class Invoice {
 
     @Column(name = "tenant_id", nullable = true)
     private Long tenantId;
+
+    /**
+     * Tax regime for this invoice (required for fiscal compliance).
+     * Determines VAT rates, withholding obligations, and reporting requirements.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tax_regime", nullable = false)
+    @ImmutableField(editableBeforeFinalization = true)
+    private TaxRegime taxRegime;
+
+    /**
+     * Finalization status of this invoice.
+     * Controls the invoice lifecycle: DRAFT -> PENDING_APPROVAL -> APPROVED -> FINALIZED -> CANCELED
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "finalization_status", nullable = false)
+    private DocumentFinalizationStatus finalizationStatus = DocumentFinalizationStatus.DRAFT;
+
+    /**
+     * Timestamp when invoice was finalized (immutable after finalization).
+     * Used to determine when invoice became immutable for fiscal compliance.
+     */
+    @Column(name = "finalized_at")
+    @ImmutableField(editableBeforeFinalization = false)
+    private Instant finalizedAt;
+
+    /**
+     * User ID who finalized this invoice (for audit trail).
+     */
+    @Column(name = "finalized_by_user_id")
+    @ImmutableField(editableBeforeFinalization = false)
+    private UUID finalizedByUserId;
 
 }
