@@ -7,6 +7,19 @@ spring:
     import: "${LOCAL_SPRING_CONFIG_IMPORT:${SPRING_CONFIG_IMPORT:optional:configserver:http://localhost:8088}}"
 
 # ============================
+# FLYWAY MIGRATION CONFIGURATION (Day 9, Phase 3)
+# ============================
+flyway:
+  enabled: true
+  locations: classpath:db/migration
+  baselineOnMigrate: true
+  validateOnMigrate: true
+  placeholderReplacement: true
+  # Allow creation of migration table if it doesn't exist
+  placeholderPrefix: ${
+  placeholderSuffix: }
+
+# ============================
 # ACTUATOR HARDENING (Day 3, Task 3.1)
 # ============================
 management:
