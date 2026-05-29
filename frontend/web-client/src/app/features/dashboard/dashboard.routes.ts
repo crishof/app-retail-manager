@@ -19,11 +19,16 @@ export const dashboardRoutes: Routes = [
         loadComponent: () => import('./pages/profile/profile.component').then(m => m.ProfileComponent),
         data: { title: 'Profile' }
       },
-      {
-        path: 'settings',
-        loadComponent: () => import('./pages/settings/settings.component').then(m => m.SettingsComponent),
-        data: { title: 'Settings' }
-      }
-    ]
-  }
+       {
+         path: 'settings',
+         loadComponent: () => import('./pages/settings/settings.component').then(m => m.SettingsComponent),
+         data: { title: 'Settings' }
+       },
+       {
+         path: 'analytics',
+         loadChildren: () => import('../analytics/analytics.routes').then(m => m.analyticsRoutes),
+         data: { title: 'Analytics' }
+       }
+     ]
+   }
 ];

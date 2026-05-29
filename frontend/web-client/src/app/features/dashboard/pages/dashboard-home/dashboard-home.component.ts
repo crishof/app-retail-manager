@@ -165,22 +165,24 @@ interface DashboardWidget {
         </div>
 
         <!-- Info Cards -->
-        <div class="space-y-4">
-          <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
-            <h3 class="font-bold text-blue-900 mb-2">📊 Analytics</h3>
-            <p class="text-sm text-blue-800 mb-4">
-              View detailed analytics and reports about your sales and inventory.
-            </p>
-            <a href="#" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View Analytics →</a>
-          </div>
-          <div class="bg-green-50 border border-green-200 rounded-lg p-6">
-            <h3 class="font-bold text-green-900 mb-2">✨ Performance</h3>
-            <p class="text-sm text-green-800 mb-4">
-              Your business is performing 12% better than last month.
-            </p>
-            <a href="#" class="text-green-600 hover:text-green-800 text-sm font-medium">View Details →</a>
-          </div>
-        </div>
+         <div class="space-y-4">
+           <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 hover:shadow-md transition cursor-pointer">
+             <a routerLink="/dashboard/analytics" class="block group">
+               <h3 class="font-bold text-blue-900 mb-2">📊 Analytics Dashboard</h3>
+               <p class="text-sm text-blue-800 mb-4">
+                 View detailed charts: sales trends, revenue, inventory, cash flow, and payment status.
+               </p>
+               <span class="text-blue-600 group-hover:text-blue-800 text-sm font-medium">Open Analytics →</span>
+             </a>
+           </div>
+           <div class="bg-green-50 border border-green-200 rounded-lg p-6">
+             <h3 class="font-bold text-green-900 mb-2">✨ Performance</h3>
+             <p class="text-sm text-green-800 mb-4">
+               Your business is performing 12% better than last month.
+             </p>
+             <a href="#" class="text-green-600 hover:text-green-800 text-sm font-medium">View Details →</a>
+           </div>
+         </div>
       </div>
     </div>
   `,

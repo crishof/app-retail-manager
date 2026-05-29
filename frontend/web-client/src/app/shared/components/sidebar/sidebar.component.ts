@@ -135,16 +135,11 @@ export class SidebarComponent {
       icon: '💳',
       route: '/caja'
     },
-    {
-      label: 'Analytics',
-      icon: '📈',
-      route: '/analytics',
-      children: [
-        { label: 'Sales Reports', icon: '📊', route: '/informes/ventas' },
-        { label: 'Movements', icon: '🔄', route: '/informes/movimientos' },
-        { label: 'Export', icon: '💾', route: '/informes/excel' }
-      ]
-    },
+     {
+       label: 'Analytics',
+       icon: '📈',
+       route: '/dashboard/analytics'
+     },
     {
       label: 'Admin',
       icon: '⚙️',
