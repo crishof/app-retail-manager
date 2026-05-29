@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, shareReplay, catchError, of } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
+import { Observable, shareReplay, catchError, of, map } from 'rxjs';
 import { AuthStore } from '../auth/auth.store';
 
 export interface SalesTrendData {
@@ -52,7 +53,7 @@ export interface SalesByPaymentMethodData {
 export class AnalyticsDataService {
   private readonly http = inject(HttpClient);
   private readonly authStore = inject(AuthStore);
-  private readonly apiUrl = '/api/v1/analytics';
+  private readonly apiUrl = `${environment.apiUrl}`;
 
   // Cache maps for tenant-aware caching
   private caches = new Map<string, Observable<any>>();
@@ -61,6 +62,7 @@ export class AnalyticsDataService {
 
   /**
    * Get sales trends data for a given date range
+   * Aggregates from /api/v1/sales endpoint
    */
   getSalesTrends(startDate: string, endDate: string): Observable<SalesTrendData[]> {
     const cacheKey = `sales-trends-${startDate}-${endDate}-${this.getTenantId()}`;
@@ -69,12 +71,9 @@ export class AnalyticsDataService {
       return this.caches.get(cacheKey)!;
     }
 
-    let params = new HttpParams()
-      .set('startDate', startDate)
-      .set('endDate', endDate);
-
-    const request$ = this.http.get<SalesTrendData[]>(`${this.apiUrl}/sales-trends`, { params })
+    const request$ = this.http.get<any[]>(`${this.apiUrl}/sales`)
       .pipe(
+        map(sales => this.aggregateSalesTrends(sales, startDate, endDate)),
         catchError(() => this.getMockSalesTrends()),
         shareReplay(1)
       );
@@ -94,12 +93,9 @@ export class AnalyticsDataService {
       return this.caches.get(cacheKey)!;
     }
 
-    let params = new HttpParams()
-      .set('startDate', startDate)
-      .set('endDate', endDate);
-
-    const request$ = this.http.get<RevenueByCategoryData[]>(`${this.apiUrl}/revenue-by-category`, { params })
+    const request$ = this.http.get<any[]>(`${this.apiUrl}/sales`)
       .pipe(
+        map(sales => this.aggregateRevenueByCategory(sales, startDate, endDate)),
         catchError(() => this.getMockRevenueByCategory()),
         shareReplay(1)
       );
@@ -119,13 +115,9 @@ export class AnalyticsDataService {
       return this.caches.get(cacheKey)!;
     }
 
-    let params = new HttpParams()
-      .set('startDate', startDate)
-      .set('endDate', endDate)
-      .set('limit', limit.toString());
-
-    const request$ = this.http.get<TopProductData[]>(`${this.apiUrl}/top-products`, { params })
+    const request$ = this.http.get<any[]>(`${this.apiUrl}/sales`)
       .pipe(
+        map(sales => this.aggregateTopProducts(sales, startDate, endDate, limit)),
         catchError(() => this.getMockTopProducts()),
         shareReplay(1)
       );
@@ -145,12 +137,9 @@ export class AnalyticsDataService {
       return this.caches.get(cacheKey)!;
     }
 
-    let params = new HttpParams()
-      .set('startDate', startDate)
-      .set('endDate', endDate);
-
-    const request$ = this.http.get<PaymentStatusData[]>(`${this.apiUrl}/payment-status`, { params })
+    const request$ = this.http.get<any[]>(`${this.apiUrl}/sales`)
       .pipe(
+        map(sales => this.aggregatePaymentStatus(sales, startDate, endDate)),
         catchError(() => this.getMockPaymentStatus()),
         shareReplay(1)
       );
@@ -170,12 +159,9 @@ export class AnalyticsDataService {
       return this.caches.get(cacheKey)!;
     }
 
-    let params = new HttpParams()
-      .set('startDate', startDate)
-      .set('endDate', endDate);
-
-    const request$ = this.http.get<InventoryAlertData[]>(`${this.apiUrl}/inventory-alerts`, { params })
+    const request$ = this.http.get<any[]>(`${this.apiUrl}/products`)
       .pipe(
+        map(products => this.aggregateInventoryAlerts(products, startDate, endDate)),
         catchError(() => this.getMockInventoryAlerts()),
         shareReplay(1)
       );
@@ -195,12 +181,9 @@ export class AnalyticsDataService {
       return this.caches.get(cacheKey)!;
     }
 
-    let params = new HttpParams()
-      .set('startDate', startDate)
-      .set('endDate', endDate);
-
-    const request$ = this.http.get<CashFlowData[]>(`${this.apiUrl}/cash-flow`, { params })
+    const request$ = this.http.get<any[]>(`${this.apiUrl}/sales`)
       .pipe(
+        map(sales => this.aggregateCashFlow(sales, startDate, endDate)),
         catchError(() => this.getMockCashFlow()),
         shareReplay(1)
       );
@@ -220,12 +203,9 @@ export class AnalyticsDataService {
       return this.caches.get(cacheKey)!;
     }
 
-    let params = new HttpParams()
-      .set('startDate', startDate)
-      .set('endDate', endDate);
-
-    const request$ = this.http.get<SalesByPaymentMethodData[]>(`${this.apiUrl}/sales-by-payment-method`, { params })
+    const request$ = this.http.get<any[]>(`${this.apiUrl}/sales`)
       .pipe(
+        map(sales => this.aggregateSalesByPaymentMethod(sales, startDate, endDate)),
         catchError(() => this.getMockSalesByPaymentMethod()),
         shareReplay(1)
       );
@@ -256,6 +236,219 @@ export class AnalyticsDataService {
     this.lastRefresh.delete(cacheKey);
   }
 
+  // ============ Aggregation Methods ============
+
+  private aggregateSalesTrends(sales: any[], startDate: string, endDate: string): SalesTrendData[] {
+    const data: SalesTrendData[] = [];
+    const dateMap = new Map<string, { sales: number; orders: number }>();
+
+    sales.forEach(sale => {
+      const saleDate = new Date(sale.createdAt || sale.date || new Date());
+      const dateStr = saleDate.toISOString().split('T')[0];
+      
+      if (dateStr >= startDate && dateStr <= endDate) {
+        if (!dateMap.has(dateStr)) {
+          dateMap.set(dateStr, { sales: 0, orders: 0 });
+        }
+        const entry = dateMap.get(dateStr)!;
+        entry.sales += sale.total || sale.amount || 0;
+        entry.orders += 1;
+      }
+    });
+
+    // Fill missing dates
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      const dateStr = d.toISOString().split('T')[0];
+      const entry = dateMap.get(dateStr) || { sales: 0, orders: 0 };
+      data.push({
+        date: dateStr,
+        sales: entry.sales,
+        orders: entry.orders
+      });
+    }
+
+    return data;
+  }
+
+  private aggregateRevenueByCategory(sales: any[], startDate: string, endDate: string): RevenueByCategoryData[] {
+    const categoryMap = new Map<string, number>();
+    let totalRevenue = 0;
+
+    sales.forEach(sale => {
+      const saleDate = new Date(sale.createdAt || sale.date || new Date());
+      const dateStr = saleDate.toISOString().split('T')[0];
+      
+      if (dateStr >= startDate && dateStr <= endDate && sale.items && Array.isArray(sale.items)) {
+        sale.items.forEach((item: any) => {
+          const category = item.category || item.productCategory || 'Uncategorized';
+          const itemRevenue = item.total || item.price * (item.quantity || 1);
+          categoryMap.set(category, (categoryMap.get(category) || 0) + itemRevenue);
+          totalRevenue += itemRevenue;
+        });
+      }
+    });
+
+    return Array.from(categoryMap.entries()).map(([category, revenue]) => ({
+      category,
+      revenue,
+      percentage: totalRevenue > 0 ? Math.round((revenue / totalRevenue) * 100) : 0
+    }));
+  }
+
+  private aggregateTopProducts(sales: any[], startDate: string, endDate: string, limit: number): TopProductData[] {
+    const productMap = new Map<string, { name: string; sales: number; revenue: number }>();
+
+    sales.forEach(sale => {
+      const saleDate = new Date(sale.createdAt || sale.date || new Date());
+      const dateStr = saleDate.toISOString().split('T')[0];
+      
+      if (dateStr >= startDate && dateStr <= endDate && sale.items && Array.isArray(sale.items)) {
+        sale.items.forEach((item: any) => {
+          const productId = item.productId || item.id;
+          if (!productMap.has(productId)) {
+            productMap.set(productId, {
+              name: item.productName || item.name || 'Unknown',
+              sales: 0,
+              revenue: 0
+            });
+          }
+          const product = productMap.get(productId)!;
+          product.sales += item.quantity || 1;
+          product.revenue += item.total || item.price * (item.quantity || 1);
+        });
+      }
+    });
+
+    return Array.from(productMap.entries())
+      .map(([id, data]) => ({
+        productId: id,
+        productName: data.name,
+        sales: data.sales,
+        revenue: data.revenue
+      }))
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, limit);
+  }
+
+  private aggregatePaymentStatus(sales: any[], startDate: string, endDate: string): PaymentStatusData[] {
+    const statusMap = { PAID: 0, PENDING: 0, OVERDUE: 0 };
+
+    sales.forEach(sale => {
+      const saleDate = new Date(sale.createdAt || sale.date || new Date());
+      const dateStr = saleDate.toISOString().split('T')[0];
+      
+      if (dateStr >= startDate && dateStr <= endDate) {
+        const status = this.mapSaleStatus(sale.status);
+        statusMap[status as keyof typeof statusMap] = (statusMap[status as keyof typeof statusMap] || 0) + 1;
+      }
+    });
+
+    const total = Object.values(statusMap).reduce((a, b) => a + b, 0);
+    return Object.entries(statusMap).map(([status, count]) => ({
+      status,
+      count,
+      percentage: total > 0 ? Math.round((count / total) * 100) : 0
+    }));
+  }
+
+  private aggregateInventoryAlerts(products: any[], startDate: string, endDate: string): InventoryAlertData[] {
+    const data: InventoryAlertData[] = [];
+    const today = new Date();
+
+    for (let i = 0; i < 30; i++) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - (30 - i));
+      const dateStr = date.toISOString().split('T')[0];
+
+      const lowStock = products.filter(p => {
+        const qty = p.quantity || p.stock || 0;
+        const minQty = p.minQuantity || p.minimumStock || 10;
+        return qty > 0 && qty <= minQty;
+      }).length;
+
+      const outOfStock = products.filter(p => (p.quantity || p.stock || 0) === 0).length;
+
+      data.push({
+        date: dateStr,
+        lowStock,
+        outOfStock
+      });
+    }
+
+    return data;
+  }
+
+  private aggregateCashFlow(sales: any[], startDate: string, endDate: string): CashFlowData[] {
+    const data: CashFlowData[] = [];
+    const dateMap = new Map<string, { inflow: number; outflow: number }>();
+
+    sales.forEach(sale => {
+      const saleDate = new Date(sale.createdAt || sale.date || new Date());
+      const dateStr = saleDate.toISOString().split('T')[0];
+      
+      if (dateStr >= startDate && dateStr <= endDate) {
+        if (!dateMap.has(dateStr)) {
+          dateMap.set(dateStr, { inflow: 0, outflow: 0 });
+        }
+        const entry = dateMap.get(dateStr)!;
+        const amount = sale.total || sale.amount || 0;
+        if (sale.type === 'PURCHASE' || sale.type === 'EXPENSE') {
+          entry.outflow += amount;
+        } else {
+          entry.inflow += amount;
+        }
+      }
+    });
+
+    // Fill missing dates
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      const dateStr = d.toISOString().split('T')[0];
+      const entry = dateMap.get(dateStr) || { inflow: 0, outflow: 0 };
+      data.push({
+        date: dateStr,
+        inflow: entry.inflow,
+        outflow: entry.outflow
+      });
+    }
+
+    return data;
+  }
+
+  private aggregateSalesByPaymentMethod(sales: any[], startDate: string, endDate: string): SalesByPaymentMethodData[] {
+    const methodMap = new Map<string, number>();
+    let totalAmount = 0;
+
+    sales.forEach(sale => {
+      const saleDate = new Date(sale.createdAt || sale.date || new Date());
+      const dateStr = saleDate.toISOString().split('T')[0];
+      
+      if (dateStr >= startDate && dateStr <= endDate) {
+        const method = sale.paymentMethod || sale.method || 'Cash';
+        const amount = sale.total || sale.amount || 0;
+        methodMap.set(method, (methodMap.get(method) || 0) + amount);
+        totalAmount += amount;
+      }
+    });
+
+    return Array.from(methodMap.entries()).map(([method, amount]) => ({
+      method,
+      amount,
+      percentage: totalAmount > 0 ? Math.round((amount / totalAmount) * 100) : 0
+    }));
+  }
+
+  private mapSaleStatus(status?: string): string {
+    if (!status) return 'PENDING';
+    const lower = status.toLowerCase();
+    if (lower.includes('paid') || lower.includes('completed')) return 'PAID';
+    if (lower.includes('overdue')) return 'OVERDUE';
+    return 'PENDING';
+  }
+
   /**
    * Get current tenant ID for isolation
    */
@@ -272,7 +465,8 @@ export class AnalyticsDataService {
     return Date.now() - lastTime < this.TTL;
   }
 
-  // Mock data generators for fallback
+  // ============ Mock Data ============
+
   private getMockSalesTrends(): Observable<SalesTrendData[]> {
     const data: SalesTrendData[] = [];
     for (let i = 0; i < 30; i++) {
