@@ -1,0 +1,136 @@
+server:
+  port: 9020
+  shutdown: graceful
+
+spring:
+  datasource:
+    # Development: connect to localhost PostgreSQL
+    url: jdbc:postgresql://localhost:5544/retail_db
+    username: ${POSTGRES_USER:admin}
+    password: ${POSTGRES_PASSWORD:root1234}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      idle-timeout: 30000
+      max-lifetime: 600000
+      connection-timeout: 20000
+
+  rabbitmq:
+    # Development: connect to localhost RabbitMQ
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_DEFAULT_USER:guest}
+    password: ${RABBITMQ_DEFAULT_PASS:guest}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  mail:
+    host: ${MAIL_HOST:}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_SMTP_AUTH:true}
+          starttls:
+            enable: ${MAIL_SMTP_STARTTLS_ENABLE:true}
+
+  cloud:
+    openfeign:
+      circuitbreaker:
+        enabled: true
+      micrometer:
+        enabled: false
+
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+
+# No Eureka for monolith - direct service communication only
+eureka:
+  client:
+    enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,refresh,metrics
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    org.springframework: ${LOG_LEVEL_SPRING:INFO}
+    com.zaphirio: DEBUG
+
+# JWT Configuration
+jwt:
+  secret_key: ${BASE64_SECRET_KEY:vzxp+DRFX2QpTbzrY+l0nQ10fs9Cepmc3v5/mslcDno=}
+  expiration: ${JWT_EXPIRATION:3600000}
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION:86400000}
+
+# Application Configuration
+app:
+  mail:
+    enabled: ${MAIL_ENABLED:false}
+    from: ${MAIL_FROM:${MAIL_USERNAME:no-reply@mail.local}}
+    provider: ${MAIL_PROVIDER:smtp}
+    brevo:
+      api-url: ${BREVO_API_URL:https://api.brevo.com/v3}
+      api-key: ${BREVO_API_KEY:}
+      timeout-seconds: ${BREVO_API_TIMEOUT_SECONDS:15}
+  email-verification:
+    code-ttl-minutes: ${EMAIL_VERIFICATION_CODE_TTL_MINUTES:10}
+  reset-password:
+    base-url: ${RESET_PASSWORD_BASE_URL:http://localhost:5173/reset-password}
+  accept-invite:
+    base-url: ${ACCEPT_INVITE_BASE_URL:http://localhost:5173/accept-invite}
+  security:
+    cors:
+      allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:4200,http://localhost:5173,http://127.0.0.1:3000}
+
+# Resilience4j Configuration (for future cross-module communication if needed)
+resilience4j:
+  circuitbreaker:
+    metrics:
+      enabled: false
+    instances:
+      default:
+        registerHealthIndicator: true
+        eventConsumerBufferSize: 10
+        failureRateThreshold: 50
+        minimumNumberOfCalls: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowSize: 10
+        slidingWindowType: COUNT_BASED
+
+  retry:
+    metrics:
+      enabled: false
+    instances:
+      default:
+        maxRetryAttempts: 3
+        waitDuration: 1s
+
+  ratelimiter:
+    metrics:
+      enabled: false
+
+  timelimiter:
+    metrics:
+      enabled: false
+    instances:
+      default:
+        timeoutDuration: 2s
+        cancelRunningFuture: true
