@@ -95,12 +95,17 @@ public class SecurityConfig {
                         .frameOptions(frameOptions -> frameOptions.deny())
                         .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'")))
                 .authorizeHttpRequests(
-                        auth -> auth
-                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                                .requestMatchers(PUBLIC_ENDPOINTS.toArray(String[]::new)).permitAll()
-                                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                                .requestMatchers("/actuator/**").hasRole("ADMIN")
-                                .anyRequest().authenticated())
+                        auth -> {
+                            log.info("Configuring public endpoints: {}", PUBLIC_ENDPOINTS);
+                            auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                                    .requestMatchers("/error", "/error/**").permitAll()
+                                    .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/actuator/health").permitAll()
+                                    .requestMatchers("/api/v1/auth/**").permitAll()
+                                    .requestMatchers("/api/v1/invitations/**").permitAll()
+                                    .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                                    .requestMatchers("/actuator/**").hasRole("ADMIN")
+                                    .anyRequest().authenticated();
+                        })
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

@@ -5,6 +5,17 @@ spring:
     active: ${SPRING_PROFILES_ACTIVE:dev}
   
   # ============================
+  # CHARACTER ENCODING
+  # ============================
+  http:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+  jackson:
+    default-property-inclusion: non_null
+  
+  # ============================
   # DISABLE SPRING CLOUD CONFIG (Phase 5, Monolith Activation)
   # ============================
   cloud:
@@ -25,6 +36,16 @@ flyway:
   # Allow creation of migration table if it doesn't exist
   placeholderPrefix: "${"
   placeholderSuffix: "}"
+
+# ============================
+# SERVER CONFIGURATION
+# ============================
+server:
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
 
 # ============================
 # ACTUATOR HARDENING (Day 3, Task 3.1)
