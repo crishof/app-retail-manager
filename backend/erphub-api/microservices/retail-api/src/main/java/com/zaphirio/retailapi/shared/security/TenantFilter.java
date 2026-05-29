@@ -28,13 +28,19 @@ public class TenantFilter extends OncePerRequestFilter {
 
     // Public endpoints that don't require tenant context
     private static final Set<String> PUBLIC_ENDPOINTS = Set.of(
-            "/api/auth/login",
-            "/api/auth/register",
-            "/api/auth/refresh",
-            "/api/health",
-            "/api/actuator",
             "/swagger-ui",
-            "/v3/api-docs"
+            "/v3/api-docs",
+            "/actuator/health",
+            "/api/v1/auth/registration/signup",
+            "/api/v1/auth/registration/verify-email",
+            "/api/v1/auth/registration/resend-verification",
+            "/api/v1/auth/login",
+            "/api/v1/auth/refresh",
+            "/api/v1/auth/logout",
+            "/api/v1/auth/password/forgot",
+            "/api/v1/auth/password/reset",
+            "/api/v1/invitations",
+            "/error"
     );
 
     @Override

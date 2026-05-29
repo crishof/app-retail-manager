@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -27,10 +28,33 @@ public class JwtFilter extends OncePerRequestFilter {
     private final SecurityUserDetailsService userDetailsService;
     private final JwtService jwtService;
 
+    private static final List<String> PUBLIC_PATHS = List.of(
+            "/swagger-ui",
+            "/v3/api-docs",
+            "/actuator/health",
+            "/api/v1/auth/registration/signup",
+            "/api/v1/auth/registration/verify-email",
+            "/api/v1/auth/registration/resend-verification",
+            "/api/v1/auth/login",
+            "/api/v1/auth/refresh",
+            "/api/v1/auth/logout",
+            "/api/v1/auth/password/forgot",
+            "/api/v1/auth/password/reset",
+            "/api/v1/invitations",
+            "/error"
+    );
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+        // Skip JWT filter for public endpoints
+        String requestPath = request.getRequestURI();
+        if (isPublicPath(requestPath)) {
+            log.debug("JWT filter skipping public path: {}", requestPath);
+            filterChain.doFilter(request, response);
+            return;
+        }
         log.debug("JWT filter processing request for path {}", request.getRequestURI());
         final String authHeader = request.getHeader("Authorization");
 
@@ -81,5 +105,12 @@ public class JwtFilter extends OncePerRequestFilter {
                 log.debug("TenantContext cleared after request");
             }
         }
+    }
+
+    /**
+     * Check if the request path is a public endpoint that should bypass JWT authentication.
+     */
+    private boolean isPublicPath(String path) {
+        return PUBLIC_PATHS.stream().anyMatch(path::startsWith);
     }
 }
