@@ -78,23 +78,6 @@ import { AuthStore } from '../../../../core/auth/auth.store';
             }
           </div>
 
-          <!-- Company Name -->
-          <div>
-            <label for="company" class="block text-sm font-medium text-gray-700 mb-1">
-              Company Name
-            </label>
-            <input
-              id="company"
-              formControlName="companyName"
-              type="text"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Your Company"
-            />
-            @if (form.get('companyName')?.invalid && form.get('companyName')?.touched) {
-              <p class="text-xs text-red-600 mt-1">Company name is required</p>
-            }
-          </div>
-
           <!-- Password -->
           <div>
             <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
@@ -218,7 +201,6 @@ export class SignupComponent implements OnInit {
       firstName: ['', [Validators.required, Validators.minLength(2)]],
       lastName: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
-      companyName: ['', [Validators.required]],
       password: ['', [
         Validators.required,
         Validators.minLength(8),
@@ -261,11 +243,9 @@ export class SignupComponent implements OnInit {
     this.store.clearError();
 
     const signupData = {
+      fullName: `${this.form.value.firstName.trim()} ${this.form.value.lastName.trim()}`,
       email: this.form.value.email,
-      password: this.form.value.password,
-      firstName: this.form.value.firstName,
-      lastName: this.form.value.lastName,
-      companyName: this.form.value.companyName
+      password: this.form.value.password
     };
 
     this.authService.signup(signupData).subscribe({

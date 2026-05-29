@@ -18,11 +18,9 @@ interface AuthResponse {
 }
 
 interface SignupRequest {
+  fullName: string;
   email: string;
   password: string;
-  firstName: string;
-  lastName: string;
-  companyName: string;
 }
 
 interface SignupResponse {
