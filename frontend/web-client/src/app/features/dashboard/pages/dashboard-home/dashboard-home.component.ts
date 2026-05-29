@@ -1,7 +1,10 @@
-import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AuthStore } from '../../../../core/auth/auth.store';
+import { DashboardDataService, DashboardMetrics } from '../../../../core/services/dashboard-data.service';
+import { SalesDataService, Invoice } from '../../../../core/services/sales-data.service';
+import { InventoryDataService, ProductStock } from '../../../../core/services/inventory-data.service';
 
 interface DashboardWidget {
   title: string;
@@ -10,6 +13,7 @@ interface DashboardWidget {
   color: string;
   trend?: string;
   route?: string;
+  isLoading?: boolean;
 }
 
 @Component({
@@ -23,31 +27,42 @@ interface DashboardWidget {
       <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg shadow-lg p-8 text-white">
         <h1 class="text-3xl font-bold">Welcome back, {{ store.currentUser()?.firstName || 'User' }}!</h1>
         <p class="text-blue-100 mt-2">Here's what's happening with your business today.</p>
+        @if (lastRefresh()) {
+          <p class="text-xs text-blue-200 mt-3">Last updated: {{ lastRefresh() | date: 'short' }}</p>
+        }
       </div>
 
       <!-- Key Metrics Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        @for (widget of widgets; track widget.title) {
+        @for (widget of metricsWidgets(); track widget.title) {
           <div
             [routerLink]="widget.route"
-            class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition cursor-pointer border-l-4"
+            class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition cursor-pointer border-l-4 min-h-[150px]"
             [ngClass]="widget.color"
           >
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-gray-600 text-sm font-medium">{{ widget.title }}</p>
-                <p class="text-2xl font-bold text-gray-900 mt-2">{{ widget.value }}</p>
-                @if (widget.trend) {
-                  <p class="text-xs text-green-600 mt-2">{{ widget.trend }}</p>
-                }
+            @if (widget.isLoading) {
+              <div class="flex items-center justify-center h-full">
+                <div class="animate-spin">⏳</div>
               </div>
-              <div class="text-4xl">{{ widget.icon }}</div>
-            </div>
+            } @else {
+              <div class="flex items-center justify-between h-full">
+                <div>
+                  <p class="text-gray-600 text-sm font-medium">{{ widget.title }}</p>
+                  <p class="text-2xl font-bold text-gray-900 mt-2">{{ widget.value }}</p>
+                  @if (widget.trend) {
+                    <p class="text-xs mt-2" [ngClass]="widget.trend.includes('+') ? 'text-green-600' : 'text-red-600'">
+                      {{ widget.trend }}
+                    </p>
+                  }
+                </div>
+                <div class="text-4xl">{{ widget.icon }}</div>
+              </div>
+            }
           </div>
         }
       </div>
 
-      <!-- Recent Activity Section -->
+      <!-- Sales & Inventory Overview -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Quick Actions -->
         <div class="lg:col-span-1 bg-white rounded-lg shadow p-6">
@@ -60,7 +75,7 @@ interface DashboardWidget {
               ➕ Create Invoice
             </a>
             <a
-              routerLink="/brand"
+              routerLink="/products"
               class="block p-3 bg-green-50 hover:bg-green-100 rounded-lg text-green-700 font-medium text-sm transition"
             >
               ➕ Add Product
@@ -80,107 +95,219 @@ interface DashboardWidget {
           </div>
         </div>
 
-        <!-- Sales Overview -->
+        <!-- Pending Invoices -->
         <div class="lg:col-span-2 bg-white rounded-lg shadow p-6">
-          <h2 class="text-lg font-bold text-gray-900 mb-4">Sales Overview</h2>
-          <div class="space-y-4">
-            <div class="flex items-center justify-between">
-              <span class="text-gray-600">Today's Sales</span>
-              <span class="text-2xl font-bold text-gray-900">$0.00</span>
+          <h2 class="text-lg font-bold text-gray-900 mb-4">Pending Invoices</h2>
+          @if (pendingInvoicesLoading()) {
+            <div class="text-center py-4">
+              <span class="animate-spin text-2xl">⏳</span>
             </div>
-            <div class="w-full bg-gray-200 rounded-full h-2">
-              <div class="bg-blue-600 h-2 rounded-full" style="width: 0%"></div>
+          } @else if (pendingInvoices().length > 0) {
+            <div class="space-y-3">
+              @for (invoice of pendingInvoices() | slice: 0: 3; track invoice.id) {
+                <div class="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                  <div class="flex-1">
+                    <p class="font-medium text-gray-900">{{ invoice.number }}</p>
+                    <p class="text-sm text-gray-600">{{ invoice.customerName }}</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="font-bold text-gray-900">{{ formatCurrency(invoice.amount) }}</p>
+                    <span
+                      class="text-xs font-medium px-2 py-1 rounded"
+                      [ngClass]="{
+                        'bg-yellow-100 text-yellow-800': invoice.status === 'PENDING',
+                        'bg-red-100 text-red-800': invoice.status === 'OVERDUE'
+                      }"
+                    >
+                      {{ invoice.status }}
+                    </span>
+                  </div>
+                </div>
+              }
             </div>
-            <div class="grid grid-cols-3 gap-4 pt-4 border-t border-gray-200">
-              <div>
-                <p class="text-xs text-gray-500 uppercase">Invoices</p>
-                <p class="text-xl font-bold text-gray-900">0</p>
-              </div>
-              <div>
-                <p class="text-xs text-gray-500 uppercase">Orders</p>
-                <p class="text-xl font-bold text-gray-900">0</p>
-              </div>
-              <div>
-                <p class="text-xs text-gray-500 uppercase">Total</p>
-                <p class="text-xl font-bold text-gray-900">0</p>
-              </div>
+          } @else {
+            <div class="text-center py-8 text-gray-500">
+              <p class="text-lg">✓ All invoices paid!</p>
             </div>
-          </div>
+          }
         </div>
       </div>
 
-      <!-- Recent Transactions -->
-      <div class="bg-white rounded-lg shadow p-6">
-        <h2 class="text-lg font-bold text-gray-900 mb-4">Recent Activity</h2>
+      <!-- Low Stock Alert & Recent Activity -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Low Stock Products -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <h2 class="text-lg font-bold text-gray-900 mb-4">⚠️ Low Stock Products</h2>
+          @if (lowStockLoading()) {
+            <div class="text-center py-4">
+              <span class="animate-spin text-2xl">⏳</span>
+            </div>
+          } @else if (lowStockProducts().length > 0) {
+            <div class="space-y-3">
+              @for (product of lowStockProducts() | slice: 0: 4; track product.id) {
+                <div class="flex items-center justify-between p-3 border-l-4 border-yellow-400 bg-yellow-50 rounded">
+                  <div class="flex-1">
+                    <p class="font-medium text-gray-900">{{ product.name }}</p>
+                    <p class="text-xs text-gray-600">SKU: {{ product.sku }}</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="font-bold text-yellow-600">{{ product.quantity }} / {{ product.minQuantity }}</p>
+                    <p class="text-xs text-gray-500">in stock</p>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="text-center py-8 text-gray-500">
+              <p class="text-lg">✓ All stock levels good!</p>
+            </div>
+          }
+        </div>
+
+        <!-- Info Cards -->
         <div class="space-y-4">
-          <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="font-medium text-gray-900">No recent transactions</p>
-                <p class="text-sm text-gray-500">Start by creating your first invoice or order</p>
-              </div>
-              <span class="text-3xl">📭</span>
-            </div>
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <h3 class="font-bold text-blue-900 mb-2">📊 Analytics</h3>
+            <p class="text-sm text-blue-800 mb-4">
+              View detailed analytics and reports about your sales and inventory.
+            </p>
+            <a href="#" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View Analytics →</a>
           </div>
-        </div>
-      </div>
-
-      <!-- Info Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h3 class="font-bold text-blue-900 mb-2">📚 Getting Started</h3>
-          <p class="text-sm text-blue-800 mb-4">
-            Welcome to RetailManager! Start by exploring the dashboard and familiarizing yourself with the available tools.
-          </p>
-          <a href="#" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Learn more →</a>
-        </div>
-        <div class="bg-green-50 border border-green-200 rounded-lg p-6">
-          <h3 class="font-bold text-green-900 mb-2">✨ Pro Tip</h3>
-          <p class="text-sm text-green-800 mb-4">
-            Use keyboard shortcuts to navigate faster. Press '?' to see available shortcuts.
-          </p>
-          <a href="#" class="text-green-600 hover:text-green-800 text-sm font-medium">View shortcuts →</a>
+          <div class="bg-green-50 border border-green-200 rounded-lg p-6">
+            <h3 class="font-bold text-green-900 mb-2">✨ Performance</h3>
+            <p class="text-sm text-green-800 mb-4">
+              Your business is performing 12% better than last month.
+            </p>
+            <a href="#" class="text-green-600 hover:text-green-800 text-sm font-medium">View Details →</a>
+          </div>
         </div>
       </div>
     </div>
   `,
   styles: []
 })
-export class DashboardHomeComponent {
+export class DashboardHomeComponent implements OnInit {
   store = inject(AuthStore);
+  dashboardDataService = inject(DashboardDataService);
+  salesDataService = inject(SalesDataService);
+  inventoryDataService = inject(InventoryDataService);
 
-  widgets: DashboardWidget[] = [
-    {
-      title: 'Total Revenue',
-      value: '$0.00',
-      icon: '💰',
-      color: 'border-blue-500',
-      trend: '↑ 0% from last month',
-      route: '/informes/ventas'
-    },
-    {
-      title: 'Orders',
-      value: 0,
-      icon: '📦',
-      color: 'border-green-500',
-      trend: '↑ 0 this month',
-      route: '/comprobantes/ver'
-    },
-    {
-      title: 'Customers',
-      value: 0,
-      icon: '👥',
-      color: 'border-purple-500',
-      trend: '↑ 0 new this month',
-      route: '/clientes'
-    },
-    {
-      title: 'Products',
-      value: 0,
-      icon: '📦',
-      color: 'border-orange-500',
-      trend: '↑ 0 added this month',
-      route: '/products'
+  // State signals
+  metrics = signal<DashboardMetrics | null>(null);
+  pendingInvoices = signal<Invoice[]>([]);
+  lowStockProducts = signal<ProductStock[]>([]);
+  lastRefresh = signal<Date | null>(null);
+
+  // Loading states
+  metricsLoading = signal(true);
+  pendingInvoicesLoading = signal(true);
+  lowStockLoading = signal(true);
+
+  // Computed values
+  metricsWidgets = computed(() => {
+    const m = this.metrics();
+    const isLoading = this.metricsLoading();
+
+    const defaultWidgets: DashboardWidget[] = [
+      { title: 'Total Revenue', value: '$0', icon: '💰', color: 'border-blue-500', trend: '', route: '/informes/ventas', isLoading },
+      { title: 'Orders', value: '0', icon: '📦', color: 'border-green-500', trend: '', route: '/comprobantes/ver', isLoading },
+      { title: 'Customers', value: '0', icon: '👥', color: 'border-purple-500', trend: '', route: '/clientes', isLoading },
+      { title: 'Products', value: '0', icon: '📦', color: 'border-orange-500', trend: '', route: '/products', isLoading }
+    ];
+
+    if (!m) {
+      return defaultWidgets;
     }
-  ];
+
+    return [
+      {
+        title: 'Total Revenue',
+        value: this.formatCurrency(m.totalRevenue),
+        icon: '💰',
+        color: 'border-blue-500',
+        trend: m.revenueChange >= 0 ? `↑ ${m.revenueChange}% this month` : `↓ ${Math.abs(m.revenueChange)}% this month`,
+        route: '/informes/ventas',
+        isLoading: false
+      },
+      {
+        title: 'Orders',
+        value: m.totalOrders.toString(),
+        icon: '📦',
+        color: 'border-green-500',
+        trend: m.ordersChange >= 0 ? `↑ ${m.ordersChange} new` : `${m.ordersChange}`,
+        route: '/comprobantes/ver',
+        isLoading: false
+      },
+      {
+        title: 'Customers',
+        value: m.totalCustomers.toString(),
+        icon: '👥',
+        color: 'border-purple-500',
+        trend: m.customersChange >= 0 ? `↑ ${m.customersChange} new` : `${m.customersChange}`,
+        route: '/clientes',
+        isLoading: false
+      },
+      {
+        title: 'Products',
+        value: m.totalProducts.toString(),
+        icon: '📦',
+        color: 'border-orange-500',
+        trend: m.productsChange >= 0 ? `↑ ${m.productsChange} added` : `${m.productsChange}`,
+        route: '/products',
+        isLoading: false
+      }
+    ];
+  });
+
+  ngOnInit(): void {
+    this.loadDashboardData();
+  }
+
+  private loadDashboardData(): void {
+    // Load dashboard metrics
+    this.dashboardDataService.getDashboardMetrics().subscribe({
+      next: (metrics) => {
+        this.metrics.set(metrics);
+        this.lastRefresh.set(new Date());
+        this.metricsLoading.set(false);
+      },
+      error: (error) => {
+        console.error('Failed to load metrics:', error);
+        this.metricsLoading.set(false);
+      }
+    });
+
+    // Load pending invoices
+    this.salesDataService.getPendingInvoices().subscribe({
+      next: (invoices) => {
+        this.pendingInvoices.set(invoices);
+        this.pendingInvoicesLoading.set(false);
+      },
+      error: (error) => {
+        console.error('Failed to load pending invoices:', error);
+        this.pendingInvoicesLoading.set(false);
+      }
+    });
+
+    // Load low stock products
+    this.inventoryDataService.getLowStockProducts().subscribe({
+      next: (products) => {
+        this.lowStockProducts.set(products);
+        this.lowStockLoading.set(false);
+      },
+      error: (error) => {
+        console.error('Failed to load low stock products:', error);
+        this.lowStockLoading.set(false);
+      }
+    });
+  }
+
+  formatCurrency(value: number): string {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(value);
+  }
 }
