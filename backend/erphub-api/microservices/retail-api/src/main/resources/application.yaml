@@ -16,8 +16,8 @@ flyway:
   validateOnMigrate: true
   placeholderReplacement: true
   # Allow creation of migration table if it doesn't exist
-  placeholderPrefix: ${
-  placeholderSuffix: }
+  placeholderPrefix: "${"
+  placeholderSuffix: "}"
 
 # ============================
 # ACTUATOR HARDENING (Day 3, Task 3.1)

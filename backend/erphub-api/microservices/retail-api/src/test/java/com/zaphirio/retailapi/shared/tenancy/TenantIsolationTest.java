@@ -1,6 +1,8 @@
 package com.zaphirio.retailapi.shared.tenancy;
 
+import com.zaphirio.retailapi.auth.model.Role;
 import com.zaphirio.retailapi.auth.model.User;
+import com.zaphirio.retailapi.auth.model.UserStatus;
 import com.zaphirio.retailapi.auth.repository.UserRepository;
 import com.zaphirio.retailapi.catalog.product.model.Product;
 import com.zaphirio.retailapi.catalog.product.repository.ProductRepository;
@@ -256,8 +258,8 @@ class TenantIsolationTest {
         User user = new User();
         user.setEmail(email);
         user.setFullName("Test User " + email);
-        user.setRole(User.Role.ADMIN);
-        user.setStatus(User.UserStatus.ACTIVE);
+        user.setRole(Role.ADMIN);
+        user.setStatus(UserStatus.ACTIVE);
         user.setTenantId(tenantId);
         user.setCreatedAt(Instant.now());
         user.setUpdatedAt(Instant.now());
