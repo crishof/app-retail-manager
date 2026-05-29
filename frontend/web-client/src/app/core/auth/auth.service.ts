@@ -29,6 +29,7 @@ interface SignupResponse {
 }
 
 interface VerifyEmailRequest {
+  email: string;
   code: string;
 }
 
@@ -204,16 +205,17 @@ export class AuthService {
   }
 
   /**
-   * Verify email with code sent to user
-   * 
-   * @param code - 6-digit verification code
-   * @returns Observable with AuthResponse
-   */
-  verifyEmail(code: string): Observable<AuthResponse> {
+    * Verify email with code sent to user
+    * 
+    * @param email - User email address
+    * @param code - 6-digit verification code
+    * @returns Observable with AuthResponse
+    */
+  verifyEmail(email: string, code: string): Observable<AuthResponse> {
     this.store.setIsLoading(true);
     this.store.clearError();
 
-    const request: VerifyEmailRequest = { code };
+    const request: VerifyEmailRequest = { email, code };
     const verificationUrl = `${this.baseUrl}/registration/verify-email`;
 
     return this.http.post<AuthResponse>(verificationUrl, request).pipe(
