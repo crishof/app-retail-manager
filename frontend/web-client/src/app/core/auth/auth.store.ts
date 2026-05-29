@@ -9,6 +9,7 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
+  companyName?: string;
   role: 'ADMIN' | 'OPERATOR' | 'VIEWER';
   tenantId: string;
   status: 'ACTIVE' | 'INACTIVE' | 'PENDING_VERIFICATION';

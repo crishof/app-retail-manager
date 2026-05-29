@@ -14,7 +14,6 @@ import { SupplierDetailsComponent } from './pages/supplier/supplier-details/supp
 import { SupplierFormComponent } from './pages/supplier/supplier-form/supplier-form.component';
 import { SupplierInvoiceComponent } from './pages/supplier/supplier-invoice/supplier-invoice.component';
 import { SupplierPriceListComponent } from './pages/supplier-price-list/supplier-price-list.component';
-import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { CustomerInvoiceComponent } from './pages/customer/customer-invoice/customer-invoice.component';
 import { CustomerVoucherListComponent } from './pages/customer/customer-voucher-list/customer-voucher-list.component';
 import { CustomerVoucherDetailComponent } from './pages/customer/customer-voucher-detail/customer-voucher-detail.component';
@@ -32,10 +31,15 @@ export const routes: Routes = [
     loadChildren: () => import('./features/auth/auth.routes').then(m => m.authRoutes)
   },
 
+  // ── Dashboard ──────────────────────────────────────
+  {
+    path: 'dashboard',
+    loadChildren: () => import('./features/dashboard/dashboard.routes').then(m => m.dashboardRoutes)
+  },
+
   // ── Público ────────────────────────────────────────
   { path: '', redirectTo: 'inicio', pathMatch: 'full' },
   { path: 'inicio', component: HomeComponent },
-  { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
 
   // ── Catálogo ───────────────────────────────────────
   { path: 'products',          component: ProductsComponent, canActivate: [authGuard] },
