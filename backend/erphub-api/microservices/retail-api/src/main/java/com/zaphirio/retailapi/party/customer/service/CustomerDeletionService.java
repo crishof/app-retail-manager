@@ -1,6 +1,6 @@
 package com.zaphirio.retailapi.party.customer.service;
 
-import com.zaphirio.retailapi.shared.client.OrderClient;
+import com.zaphirio.retailapi.shared.client.OrderServiceClient;
 import com.zaphirio.retailapi.shared.exception.BusinessException;
 import com.zaphirio.retailapi.shared.exception.ResourceNotFoundException;
 import com.zaphirio.retailapi.party.customer.repository.CustomerRepository;
@@ -17,7 +17,7 @@ import java.util.UUID;
 public class CustomerDeletionService {
 
     private final CustomerRepository customerRepository;
-    private final OrderClient orderClient;
+    private final OrderServiceClient orderServiceClient;
 
     @Transactional
     public void forceDelete(UUID id) {
@@ -26,7 +26,7 @@ public class CustomerDeletionService {
 
         customerRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Customer with id %s not found".formatted(id)));
 
-        boolean hasOrders = orderClient.hasOrdersForCustomer(id);
+        boolean hasOrders = orderServiceClient.hasOrdersForCustomer(id);
         if (hasOrders) {
             throw new BusinessException("Cannot delete customer because it is used by products");
         }

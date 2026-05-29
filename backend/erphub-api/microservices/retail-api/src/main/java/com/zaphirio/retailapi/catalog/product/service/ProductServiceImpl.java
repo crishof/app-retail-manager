@@ -48,7 +48,7 @@ public class ProductServiceImpl implements ProductService {
     private final ImageServiceClient imageClient;
     private final OrderServiceClient orderClient;
     private final InvoiceServiceClient invoiceClient;
-    private final InventoryServiceClient inventoryClient;
+    private final InventoryServiceClient inventoryServiceClient;
     private final PricingServiceClient pricingClient;
     private final ProductPriceLinkService priceLinkService;
 
@@ -104,10 +104,10 @@ public class ProductServiceImpl implements ProductService {
         Product product = getProductOrThrow(id);
 
         // Validate stock movements
-        boolean hasStockMovements = inventoryClient.hasMovementsForProduct(id);
-        if (hasStockMovements) {
-            throw new BusinessException("Cannot delete product with stock movements");
-        }
+         boolean hasStockMovements = inventoryServiceClient.hasMovementsForProduct(id);
+         if (hasStockMovements) {
+             throw new BusinessException("Cannot delete product with stock movements");
+         }
 
         // Commercial validations
         if (orderClient.hasOrdersForProduct(id) || invoiceClient.hasInvoicesForProduct(id)) {
@@ -257,8 +257,8 @@ public class ProductServiceImpl implements ProductService {
         if (response == null || response.getId() == null) {
             return response;
         }
-        response.setStockResponses(inventoryClient.getProductStock(response.getId()));
-        return response;
+        response.setStockResponses(inventoryServiceClient.getProductStock(response.getId()));
+         return response;
     }
 
     private ProductPriceResponse resolvePrice(UUID productId) {

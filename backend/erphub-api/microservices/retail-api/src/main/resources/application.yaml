@@ -29,3 +29,10 @@ app:
   security:
     cors:
       allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:4200,http://localhost:3001}
+
+# ============================
+# RABBITMQ EVENT SYNC (Day 2, Task Phase 2)
+# ============================
+rabbitmq:
+  event-sync:
+    enabled: false  # Disabled for MVP - event sync replaced with direct service calls

@@ -22,4 +22,6 @@ public interface InvoiceService {
     SupplierPaymentResponse savePayment(SupplierPaymentRequest request);
 
     List<AccountMovementResponse> getAccountStatement(UUID supplierId);
+
+    boolean hasInvoicesForProduct(UUID productId);
 }

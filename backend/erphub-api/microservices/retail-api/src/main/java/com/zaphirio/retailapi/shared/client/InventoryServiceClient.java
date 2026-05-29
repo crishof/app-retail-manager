@@ -2,6 +2,9 @@ package com.zaphirio.retailapi.shared.client;
 
 import com.zaphirio.retailapi.catalog.product.dto.StockMovementRequest;
 import com.zaphirio.retailapi.catalog.product.dto.StockResponse;
+import com.zaphirio.retailapi.inventory.service.StockService;
+import com.zaphirio.retailapi.operation.invoice.dto.InvoiceStockMovementRequest;
+import com.zaphirio.retailapi.operation.sales.dto.SaleStockMovementRequest;
 import com.zaphirio.retailapi.shared.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,32 +19,90 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class InventoryServiceClient {
 
-    private final InventoryClient inventoryClient;
+    private final StockService stockService;
 
     public boolean hasMovementsForProduct(UUID productId) {
         try {
-            return inventoryClient.hasMovementsForProduct(productId);
+            return stockService.hasMovementsForProduct(productId);
         } catch (Exception e) {
-            log.error("Error calling inventory-sv for product {}", productId, e);
+            log.error("Error calling inventory service for product {}", productId, e);
             throw new BusinessException("Failed to verify inventory movements for product");
         }
     }
 
     public void registerMovement(StockMovementRequest request) {
         try {
-            inventoryClient.registerMovement(request);
+            stockService.registerMovement(toStockMovementRequest(request));
         } catch (Exception e) {
             log.error("Error registering stock movement {}", request, e);
             throw new BusinessException("Failed to register stock movement");
         }
     }
 
+    public void registerInvoiceMovement(InvoiceStockMovementRequest request) {
+        try {
+            stockService.registerMovement(toStockMovementRequest(request));
+        } catch (Exception e) {
+            log.error("Error registering invoice stock movement {}", request, e);
+            throw new BusinessException("Failed to register stock movement");
+        }
+    }
+
+    public void registerSaleMovement(SaleStockMovementRequest request) {
+        try {
+            stockService.registerMovement(toStockMovementRequest(request));
+        } catch (Exception e) {
+            log.error("Error registering sale stock movement {}", request, e);
+            throw new BusinessException("Failed to register stock movement");
+        }
+    }
+
     public List<StockResponse> getProductStock(UUID productId) {
         try {
-            return inventoryClient.getProductStock(productId);
+            var stocks = stockService.getProductStock(productId);
+            return stocks.stream()
+                    .map(s -> StockResponse.builder()
+                            .productId(s.getProductId())
+                            .branchId(s.getBranchId())
+                            .locationId(s.getLocationId())
+                            .quantity(s.getQuantity())
+                            .build())
+                    .toList();
         } catch (Exception e) {
             log.error("Error fetching stock for product {}", productId, e);
             return Collections.emptyList();
         }
+    }
+
+    private com.zaphirio.retailapi.inventory.dto.StockMovementRequest toStockMovementRequest(StockMovementRequest req) {
+        return com.zaphirio.retailapi.inventory.dto.StockMovementRequest.builder()
+                .productId(req.getProductId())
+                .branchId(req.getBranchId())
+                .locationId(req.getLocationId())
+                .quantity(req.getQuantity())
+                .reason(com.zaphirio.retailapi.inventory.model.StockMovementReason.ADJUSTMENT)
+                .build();
+    }
+
+    private com.zaphirio.retailapi.inventory.dto.StockMovementRequest toStockMovementRequest(InvoiceStockMovementRequest req) {
+        return com.zaphirio.retailapi.inventory.dto.StockMovementRequest.builder()
+                .productId(req.getProductId())
+                .branchId(req.getBranchId())
+                .locationId(req.getLocationId())
+                .quantity(req.getQuantity())
+                .reason(com.zaphirio.retailapi.inventory.model.StockMovementReason.valueOf(req.getReason().name()))
+                .referenceId(req.getReferenceId())
+                .build();
+    }
+
+    private com.zaphirio.retailapi.inventory.dto.StockMovementRequest toStockMovementRequest(SaleStockMovementRequest req) {
+        return com.zaphirio.retailapi.inventory.dto.StockMovementRequest.builder()
+                .productId(req.getProductId())
+                .branchId(req.getBranchId())
+                .locationId(req.getLocationId())
+                .quantity(req.getQuantity())
+                .reason(com.zaphirio.retailapi.inventory.model.StockMovementReason.ORDER)
+                .referenceId(req.getReferenceId())
+                .build();
     }
 }

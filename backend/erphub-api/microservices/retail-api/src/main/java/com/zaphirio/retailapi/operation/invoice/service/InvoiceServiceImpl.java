@@ -1,6 +1,6 @@
 package com.zaphirio.retailapi.operation.invoice.service;
 
-import com.zaphirio.retailapi.shared.client.InventoryClient;
+import com.zaphirio.retailapi.shared.client.InventoryServiceClient;
 import com.zaphirio.retailapi.operation.invoice.dto.InvoiceStockMovementRequest;
 import com.zaphirio.retailapi.operation.invoice.dto.*;
 import com.zaphirio.retailapi.operation.invoice.exception.InvoiceNotFoundException;
@@ -28,7 +28,7 @@ import java.util.UUID;
 public class InvoiceServiceImpl implements InvoiceService {
 
     private final InvoiceRepository invoiceRepository;
-    private final InventoryClient inventoryClient;
+    private final InventoryServiceClient inventoryServiceClient;
     private final SupplierPaymentRepository supplierPaymentRepository;
 
     @Override
@@ -62,21 +62,21 @@ public class InvoiceServiceImpl implements InvoiceService {
         Invoice saved = invoiceRepository.save(invoice);
 
         if (invoiceRequest.isSaveStocks()) {
-            invoiceRequest.getInvoiceItemsRequest().forEach(item -> {
-                try {
-                    inventoryClient.registerMovement(InvoiceStockMovementRequest.builder()
-                            .productId(item.getId())
-                            .branchId(invoiceRequest.getBranchId())
-                            .locationId(invoiceRequest.getLocationId())
-                            .quantity(item.getQuantity())
-                            .reason(StockMovementReason.INVOICE)
-                            .referenceId(saved.getId())
-                            .build());
-                } catch (Exception ex) {
-                    log.warn("Could not register stock movement for product={}: {}", item.getId(), ex.getMessage());
-                }
-            });
-        }
+             invoiceRequest.getInvoiceItemsRequest().forEach(item -> {
+                 try {
+                     inventoryServiceClient.registerInvoiceMovement(InvoiceStockMovementRequest.builder()
+                             .productId(item.getId())
+                             .branchId(invoiceRequest.getBranchId())
+                             .locationId(invoiceRequest.getLocationId())
+                             .quantity(item.getQuantity())
+                             .reason(StockMovementReason.INVOICE)
+                             .referenceId(saved.getId())
+                             .build());
+                 } catch (Exception ex) {
+                     log.warn("Could not register stock movement for product={}: {}", item.getId(), ex.getMessage());
+                 }
+             });
+         }
 
         return this.toInvoiceResponse(saved);
     }
@@ -324,5 +324,10 @@ public class InvoiceServiceImpl implements InvoiceService {
                 .reference(p.getReference())
                 .description(p.getDescription())
                 .build();
+    }
+
+    @Override
+    public boolean hasInvoicesForProduct(UUID productId) {
+        return invoiceRepository.existsByInvoiceItemsProductId(productId);
     }
 }

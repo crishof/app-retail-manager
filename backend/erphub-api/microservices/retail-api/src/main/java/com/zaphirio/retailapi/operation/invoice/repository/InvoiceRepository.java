@@ -11,4 +11,6 @@ import java.util.UUID;
 public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
 
     List<Invoice> findAllBySupplierId(UUID supplierId);
+
+    boolean existsByInvoiceItemsProductId(UUID productId);
 }

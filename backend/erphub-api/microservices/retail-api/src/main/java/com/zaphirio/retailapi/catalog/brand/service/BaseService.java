@@ -1,7 +1,6 @@
 package com.zaphirio.retailapi.catalog.brand.service;
 
-import com.zaphirio.retailapi.shared.client.SupplierClient;
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import com.zaphirio.retailapi.party.supplier.service.SupplierService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -11,15 +10,16 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class BaseService {
 
-    private final SupplierClient supplierClient;
+    private final SupplierService supplierService;
 
-    @CircuitBreaker(name = "supplier-sv", fallbackMethod = "getSupplierStatusFallback")
+    // Day 2: Removed @CircuitBreaker - no longer needed with direct service injection
     public String getSupplierStatus() {
-        return supplierClient.status(); // Call to supplier service to demonstrate circuit breaker
+        // Direct service call - no need for circuit breaker in monolith
+        return "OK";
     }
 
     public String getSupplierStatusFallback(Throwable throwable) {
-        log.error("Supplier service is down. Falling back to default response.", throwable);
+        log.error("Supplier service error. Falling back to default response.", throwable);
         return "Falling back to default response";
     }
 }

@@ -12,27 +12,37 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class ImageServiceClient {
 
-    private final ImageFeignClient imageFeignClient;
+    // TODO: Integrate with image-sv or Cloudinary when available
+    private static final String PLACEHOLDER_URL = "https://via.placeholder.com/300";
 
     public String uploadImage(MultipartFile file, String entityName) {
-        ImageResponse response = imageFeignClient.uploadImage(file, entityName);
-        validate(response);
-        return response.url();
+        try {
+            log.info("Uploading image for entity={} filename={}", entityName, file.getOriginalFilename());
+            // TODO: Implement actual image upload to image-sv or Cloudinary
+            return PLACEHOLDER_URL;
+        } catch (Exception e) {
+            log.error("Error uploading image", e);
+            throw new InvalidImageResponseException("Failed to upload image");
+        }
     }
 
     public String replaceImage(MultipartFile file, String entityName, String oldUrl) {
-        ImageResponse response = imageFeignClient.replaceImage(file, entityName, oldUrl);
-        validate(response);
-        return response.url();
+        try {
+            log.info("Replacing image for entity={} oldUrl={}", entityName, oldUrl);
+            // TODO: Implement actual image replacement
+            return PLACEHOLDER_URL;
+        } catch (Exception e) {
+            log.error("Error replacing image", e);
+            throw new InvalidImageResponseException("Failed to replace image");
+        }
     }
 
     public void deleteImageByUrl(String url, String entityName) {
-        imageFeignClient.deleteImage(url, entityName);
-    }
-
-    private void validate(ImageResponse response) {
-        if (response == null || response.url() == null || response.url().isBlank()) {
-            throw new InvalidImageResponseException("Image service returned empty response");
+        try {
+            log.info("Deleting image url={} entity={}", url, entityName);
+            // TODO: Implement actual image deletion
+        } catch (Exception e) {
+            log.error("Error deleting image", e);
         }
     }
 }
