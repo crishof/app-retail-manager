@@ -1,12 +1,12 @@
 package com.zaphirio.retailapi.auth.repository;
 
 import com.zaphirio.retailapi.auth.model.InvitationToken;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.zaphirio.retailapi.shared.persistence.TenantAwareRepository;
 
 import java.util.Optional;
 import java.util.UUID;
 
-public interface InvitationTokenRepository extends JpaRepository<InvitationToken, UUID> {
+public interface InvitationTokenRepository extends TenantAwareRepository<InvitationToken, UUID> {
 
     Optional<InvitationToken> findByToken(String token);
 

@@ -39,6 +39,9 @@ public class Stock {
     @Column(nullable = false)
     private Instant updatedAt;
 
+    @Column(name = "tenant_id", nullable = true)
+    private Long tenantId;
+
     public void applyMovement(int delta) {
         this.quantity += delta;
         this.updatedAt = Instant.now();

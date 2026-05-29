@@ -72,4 +72,7 @@ public class Invoice {
 
     private String currency;
 
+    @Column(name = "tenant_id", nullable = true)
+    private Long tenantId;
+
 }

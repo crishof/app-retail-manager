@@ -2,12 +2,12 @@ package com.zaphirio.retailapi.auth.repository;
 
 import com.zaphirio.retailapi.auth.model.SecurityAccount;
 import com.zaphirio.retailapi.auth.model.User;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.zaphirio.retailapi.shared.persistence.TenantAwareRepository;
 
 import java.util.Optional;
 import java.util.UUID;
 
-public interface SecurityAccountRepository extends JpaRepository<SecurityAccount, UUID> {
+public interface SecurityAccountRepository extends TenantAwareRepository<SecurityAccount, UUID> {
 
     Optional<SecurityAccount> findByUser(User user);
 

@@ -1,7 +1,7 @@
 package com.zaphirio.retailapi.catalog.category.repository;
 
 import com.zaphirio.retailapi.catalog.category.model.Category;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.zaphirio.retailapi.shared.persistence.TenantAwareRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface CategoryRepository extends JpaRepository<Category, UUID> {
+public interface CategoryRepository extends TenantAwareRepository<Category, UUID> {
 
     boolean existsByNameAndParent(String name, Category parent);
 

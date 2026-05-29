@@ -1,12 +1,12 @@
 package com.zaphirio.retailapi.operation.cash.repository;
 
 import com.zaphirio.retailapi.operation.cash.model.CashMovement;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.zaphirio.retailapi.shared.persistence.TenantAwareRepository;
 
 import java.util.List;
 import java.util.UUID;
 
-public interface CashMovementRepository extends JpaRepository<CashMovement, UUID> {
+public interface CashMovementRepository extends TenantAwareRepository<CashMovement, UUID> {
 
     List<CashMovement> findAllBySessionIdOrderByCreatedAtAsc(UUID sessionId);
 }
