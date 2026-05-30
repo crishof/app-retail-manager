@@ -180,7 +180,7 @@ interface DashboardWidget {
              <p class="text-sm text-green-800 mb-4">
                Your business is performing 12% better than last month.
              </p>
-             <a href="#" class="text-green-600 hover:text-green-800 text-sm font-medium">View Details →</a>
+             <a routerLink="/dashboard/analytics" class="text-green-600 hover:text-green-800 text-sm font-medium">View Details →</a>
            </div>
          </div>
       </div>

@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { inject } from '@angular/core';
 import { Router, CanActivateFn, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { AuthService } from './auth.service';
 
@@ -23,12 +23,9 @@ export const authGuard: CanActivateFn = (
     return true;
   }
 
-  // Store return URL so we can redirect after login
-  router.navigate(['/landing/login'], {
+  return router.createUrlTree(['/landing/login'], {
     queryParams: { returnUrl: state.url }
   });
-
-  return false;
 };
 
 /**
@@ -46,9 +43,7 @@ export const noAuthGuard: CanActivateFn = () => {
     return true;
   }
 
-  // User is already logged in, redirect to dashboard
-  router.navigate(['/dashboard']);
-  return false;
+  return router.createUrlTree(['/dashboard']);
 };
 
 /**
@@ -67,8 +62,7 @@ export const roleGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
   const router = inject(Router);
 
   if (!authService.isLoggedIn()) {
-    router.navigate(['/landing/login']);
-    return false;
+    return router.createUrlTree(['/landing/login']);
   }
 
   const allowedRoles = route.data['roles'] as string[];
@@ -87,6 +81,5 @@ export const roleGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
 
   // User doesn't have required role
   console.warn(`User role '${userRole}' not in allowed roles:`, allowedRoles);
-  router.navigate(['/']);
-  return false;
+  return router.createUrlTree(['/dashboard']);
 };

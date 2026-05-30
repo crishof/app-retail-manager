@@ -31,7 +31,6 @@ export class SidebarComponent {
     {
       title: 'Principal',
       items: [
-        { label: 'Inicio',     icon: 'home',             route: '/inicio'    },
         { label: 'Dashboard',  icon: 'dashboard',        route: '/dashboard' },
       ],
     },

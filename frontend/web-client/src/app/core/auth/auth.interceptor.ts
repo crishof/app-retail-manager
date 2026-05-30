@@ -3,7 +3,7 @@ import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { TokenService } from './token.service';
 import { AuthService } from './auth.service';
-import { catchError, switchMap, throwError, of } from 'rxjs';
+import { catchError, switchMap, throwError } from 'rxjs';
 
 // Flag to prevent multiple simultaneous refresh attempts
 let isRefreshing = false;
@@ -33,6 +33,9 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authExemptPaths = [
     '/auth/login',
     '/auth/logout',
+    '/auth/registration/signup',
+    '/auth/registration/verify-email',
+    '/auth/registration/resend-verification',
     '/registration/signup',
     '/registration/verify-email',
     '/registration/resend-verification',

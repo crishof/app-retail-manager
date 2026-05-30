@@ -5,7 +5,7 @@
   </button>
 
   <!-- Brand (visible solo en mobile) -->
-  <a class="topbar__brand" [routerLink]="['/inicio']">RetailManager</a>
+  <a class="topbar__brand" [routerLink]="['/dashboard']">RetailManager</a>
 
   <div class="topbar__spacer"></div>
 
@@ -32,38 +32,90 @@
     }
 
     <!-- Notificaciones -->
-    <button class="topbar__icon-btn topbar__icon-btn--notif" aria-label="Notificaciones">
+    <button class="topbar__icon-btn topbar__icon-btn--notif">
       <span class="material-icons">notifications</span>
+      <span class="topbar__icon-label">Avisos</span>
       @if (notificationCount > 0) {
         <span class="topbar__badge">{{ notificationCount }}</span>
       }
     </button>
 
-    <!-- Usuario -->
-    <div class="topbar__user" (click)="toggleUserMenu()" (keydown.enter)="toggleUserMenu()" tabindex="0">
-      <div class="topbar__avatar">
-        <span class="material-icons">person</span>
+    @if (store.canAdminister()) {
+      <div class="topbar__admin">
+        <button class="topbar__admin-trigger" type="button" (click)="toggleAdminMenu($event)" aria-label="Abrir centro administrativo">
+          <span class="material-icons topbar__admin-icon">shield_person</span>
+          <span class="topbar__admin-copy">
+            <span class="topbar__admin-title">Admin</span>
+            <span class="topbar__admin-subtitle">Control y configuración</span>
+          </span>
+          <span class="material-icons topbar__admin-chevron">expand_more</span>
+        </button>
+
+        @if (showAdminMenu) {
+          <div class="topbar__admin-panel">
+            <div class="topbar__admin-panel-header">
+              <p class="topbar__admin-kicker">Centro administrativo</p>
+              <h3 class="topbar__admin-heading">Accesos críticos del sistema</h3>
+              <p class="topbar__admin-description">
+                Gestioná estructura, usuarios y gobierno operativo desde un único punto.
+              </p>
+            </div>
+
+            <div class="topbar__admin-grid">
+              @for (section of adminSections; track section.title) {
+                <section class="topbar__admin-section">
+                  <p class="topbar__admin-section-title">{{ section.title }}</p>
+
+                  <div class="topbar__admin-section-items">
+                    @for (item of section.items; track item.route) {
+                      <a class="topbar__admin-item" [routerLink]="item.route" (click)="onMenuNavigation()">
+                        <span class="material-icons topbar__admin-item-icon">{{ item.icon }}</span>
+                        <span class="topbar__admin-item-copy">
+                          <span class="topbar__admin-item-title">{{ item.label }}</span>
+                          <span class="topbar__admin-item-description">{{ item.description }}</span>
+                        </span>
+                        <span class="material-icons topbar__admin-item-arrow">arrow_outward</span>
+                      </a>
+                    }
+                  </div>
+                </section>
+              }
+            </div>
+          </div>
+        }
       </div>
-      <span class="topbar__username">Admin</span>
-      <span class="material-icons topbar__chevron">expand_more</span>
+    }
+
+    <!-- Usuario -->
+    <div class="topbar__user">
+      <button class="topbar__user-trigger" type="button" (click)="toggleUserMenu($event)" aria-label="Abrir menú de usuario">
+        <div class="topbar__avatar">
+          <span class="material-icons">person</span>
+        </div>
+        <span class="topbar__username">{{ store.currentUser()?.firstName || 'Cuenta' }}</span>
+        <span class="material-icons topbar__chevron">expand_more</span>
+      </button>
 
       @if (showUserMenu) {
         <div class="topbar__user-menu">
           <div class="topbar__user-menu-header">
-            <p class="topbar__user-name">Administrador</p>
-            <p class="topbar__user-role">admin&#64;retailmanager.com</p>
+            <div class="topbar__user-summary">
+              <p class="topbar__user-name">{{ store.userDisplayName() }}</p>
+              <span class="topbar__user-badge">{{ store.userRole() || 'USER' }}</span>
+            </div>
+            <p class="topbar__user-role">{{ store.userEmail() || 'Sin correo asociado' }}</p>
           </div>
           <hr class="topbar__divider" />
-          <button class="topbar__user-menu-item">
+          <a class="topbar__user-menu-item" [routerLink]="'/dashboard/profile'" (click)="onMenuNavigation()">
             <span class="material-icons">account_circle</span>
             Mi perfil
-          </button>
-          <button class="topbar__user-menu-item">
+          </a>
+          <a class="topbar__user-menu-item" [routerLink]="'/dashboard/settings'" (click)="onMenuNavigation()">
             <span class="material-icons">settings</span>
             Configuración
-          </button>
+          </a>
           <hr class="topbar__divider" />
-          <button class="topbar__user-menu-item topbar__user-menu-item--danger">
+          <button class="topbar__user-menu-item topbar__user-menu-item--danger" type="button" (click)="logout()">
             <span class="material-icons">logout</span>
             Cerrar sesión
           </button>

@@ -76,7 +76,7 @@ public class AuthServiceImpl implements AuthService {
         User user = new User();
         user.setFullName(normalizeFullName(request.fullName()));
         user.setEmail(normalizedEmail);
-        user.setRole(Role.USER);
+        user.setRole(Role.ADMIN);
         user.setStatus(UserStatus.PENDING_VERIFICATION);
 
         User savedUser = userRepository.save(user);

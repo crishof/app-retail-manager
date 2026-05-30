@@ -29,9 +29,9 @@ export class ApiConfig {
       me: `${this.authUrl}/me`,
     },
     registration: {
-      signup: `${this.baseUrl}/registration/signup`,
-      verify: `${this.baseUrl}/registration/verify-email`,
-      resend: `${this.baseUrl}/registration/resend-verification`,
+      signup: `${this.authUrl}/registration/signup`,
+      verify: `${this.authUrl}/registration/verify-email`,
+      resend: `${this.authUrl}/registration/resend-verification`,
     },
     password: {
       forgot: `${this.authUrl}/password/forgot`,

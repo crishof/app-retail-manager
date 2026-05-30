@@ -4,7 +4,7 @@ import { environment } from '../../../environments/environment';
 import { TokenService } from './token.service';
 import { AuthStore, User } from './auth.store';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
-import { map, tap, catchError } from 'rxjs/operators';
+import { tap, catchError } from 'rxjs/operators';
 
 // API Request/Response interfaces
 interface LoginRequest {
@@ -63,15 +63,16 @@ interface PasswordChangeRequest {
  */
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private http = inject(HttpClient);
-  private tokenService = inject(TokenService);
-  private store = inject(AuthStore);
+  private readonly http = inject(HttpClient);
+  private readonly tokenService = inject(TokenService);
+  private readonly store = inject(AuthStore);
 
-  private apiUrl = environment.authUrl;
-  private baseUrl = environment.apiUrl;
+  private readonly apiUrl = environment.authUrl;
+  private readonly baseUrl = environment.apiUrl;
 
-  private isLoggedInSubject = new BehaviorSubject<boolean>(false);
+  private readonly isLoggedInSubject = new BehaviorSubject<boolean>(false);
   public isLoggedIn$ = this.isLoggedInSubject.asObservable();
+  private readonly authHttpOptions = { withCredentials: true };
 
   constructor() {
     // Check if user already logged in from previous session
@@ -126,7 +127,7 @@ export class AuthService {
 
     const request: LoginRequest = { email, password };
 
-    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, request).pipe(
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, request, this.authHttpOptions).pipe(
       tap(response => {
         // Store token
         this.tokenService.setAccessToken(response.accessToken);
@@ -152,7 +153,7 @@ export class AuthService {
    * Clears all auth state and tokens
    */
   logout(): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/logout`, {}).pipe(
+    return this.http.post<void>(`${this.apiUrl}/logout`, {}, this.authHttpOptions).pipe(
       tap(() => {
         this.clearAuthState();
       }),
@@ -168,7 +169,7 @@ export class AuthService {
    * Logout from all devices
    */
   logoutAll(): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/logout-all`, {}).pipe(
+    return this.http.post<void>(`${this.apiUrl}/logout-all`, {}, this.authHttpOptions).pipe(
       tap(() => {
         this.clearAuthState();
       }),
@@ -189,7 +190,7 @@ export class AuthService {
     this.store.setIsLoading(true);
     this.store.clearError();
 
-    const registrationUrl = `${this.baseUrl}/registration/signup`;
+    const registrationUrl = `${this.apiUrl}/registration/signup`;
 
     return this.http.post<SignupResponse>(registrationUrl, data).pipe(
       tap(() => {
@@ -216,7 +217,7 @@ export class AuthService {
     this.store.clearError();
 
     const request: VerifyEmailRequest = { email, code };
-    const verificationUrl = `${this.baseUrl}/registration/verify-email`;
+    const verificationUrl = `${this.apiUrl}/registration/verify-email`;
 
     return this.http.post<AuthResponse>(verificationUrl, request).pipe(
       tap(response => {
@@ -240,7 +241,7 @@ export class AuthService {
    * @param email - User email to send verification to
    */
   resendVerification(email: string): Observable<SignupResponse> {
-    const url = `${this.baseUrl}/registration/resend-verification`;
+    const url = `${this.apiUrl}/registration/resend-verification`;
     return this.http.post<SignupResponse>(url, { email }).pipe(
       catchError(error => {
         const message = error.error?.message || 'Failed to resend verification email.';
@@ -294,7 +295,7 @@ export class AuthService {
    * Uses refresh token (sent via HttpOnly cookie)
    */
   refreshToken(): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/refresh`, {}).pipe(
+    return this.http.post<AuthResponse>(`${this.apiUrl}/refresh`, {}, this.authHttpOptions).pipe(
       tap(response => {
         this.tokenService.setAccessToken(response.accessToken);
         this.store.setCurrentUser(response.user);

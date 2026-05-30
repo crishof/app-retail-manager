@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Groups signup and verification-related endpoints.
  */
 @RestController
-@RequestMapping("/api/v1/auth/registration")
+@RequestMapping({"/api/v1/auth/registration", "/api/v1/registration"})
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Registration", description = "Endpoints for user registration and email verification")
@@ -42,7 +42,7 @@ public class RegistrationController {
             summary = "Register new user",
             description = "Creates a new user account. Email verification is required before login."
     )
-    public ResponseEntity<SignupResponse> signup(
+        public ResponseEntity<SignupResponse> signup(
             @Valid @RequestBody SignupRequest request) {
         log.info("Signup request for email: {}", request.email());
 

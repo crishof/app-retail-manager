@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { HomeComponent } from './pages/home/home.component';
 import { ProductsComponent } from './pages/product/products/products.component';
 import { ProductDetailsComponent } from './pages/product/product-details/product-details.component';
 import { ProductEditComponent } from './pages/product/product-edit/product-edit.component';
@@ -22,7 +21,8 @@ import { CashComponent } from './pages/cash/cash.component';
 import { BranchesComponent } from './pages/settings/branches/branches.component';
 import { CompaniesComponent } from './pages/settings/companies/companies.component';
 import { EnConstruccionComponent } from './shared/en-construccion/en-construccion.component';
-import { authGuard } from './core/auth/auth.guard';
+import { authGuard, roleGuard } from './core/auth/auth.guard';
+import { DashboardHomeComponent } from './features/dashboard/pages/dashboard-home/dashboard-home.component';
 
 export const routes: Routes = [
   // ── Auth / Landing Pages ───────────────────────────
@@ -32,14 +32,28 @@ export const routes: Routes = [
   },
 
   // ── Dashboard ──────────────────────────────────────
+  { path: 'dashboard', component: DashboardHomeComponent, canActivate: [authGuard] },
   {
-    path: 'dashboard',
-    loadChildren: () => import('./features/dashboard/dashboard.routes').then(m => m.dashboardRoutes)
+    path: 'dashboard/profile',
+    loadComponent: () => import('./features/dashboard/pages/profile/profile.component').then(m => m.ProfileComponent),
+    canActivate: [authGuard],
+    data: { title: 'Profile' }
+  },
+  {
+    path: 'dashboard/settings',
+    loadComponent: () => import('./features/dashboard/pages/settings/settings.component').then(m => m.SettingsComponent),
+    canActivate: [authGuard],
+    data: { title: 'Settings' }
+  },
+  {
+    path: 'dashboard/analytics',
+    loadChildren: () => import('./features/analytics/analytics.routes').then(m => m.analyticsRoutes),
+    canActivate: [authGuard],
+    data: { title: 'Analytics' }
   },
 
-  // ── Público ────────────────────────────────────────
-  { path: '', redirectTo: 'inicio', pathMatch: 'full' },
-  { path: 'inicio', component: HomeComponent },
+  // ── Entrada ────────────────────────────────────────
+  { path: '', redirectTo: 'landing/login', pathMatch: 'full' },
 
   // ── Catálogo ───────────────────────────────────────
   { path: 'products',          component: ProductsComponent, canActivate: [authGuard] },
@@ -111,6 +125,11 @@ export const routes: Routes = [
   { path: 'configuracion/archivos',             component: EnConstruccionComponent, canActivate: [authGuard], data: { titulo: 'Archivos Maestros' } },
   { path: 'importaciones',                      component: EnConstruccionComponent, canActivate: [authGuard], data: { titulo: 'Importaciones' } },
 
+  // ── Administración ────────────────────────────────
+  { path: 'admin',                              redirectTo: 'configuracion/general', pathMatch: 'full' },
+  { path: 'admin/roles',                        component: EnConstruccionComponent, canActivate: [authGuard, roleGuard], data: { roles: ['ADMIN'], titulo: 'Roles y permisos' } },
+  { path: 'admin/auditoria',                    component: EnConstruccionComponent, canActivate: [authGuard, roleGuard], data: { roles: ['ADMIN'], titulo: 'Auditoría y actividad administrativa' } },
+
   // ── Fallback ───────────────────────────────────────
-  { path: '**', redirectTo: 'inicio', pathMatch: 'full' },
+  { path: '**', redirectTo: 'landing/login', pathMatch: 'full' },
 ];

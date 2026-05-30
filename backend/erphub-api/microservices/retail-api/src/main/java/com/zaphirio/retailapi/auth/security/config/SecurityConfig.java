@@ -47,6 +47,10 @@ public class SecurityConfig {
             "/api/v1/auth/registration/signup",
             "/api/v1/auth/registration/verify-email",
             "/api/v1/auth/registration/resend-verification",
+            // Legacy registration endpoints
+            "/api/v1/registration/signup",
+            "/api/v1/registration/verify-email",
+            "/api/v1/registration/resend-verification",
             // Authentication endpoints
             "/api/v1/auth/login",
             "/api/v1/auth/refresh",
@@ -101,6 +105,7 @@ public class SecurityConfig {
                                     .requestMatchers("/error", "/error/**").permitAll()
                                     .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/actuator/health").permitAll()
                                     .requestMatchers("/api/v1/auth/**").permitAll()
+                                    .requestMatchers("/api/v1/registration/**").permitAll()
                                     .requestMatchers("/api/v1/invitations/**").permitAll()
                                     .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                                     .requestMatchers("/actuator/**").hasRole("ADMIN")

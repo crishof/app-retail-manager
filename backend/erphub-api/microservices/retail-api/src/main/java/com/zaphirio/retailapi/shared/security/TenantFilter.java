@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -34,6 +33,9 @@ public class TenantFilter extends OncePerRequestFilter {
             "/api/v1/auth/registration/signup",
             "/api/v1/auth/registration/verify-email",
             "/api/v1/auth/registration/resend-verification",
+            "/api/v1/registration/signup",
+            "/api/v1/registration/verify-email",
+            "/api/v1/registration/resend-verification",
             "/api/v1/auth/login",
             "/api/v1/auth/refresh",
             "/api/v1/auth/logout",
