@@ -445,11 +445,17 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthMeResponse me(SecurityUser securityUser) {
         log.debug("me requested for userId={}", securityUser.getId());
+
+        User user = userRepository.findById(securityUser.getId()).orElseThrow(
+            () -> new ResourceNotFoundException("User not found"));
+
         return new AuthMeResponse(
-                securityUser.getId(),
-                securityUser.getEmail(),
-                securityUser.getRole().name(),
-                securityUser.getStatus().name());
+            user.getId(),
+            user.getFullName(),
+            user.getEmail(),
+            user.getRole().name(),
+            user.getStatus().name(),
+            user.getTenantId());
     }
 
 //  ===========

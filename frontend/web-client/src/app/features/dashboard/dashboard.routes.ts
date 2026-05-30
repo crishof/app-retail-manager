@@ -12,7 +12,7 @@ export const dashboardRoutes: Routes = [
       {
         path: '',
         component: DashboardHomeComponent,
-        data: { title: 'Dashboard' }
+        data: { title: 'Inicio' }
       },
       {
         path: 'profile',

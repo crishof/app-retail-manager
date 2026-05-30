@@ -1,12 +1,11 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthStore } from '../../../../core/auth/auth.store';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="max-w-4xl mx-auto space-y-8">
@@ -26,7 +25,7 @@ import { AuthStore } from '../../../../core/auth/auth.store';
             <div class="flex items-center gap-6">
               <div class="w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full flex items-center justify-center flex-shrink-0">
                 <span class="text-3xl font-bold text-white">
-                  {{ (store.currentUser()?.firstName || 'U').charAt(0).toUpperCase() }}
+                  {{ (store.currentUser()?.fullName || 'U').charAt(0).toUpperCase() }}
                 </span>
               </div>
               <div class="flex-1">
@@ -41,16 +40,10 @@ import { AuthStore } from '../../../../core/auth/auth.store';
 
             <!-- User Details Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
                 <p class="px-4 py-3 bg-gray-50 rounded-lg text-gray-900 font-medium">
-                  {{ store.currentUser()?.firstName || 'N/A' }}
-                </p>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
-                <p class="px-4 py-3 bg-gray-50 rounded-lg text-gray-900 font-medium">
-                  {{ store.currentUser()?.lastName || 'N/A' }}
+                  {{ store.currentUser()?.fullName || 'N/A' }}
                 </p>
               </div>
               <div>
@@ -68,7 +61,7 @@ import { AuthStore } from '../../../../core/auth/auth.store';
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
                 <p class="px-4 py-3 bg-gray-50 rounded-lg text-gray-900 font-medium">
-                  {{ store.currentUser()?.role || 'User' }}
+                  {{ roleLabel[store.currentUser()?.role || 'VIEWER'] || 'Consulta' }}
                 </p>
               </div>
               <div>
@@ -123,4 +116,10 @@ import { AuthStore } from '../../../../core/auth/auth.store';
 })
 export class ProfileComponent {
   store = inject(AuthStore);
+
+  readonly roleLabel: Record<string, string> = {
+    ADMIN: 'Administrador',
+    OPERATOR: 'Operador',
+    VIEWER: 'Consulta',
+  };
 }

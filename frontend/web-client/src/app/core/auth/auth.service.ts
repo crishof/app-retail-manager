@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { TokenService } from './token.service';
 import { AuthStore, User } from './auth.store';
-import { Observable, BehaviorSubject, throwError } from 'rxjs';
+import { Observable, BehaviorSubject, of, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 
 // API Request/Response interfaces
@@ -85,6 +85,11 @@ export class AuthService {
    */
   private checkExistingSession(): void {
     const token = this.tokenService.getAccessToken();
+    const fallbackUser = this.buildUserFromToken();
+
+    if (fallbackUser && !this.store.currentUser()) {
+      this.store.setCurrentUser(fallbackUser);
+    }
     
     if (token && !this.tokenService.isTokenExpired()) {
       // Token exists and valid - fetch current user
@@ -93,6 +98,11 @@ export class AuthService {
           this.isLoggedInSubject.next(true);
         },
         error: () => {
+          if (this.store.currentUser()) {
+            this.isLoggedInSubject.next(true);
+            return;
+          }
+
           // Token invalid - clear state
           this.tokenService.clearAccessToken();
           this.store.clear();
@@ -133,7 +143,7 @@ export class AuthService {
         this.tokenService.setAccessToken(response.accessToken);
         
         // Update state
-        this.store.setCurrentUser(response.user);
+        this.store.setCurrentUser(response.user ?? this.buildUserFromToken());
         this.store.setIsLoading(false);
         
         // Emit login event
@@ -222,7 +232,7 @@ export class AuthService {
     return this.http.post<AuthResponse>(verificationUrl, request).pipe(
       tap(response => {
         this.tokenService.setAccessToken(response.accessToken);
-        this.store.setCurrentUser(response.user);
+        this.store.setCurrentUser(response.user ?? this.buildUserFromToken());
         this.store.setIsLoading(false);
         this.isLoggedInSubject.next(true);
       }),
@@ -298,7 +308,7 @@ export class AuthService {
     return this.http.post<AuthResponse>(`${this.apiUrl}/refresh`, {}, this.authHttpOptions).pipe(
       tap(response => {
         this.tokenService.setAccessToken(response.accessToken);
-        this.store.setCurrentUser(response.user);
+        this.store.setCurrentUser(response.user ?? this.buildUserFromToken());
       }),
       catchError(error => {
         // Refresh failed - force logout
@@ -318,6 +328,12 @@ export class AuthService {
         this.store.setCurrentUser(user);
       }),
       catchError(error => {
+        const fallbackUser = this.buildUserFromToken();
+        if (fallbackUser) {
+          this.store.setCurrentUser(fallbackUser);
+          return of(fallbackUser);
+        }
+
         this.store.clear();
         return throwError(() => error);
       })
@@ -355,5 +371,38 @@ export class AuthService {
     this.tokenService.clearAccessToken();
     this.store.clear();
     this.isLoggedInSubject.next(false);
+  }
+
+  private buildUserFromToken(): User | null {
+    const payload = this.tokenService.getTokenPayload();
+    if (!payload) {
+      return null;
+    }
+
+    const normalizedRole = String(payload.role ?? 'VIEWER').toUpperCase();
+    const role: User['role'] =
+      normalizedRole === 'ADMIN' || normalizedRole === 'OPERATOR' || normalizedRole === 'VIEWER'
+        ? normalizedRole
+        : 'VIEWER';
+
+    const normalizedStatus = String(payload.status ?? 'ACTIVE').toUpperCase();
+    const status: User['status'] =
+      normalizedStatus === 'ACTIVE' || normalizedStatus === 'INACTIVE' || normalizedStatus === 'PENDING_VERIFICATION'
+        ? normalizedStatus
+        : 'ACTIVE';
+
+    const tokenSub = payload.sub || '';
+    const emailFromSub = tokenSub.includes('@') ? tokenSub : '';
+    const email = payload.email || emailFromSub;
+
+    return {
+      id: payload.uid || payload.sub || email || 'session-user',
+      email,
+      fullName: '',
+      role,
+      tenantId: payload.tenantId || 'default-tenant',
+      status,
+      createdAt: new Date().toISOString(),
+    };
   }
 }

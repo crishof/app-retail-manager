@@ -116,11 +116,13 @@ export const routes: Routes = [
   { path: 'contabilidad/libro-iva',   component: EnConstruccionComponent, canActivate: [authGuard], data: { titulo: 'Libro IVA' } },
   { path: 'contabilidad/retenciones', component: EnConstruccionComponent, canActivate: [authGuard], data: { titulo: 'Retenciones de IIBB' } },
   { path: 'contabilidad/libro-mayor', component: EnConstruccionComponent, canActivate: [authGuard], data: { titulo: 'Libro Mayor' } },
+  { path: 'contabilidad/facturacion-electronica', component: EnConstruccionComponent, canActivate: [authGuard], data: { titulo: 'Facturación electrónica · VeriFactu / AEAT' } },
 
   // ── Configuración ──────────────────────────────────
-  { path: 'configuracion/general',              component: EnConstruccionComponent, canActivate: [authGuard], data: { titulo: 'Configuración General' } },
+  { path: 'configuracion/general',              component: CompaniesComponent, canActivate: [authGuard] },
   { path: 'configuracion/general/empresas',     component: CompaniesComponent, canActivate: [authGuard] },
   { path: 'configuracion/general/sucursales',   component: BranchesComponent, canActivate: [authGuard] },
+  { path: 'configuracion/general/depositos',    redirectTo: 'configuracion/general/sucursales', pathMatch: 'full' },
   { path: 'configuracion/usuarios',             component: EnConstruccionComponent, canActivate: [authGuard], data: { titulo: 'Usuarios' } },
   { path: 'configuracion/archivos',             component: EnConstruccionComponent, canActivate: [authGuard], data: { titulo: 'Archivos Maestros' } },
   { path: 'importaciones',                      component: EnConstruccionComponent, canActivate: [authGuard], data: { titulo: 'Importaciones' } },
@@ -129,6 +131,8 @@ export const routes: Routes = [
   { path: 'admin',                              redirectTo: 'configuracion/general', pathMatch: 'full' },
   { path: 'admin/roles',                        component: EnConstruccionComponent, canActivate: [authGuard, roleGuard], data: { roles: ['ADMIN'], titulo: 'Roles y permisos' } },
   { path: 'admin/auditoria',                    component: EnConstruccionComponent, canActivate: [authGuard, roleGuard], data: { roles: ['ADMIN'], titulo: 'Auditoría y actividad administrativa' } },
+  { path: 'ayuda',                              component: EnConstruccionComponent, canActivate: [authGuard], data: { titulo: 'Centro de ayuda' } },
+  { path: 'notificaciones',                     component: EnConstruccionComponent, canActivate: [authGuard], data: { titulo: 'Notificaciones' } },
 
   // ── Fallback ───────────────────────────────────────
   { path: '**', redirectTo: 'landing/login', pathMatch: 'full' },

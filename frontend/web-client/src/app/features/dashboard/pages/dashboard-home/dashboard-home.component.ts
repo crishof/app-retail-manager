@@ -221,40 +221,49 @@ export class DashboardHomeComponent implements OnInit {
       return defaultWidgets;
     }
 
+    const totalRevenue = Number(m.totalRevenue ?? 0);
+    const totalOrders = Number(m.totalOrders ?? 0);
+    const totalCustomers = Number(m.totalCustomers ?? 0);
+    const totalProducts = Number(m.totalProducts ?? 0);
+    const revenueChange = Number(m.revenueChange ?? 0);
+    const ordersChange = Number(m.ordersChange ?? 0);
+    const customersChange = Number(m.customersChange ?? 0);
+    const productsChange = Number(m.productsChange ?? 0);
+
     return [
       {
         title: 'Total Revenue',
-        value: this.formatCurrency(m.totalRevenue),
+        value: this.formatCurrency(totalRevenue),
         icon: '💰',
         color: 'border-blue-500',
-        trend: m.revenueChange >= 0 ? `↑ ${m.revenueChange}% this month` : `↓ ${Math.abs(m.revenueChange)}% this month`,
+        trend: revenueChange >= 0 ? `↑ ${revenueChange}% this month` : `↓ ${Math.abs(revenueChange)}% this month`,
         route: '/informes/ventas',
         isLoading: false
       },
       {
         title: 'Orders',
-        value: m.totalOrders.toString(),
+        value: totalOrders.toString(),
         icon: '📦',
         color: 'border-green-500',
-        trend: m.ordersChange >= 0 ? `↑ ${m.ordersChange} new` : `${m.ordersChange}`,
+        trend: ordersChange >= 0 ? `↑ ${ordersChange} new` : `${ordersChange}`,
         route: '/comprobantes/ver',
         isLoading: false
       },
       {
         title: 'Customers',
-        value: m.totalCustomers.toString(),
+        value: totalCustomers.toString(),
         icon: '👥',
         color: 'border-purple-500',
-        trend: m.customersChange >= 0 ? `↑ ${m.customersChange} new` : `${m.customersChange}`,
+        trend: customersChange >= 0 ? `↑ ${customersChange} new` : `${customersChange}`,
         route: '/clientes',
         isLoading: false
       },
       {
         title: 'Products',
-        value: m.totalProducts.toString(),
+        value: totalProducts.toString(),
         icon: '📦',
         color: 'border-orange-500',
-        trend: m.productsChange >= 0 ? `↑ ${m.productsChange} added` : `${m.productsChange}`,
+        trend: productsChange >= 0 ? `↑ ${productsChange} added` : `${productsChange}`,
         route: '/products',
         isLoading: false
       }

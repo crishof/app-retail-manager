@@ -1,5 +1,4 @@
-import { Injectable } from '@angular/core';
-import { signal, computed } from '@angular/core';
+import { Injectable, computed, signal } from '@angular/core';
 
 /**
  * User model - Represents authenticated user
@@ -7,8 +6,9 @@ import { signal, computed } from '@angular/core';
 export interface User {
   id: string;
   email: string;
-  firstName: string;
-  lastName: string;
+  fullName?: string;
+  firstName?: string;
+  lastName?: string;
   companyName?: string;
   role: 'ADMIN' | 'OPERATOR' | 'VIEWER';
   tenantId: string;
@@ -50,7 +50,11 @@ export class AuthStore {
 
   readonly userDisplayName = computed(() => {
     const user = this.currentUserSignal();
-    return user ? `${user.firstName} ${user.lastName}`.trim() : 'Guest';
+    if (!user) {
+      return 'Usuario';
+    }
+
+    return user.fullName?.trim() || 'Usuario';
   });
 
   readonly userEmail = computed(() => 
@@ -75,9 +79,23 @@ export class AuthStore {
    * Set current user and mark as authenticated
    */
   setCurrentUser(user: User | null): void {
-    this.currentUserSignal.set(user);
-    this.isAuthenticatedSignal.set(!!user);
+    const normalizedUser = user
+      ? { ...user, role: this.normalizeRole((user as { role?: unknown }).role) }
+      : null;
+
+    this.currentUserSignal.set(normalizedUser);
+    this.isAuthenticatedSignal.set(!!normalizedUser);
     this.errorSignal.set(null);
+  }
+
+  private normalizeRole(role: unknown): User['role'] {
+    const value = typeof role === 'string' ? role.toUpperCase() : 'VIEWER';
+
+    if (value === 'ADMIN' || value === 'OPERATOR' || value === 'VIEWER') {
+      return value;
+    }
+
+    return 'VIEWER';
   }
 
   /**
