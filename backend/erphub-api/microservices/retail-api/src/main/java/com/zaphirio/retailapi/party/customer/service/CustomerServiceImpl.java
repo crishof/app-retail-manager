@@ -1,6 +1,6 @@
 package com.zaphirio.retailapi.party.customer.service;
 
-import com.zaphirio.retailapi.shared.client.OrderClient;
+import com.zaphirio.retailapi.shared.client.OrderServiceClient;
 import com.zaphirio.retailapi.party.customer.dto.CustomerMergeResponse;
 import com.zaphirio.retailapi.party.customer.dto.CustomerRequest;
 import com.zaphirio.retailapi.party.customer.dto.CustomerResponse;
@@ -31,7 +31,7 @@ public class CustomerServiceImpl implements CustomerService {
     private final CustomerRepository customerRepository;
     private final CustomerDeletionService customerDeletionService;
     private final CustomerMapper customerMapper;
-    private final OrderClient orderClient;
+    private final OrderServiceClient orderServiceClient;
 
     @Override
     @Transactional
@@ -94,12 +94,12 @@ public class CustomerServiceImpl implements CustomerService {
 
         Customer customer = getCustomerOrThrow(id);
 
-        boolean hasOrders = orderClient.hasOrdersForCustomer(id);
-        if (hasOrders) {
-            throw new BusinessException("Cannot delete customer because it has orders");
-        }
+        boolean hasOrders = orderServiceClient.hasOrdersForCustomer(id);
+         if (hasOrders) {
+             throw new BusinessException("Cannot delete customer because it has orders");
+         }
 
-        customerRepository.delete(customer);
+         customerRepository.delete(customer);
         int deleted = customerRepository.setDeletedAt(id);
 
         if (deleted > 0) {
@@ -115,12 +115,12 @@ public class CustomerServiceImpl implements CustomerService {
 
         getCustomerOrThrow(id);
 
-        boolean hasOrders = orderClient.hasOrdersForCustomer(id);
-        if (hasOrders) {
-            throw new BusinessException("Cannot delete customer because it has orders");
-        }
+        boolean hasOrders = orderServiceClient.hasOrdersForCustomer(id);
+         if (hasOrders) {
+             throw new BusinessException("Cannot delete customer because it has orders");
+         }
 
-        int deleted = customerRepository.forceDelete(id);
+         int deleted = customerRepository.forceDelete(id);
 
         if (deleted > 0) {
             deleteLog(DELETED, id);
@@ -165,7 +165,7 @@ public class CustomerServiceImpl implements CustomerService {
 
         log.info("Merging customer {} into {}", sourceCustomerId, targetCustomerId);
 
-        ReassignCustomerResponse result = orderClient.replaceCustomer(sourceCustomerId, targetCustomerId);
+        ReassignCustomerResponse result = orderServiceClient.replaceCustomer(sourceCustomerId, targetCustomerId);
 
         if (result == null || result.affectedOrders() == 0) {
             throw new BusinessException("No orders were reassigned");

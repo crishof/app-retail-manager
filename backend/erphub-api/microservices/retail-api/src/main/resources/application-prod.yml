@@ -1,0 +1,148 @@
+server:
+  port: 9020
+  shutdown: graceful
+
+spring:
+  datasource:
+    # Production: external PostgreSQL
+    url: jdbc:postgresql://${POSTGRES_HOST:postgres}:${POSTGRES_PORT:5432}/retail_db
+    username: ${POSTGRES_USER:admin}
+    password: ${POSTGRES_PASSWORD:root1234}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 60000
+      max-lifetime: 1800000
+      connection-timeout: 30000
+
+  rabbitmq:
+    # Production: external RabbitMQ
+    host: ${RABBITMQ_HOST:rabbitmq}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_DEFAULT_USER:guest}
+    password: ${RABBITMQ_DEFAULT_PASS:guest}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate  # Strict: no schema changes in production
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  cloud:
+    openfeign:
+      circuitbreaker:
+        enabled: true
+      micrometer:
+        enabled: true
+
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+
+# No Eureka for monolith
+eureka:
+  client:
+    enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+logging:
+  level:
+    org.springframework: ${LOG_LEVEL_SPRING:WARN}
+    com.zaphirio: INFO
+  file:
+    name: logs/retail-api.log
+    max-size: 100MB
+    max-history: 30
+
+# JWT Configuration
+jwt:
+  secret_key: ${BASE64_SECRET_KEY:vzxp+DRFX2QpTbzrY+l0nQ10fs9Cepmc3v5/mslcDno=}
+  expiration: ${JWT_EXPIRATION:3600000}
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION:86400000}
+
+# Application Configuration
+app:
+  mail:
+    enabled: ${MAIL_ENABLED:true}
+    from: ${MAIL_FROM:noreply@erphub.io}
+    provider: ${MAIL_PROVIDER:brevo}
+    brevo:
+      api-url: ${BREVO_API_URL:https://api.brevo.com/v3}
+      api-key: ${BREVO_API_KEY:}
+      timeout-seconds: ${BREVO_API_TIMEOUT_SECONDS:15}
+  email-verification:
+    code-ttl-minutes: ${EMAIL_VERIFICATION_CODE_TTL_MINUTES:10}
+  reset-password:
+    base-url: ${RESET_PASSWORD_BASE_URL:https://app.erphub.io/reset-password}
+  accept-invite:
+    base-url: ${ACCEPT_INVITE_BASE_URL:https://app.erphub.io/accept-invite}
+  security:
+    cors:
+      allowed-origins: ${CORS_ALLOWED_ORIGINS:https://app.erphub.io,https://erphub.io}
+
+# Resilience4j Configuration
+resilience4j:
+  circuitbreaker:
+    metrics:
+      enabled: true
+    instances:
+      default:
+        registerHealthIndicator: true
+        eventConsumerBufferSize: 50
+        failureRateThreshold: 50
+        minimumNumberOfCalls: 10
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 5
+        slidingWindowSize: 20
+        slidingWindowType: COUNT_BASED
+
+  retry:
+    metrics:
+      enabled: true
+    instances:
+      default:
+        maxRetryAttempts: 5
+        waitDuration: 2s
+
+  ratelimiter:
+    metrics:
+      enabled: true
+    instances:
+      default:
+        limitForPeriod: 100
+        limitRefreshPeriod: 1m
+
+  timelimiter:
+    metrics:
+      enabled: true
+    instances:
+      default:
+        timeoutDuration: 5s
+        cancelRunningFuture: true

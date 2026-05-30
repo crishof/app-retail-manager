@@ -21,8 +21,8 @@ public class ProductStockServiceImpl implements ProductStockService {
     private static final String PRODUCT_NOT_FOUND = "Product with id %s not found";
 
     private final ProductRepository productRepository;
-    private final InventoryServiceClient inventoryClient;
-    private final PricingServiceClient pricingClient;
+    private final InventoryServiceClient inventoryServiceClient;
+    private final PricingServiceClient pricingServiceClient;
 
     @Override
     @Transactional
@@ -33,10 +33,10 @@ public class ProductStockServiceImpl implements ProductStockService {
             Product product = getProductOrThrow(item.getProductId());
 
             // Stock IN
-            inventoryClient.registerMovement(StockMovementRequest.builder().productId(product.getId()).branchId(request.getBranchId()).locationId(request.getLocationId()).quantity(item.getQuantity()).type(StockMovementType.IN).reference("SUPPLIER_INVOICE").build());
+            inventoryServiceClient.registerMovement(StockMovementRequest.builder().productId(product.getId()).branchId(request.getBranchId()).locationId(request.getLocationId()).quantity(item.getQuantity()).type(StockMovementType.IN).reference("SUPPLIER_INVOICE").build());
 
             // Update purchase price
-            pricingClient.update(product.getPriceId(), new PriceRequest(item.getPrice(), item.getTaxRate(), item.getDiscountRate(), product.getId()));
+            pricingServiceClient.update(product.getPriceId(), new PriceRequest(item.getPrice(), item.getTaxRate(), item.getDiscountRate(), product.getId()));
         }
     }
 
@@ -48,7 +48,7 @@ public class ProductStockServiceImpl implements ProductStockService {
 
             Product product = getProductOrThrow(item.getProductId());
 
-            inventoryClient.registerMovement(StockMovementRequest.builder().productId(product.getId()).branchId(request.getBranchId()).locationId(request.getLocationId()).quantity(item.getQuantity()).type(StockMovementType.OUT).reference("ORDER").build());
+            inventoryServiceClient.registerMovement(StockMovementRequest.builder().productId(product.getId()).branchId(request.getBranchId()).locationId(request.getLocationId()).quantity(item.getQuantity()).type(StockMovementType.OUT).reference("ORDER").build());
         }
     }
 

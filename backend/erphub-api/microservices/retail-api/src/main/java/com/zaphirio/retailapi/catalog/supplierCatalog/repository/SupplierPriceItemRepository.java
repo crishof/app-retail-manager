@@ -2,7 +2,7 @@ package com.zaphirio.retailapi.catalog.supplierCatalog.repository;
 
 
 import com.zaphirio.retailapi.catalog.supplierCatalog.model.SupplierPriceItem;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.zaphirio.retailapi.shared.persistence.TenantAwareRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface SupplierPriceItemRepository extends JpaRepository<SupplierPriceItem, UUID> {
+public interface SupplierPriceItemRepository extends TenantAwareRepository<SupplierPriceItem, UUID> {
 
     SupplierPriceItem findProductByBrandAndSupplierCodeAndSupplierId(String brand, String supplierCode, UUID supplierId);
 

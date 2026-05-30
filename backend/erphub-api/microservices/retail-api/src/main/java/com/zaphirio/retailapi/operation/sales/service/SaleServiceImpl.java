@@ -1,6 +1,6 @@
 package com.zaphirio.retailapi.operation.sales.service;
 
-import com.zaphirio.retailapi.shared.client.InventoryClient;
+import com.zaphirio.retailapi.shared.client.InventoryServiceClient;
 import com.zaphirio.retailapi.operation.sales.dto.*;
 
 import com.zaphirio.retailapi.operation.sales.exception.SaleNotFoundException;
@@ -19,7 +19,7 @@ import java.util.UUID;
 public class SaleServiceImpl implements SaleService {
 
     private final SaleRepository saleRepository;
-    private final InventoryClient inventoryClient;
+    private final InventoryServiceClient inventoryServiceClient;
 
     @Override
     public List<SaleResponse> getAll() {
@@ -41,17 +41,17 @@ public class SaleServiceImpl implements SaleService {
         Sale saved = saleRepository.save(sale);
 
         // Presupuesto no impacta stock; el resto de comprobantes sí.
-        if (!isBudgetVoucher(request.getInvoiceType()) && request.getInvoiceItemsRequest() != null) {
-            request.getInvoiceItemsRequest().forEach(item ->
-                    inventoryClient.registerMovement(SaleStockMovementRequest.builder()
-                            .productId(item.getId())
-                            .branchId(request.getBranchId())
-                            .locationId(request.getLocationId())
-                            .quantity(-item.getQuantity())
-                            .reason("INVOICE") // Debe coincidir con el enum de inventory-sv
-                            .referenceId(saved.getId())
-                            .build()));
-        }
+         if (!isBudgetVoucher(request.getInvoiceType()) && request.getInvoiceItemsRequest() != null) {
+             request.getInvoiceItemsRequest().forEach(item ->
+                     inventoryServiceClient.registerSaleMovement(SaleStockMovementRequest.builder()
+                             .productId(item.getId())
+                             .branchId(request.getBranchId())
+                             .locationId(request.getLocationId())
+                             .quantity(-item.getQuantity())
+                             .reason("INVOICE") // Debe coincidir con el enum de inventory-sv
+                             .referenceId(saved.getId())
+                             .build()));
+         }
 
         return toResponse(saved);
     }

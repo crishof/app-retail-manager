@@ -42,6 +42,9 @@ public class Category {
     @Column(name = "image_url")
     private String imageUrl;
 
+    @Column(name = "tenant_id", nullable = true)
+    private Long tenantId;
+
     @PrePersist
     public void prePersist() {
         if (level == null) level = parent == null ? 0 : parent.getLevel() + 1;

@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -92,6 +94,18 @@ public class GlobalExceptionHandler {
     public ResponseEntity<com.zaphirio.retailapi.auth.exception.ApiError> handleInvalidToken(InvalidTokenException ex, HttpServletRequest request) {
         log.warn("Invalid token: {}", ex.getMessage());
         return respond(HttpStatus.UNAUTHORIZED, ERROR_UNAUTHORIZED, ex, request);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<com.zaphirio.retailapi.auth.exception.ApiError> handleAccessDenied(AccessDeniedException ex, HttpServletRequest request) {
+        log.warn("Access denied to {}: {}", request.getRequestURI(), ex.getMessage());
+        return respond(HttpStatus.FORBIDDEN, ERROR_FORBIDDEN, "Access Denied: You do not have permission to access this resource", request);
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<com.zaphirio.retailapi.auth.exception.ApiError> handleAuthenticationException(AuthenticationException ex, HttpServletRequest request) {
+        log.warn("Authentication failed for {}: {}", request.getRequestURI(), ex.getMessage());
+        return respond(HttpStatus.UNAUTHORIZED, ERROR_UNAUTHORIZED, "Authentication Failed: Invalid credentials or missing authentication token", request);
     }
 
     @ExceptionHandler(ExternalServiceException.class)

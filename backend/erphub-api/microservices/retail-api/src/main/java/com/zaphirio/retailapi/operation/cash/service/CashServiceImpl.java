@@ -2,7 +2,7 @@ package com.zaphirio.retailapi.operation.cash.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.zaphirio.retailapi.shared.client.ExchangeRateClient;
+import com.zaphirio.retailapi.shared.service.ExchangeRateInternalService;
 import com.zaphirio.retailapi.operation.cash.dto.*;
 import com.zaphirio.retailapi.operation.cash.model.*;
 import com.zaphirio.retailapi.operation.cash.repository.CashMovementRepository;
@@ -37,7 +37,7 @@ public class CashServiceImpl implements CashService {
     private final CashSessionRepository sessionRepository;
     private final CashMovementRepository movementRepository;
         private final ObjectMapper objectMapper;
-        private final ExchangeRateClient exchangeRateClient;
+        private final ExchangeRateInternalService exchangeRateInternalService;
 
     @Override
     public CashSessionResponse openSession(OpenSessionRequest request) {
@@ -309,12 +309,12 @@ public class CashServiceImpl implements CashService {
 
         private double fetchRateFromExchangeOrFallback(String currency) {
                 try {
-                        var response = exchangeRateClient.getExchangeRate(BASE_CURRENCY, currency);
+                        var response = exchangeRateInternalService.getExchangeRate(BASE_CURRENCY, currency);
                         if (response != null && response.doubleValue() > 0d) {
                                 return response.doubleValue();
                         }
                 } catch (Exception ex) {
-                        log.warn("No se pudo obtener cotización {}->{} desde exchange-sv. Se usa fallback.", BASE_CURRENCY, currency);
+                        log.warn("No se pudo obtener cotización {}->{} desde exchange service. Se usa fallback.", BASE_CURRENCY, currency);
                 }
                 return FALLBACK_RATES_TO_ARS.getOrDefault(currency, 1d);
         }

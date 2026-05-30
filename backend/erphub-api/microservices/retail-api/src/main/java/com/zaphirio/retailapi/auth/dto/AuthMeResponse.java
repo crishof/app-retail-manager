@@ -4,8 +4,10 @@ import java.util.UUID;
 
 public record AuthMeResponse(
         UUID id,
+        String fullName,
         String email,
         String role,
-        String status
+        String status,
+        Long tenantId
 ) {
 }

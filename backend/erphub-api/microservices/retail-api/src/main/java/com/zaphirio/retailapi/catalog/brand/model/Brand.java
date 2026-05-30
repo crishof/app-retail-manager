@@ -33,4 +33,7 @@ public class Brand {
     @Column(name = "deleted_at", insertable = false, updatable = false)
     private Instant deletedAt;
 
+    @Column(name = "tenant_id", nullable = true)
+    private Long tenantId;
+
 }

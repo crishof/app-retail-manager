@@ -18,105 +18,105 @@ spring:
               predicates:
                 - Path=/api/v1/**
 
-            - id: branch-sv
-              uri: lb://BRANCH-SV
-              predicates:
-                - Path=/api/v1/branches/**
-
-            - id: branch-sv-companies
-              uri: lb://BRANCH-SV
-              predicates:
-                - Path=/api/v1/companies/**
-
-            - id: brand-sv
-              uri: lb://BRAND-SV
-              predicates:
-                - Path=/api/v1/brands/**
-
-            - id: cash-sv
-              uri: lb://CASH-SV
-              predicates:
-                - Path=/api/v1/cash/**
-
-            - id: category-sv
-              uri: lb://CATEGORY-SV
-              predicates:
-                - Path=/api/v1/categories/**
-
-            - id: customer-sv
-              uri: lb://CUSTOMER-SV
-              predicates:
-                - Path=/api/v1/customers/**
-
-            - id: exchange-sv
-              uri: lb://EXCHANGE-SV
-              predicates:
-                - Path=/api/v1/exchange/**
-
-            - id: identity-sv
-              uri: lb://IDENTITY-SV
-              predicates:
-                - Path=/api/v1/identity/**
-
-            - id: image-sv
-              uri: lb://IMAGE-SV
-              predicates:
-                - Path=/api/v1/images/**
-
-            - id: inventory-sv
-              uri: lb://INVENTORY-SV
-              predicates:
-                - Path=/api/v1/inventory/**
-
-            - id: inventory-sv-internal
-              uri: lb://INVENTORY-SV
-              predicates:
-                - Path=/internal/inventory/**
-
-            - id: location-sv
-              uri: lb://LOCATION-SV
-              predicates:
-                - Path=/api/v1/locations/**
-
-            - id: pricing-sv
-              uri: lb://PRICING-SV
-              predicates:
-                - Path=/api/v1/pricing/**
-
-            - id: product-sv
-              uri: lb://PRODUCT-SV
-              predicates:
-                - Path=/api/v1/products/**
-
-            - id: purchase-sv
-              uri: lb://PURCHASE-SV
-              predicates:
-                - Path=/api/v1/purchases/**
-
-            - id: reporting-sv
-              uri: lb://REPORTING-SV
-              predicates:
-                - Path=/api/v1/reporting/**
-
-            - id: sales-sv
-              uri: lb://SALES-SV
-              predicates:
-                - Path=/api/v1/sales/**
-
-            - id: supplier-catalog-sv
-              uri: lb://SUPPLIER-CATALOG-SV
-              predicates:
-                - Path=/api/v1/price-items/**
-              filters:
-                - name: RequestSize
-                  args:
-                    maxSize: ${API_GATEWAY_SUPPLIER_CATALOG_MAX_REQUEST_SIZE:20MB}
-
-            - id: supplier-sv
-              uri: lb://SUPPLIER-SV
-              predicates:
-                - Path=/api/v1/suppliers/**
-
+#            - id: branch-sv
+#              uri: lb://BRANCH-SV
+#              predicates:
+#                - Path=/api/v1/branches/**
+#
+#            - id: branch-sv-companies
+#              uri: lb://BRANCH-SV
+#              predicates:
+#                - Path=/api/v1/companies/**
+#
+#            - id: brand-sv
+#              uri: lb://BRAND-SV
+#              predicates:
+#                - Path=/api/v1/brands/**
+#
+#            - id: cash-sv
+#              uri: lb://CASH-SV
+#              predicates:
+#                - Path=/api/v1/cash/**
+#
+#            - id: category-sv
+#              uri: lb://CATEGORY-SV
+#              predicates:
+#                - Path=/api/v1/categories/**
+#
+#            - id: customer-sv
+#              uri: lb://CUSTOMER-SV
+#              predicates:
+#                - Path=/api/v1/customers/**
+#
+#            - id: exchange-sv
+#              uri: lb://EXCHANGE-SV
+#              predicates:
+#                - Path=/api/v1/exchange/**
+#
+#            - id: identity-sv
+#              uri: lb://IDENTITY-SV
+#              predicates:
+#                - Path=/api/v1/identity/**
+#
+#            - id: image-sv
+#              uri: lb://IMAGE-SV
+#              predicates:
+#                - Path=/api/v1/images/**
+#
+#            - id: inventory-sv
+#              uri: lb://INVENTORY-SV
+#              predicates:
+#                - Path=/api/v1/inventory/**
+#
+#            - id: inventory-sv-internal
+#              uri: lb://INVENTORY-SV
+#              predicates:
+#                - Path=/internal/inventory/**
+#
+#            - id: location-sv
+#              uri: lb://LOCATION-SV
+#              predicates:
+#                - Path=/api/v1/locations/**
+#
+#            - id: pricing-sv
+#              uri: lb://PRICING-SV
+#              predicates:
+#                - Path=/api/v1/pricing/**
+#
+#            - id: product-sv
+#              uri: lb://PRODUCT-SV
+#              predicates:
+#                - Path=/api/v1/products/**
+#
+#            - id: purchase-sv
+#              uri: lb://PURCHASE-SV
+#              predicates:
+#                - Path=/api/v1/purchases/**
+#
+#            - id: reporting-sv
+#              uri: lb://REPORTING-SV
+#              predicates:
+#                - Path=/api/v1/reporting/**
+#
+#            - id: sales-sv
+#              uri: lb://SALES-SV
+#              predicates:
+#                - Path=/api/v1/sales/**
+#
+#            - id: supplier-catalog-sv
+#              uri: lb://SUPPLIER-CATALOG-SV
+#              predicates:
+#                - Path=/api/v1/price-items/**
+#              filters:
+#                - name: RequestSize
+#                  args:
+#                    maxSize: ${API_GATEWAY_SUPPLIER_CATALOG_MAX_REQUEST_SIZE:20MB}
+#
+#            - id: supplier-sv
+#              uri: lb://SUPPLIER-SV
+#              predicates:
+#                - Path=/api/v1/suppliers/**
+#
 #            - id: tenant-sv
 #              uri: lb://TENANT-SV
 #              predicates:

@@ -10,6 +10,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -27,6 +28,7 @@ public class ProductInternalController {
     // HAS PRODUCTS BY BRAND
     // ============================
     @GetMapping("/brand/{brandId}/exists")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public boolean hasProductsForBrand(@PathVariable UUID brandId) {
         log.info("Checking if products exist for brand {}", brandId);
         return productService.hasProductsForBrand(brandId);
@@ -36,6 +38,7 @@ public class ProductInternalController {
     // REPLACE PRODUCT BRAND
     // ============================
     @PatchMapping("/brand")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ReassignBrandResponse replaceBrand(@RequestParam UUID brandId, @RequestParam UUID newBrandId) {
         log.info("Replacing brand {} with new brand {}", brandId, newBrandId);
         int updated = productService.replaceBrand(brandId, newBrandId);
@@ -46,6 +49,7 @@ public class ProductInternalController {
     // REMOVE CATEGORY
     // ============================
     @PatchMapping("/category/{categoryId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeCategory(@PathVariable UUID categoryId) {
         log.info("Removing category {}", categoryId);
@@ -57,6 +61,7 @@ public class ProductInternalController {
     // ============================
     @Operation(summary = "Replace category from product")
     @PatchMapping("/category")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void replaceCategory(@RequestBody @Valid CategoryReplaceRequest request) {
         log.info("Replacing category from product {}", request);
@@ -67,6 +72,7 @@ public class ProductInternalController {
     // CLEAR PRODUCT CATEGORY
     // ============================
     @PatchMapping("/category/{categoryId}/clear")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public int clearCategory(@PathVariable UUID categoryId) {
         log.info("Clearing category {} from products", categoryId);
         return productService.clearCategory(categoryId);
@@ -76,6 +82,7 @@ public class ProductInternalController {
     // EXIST PRODUCTS BY SUPPLIER
     // ============================
     @GetMapping("/supplier/{id}/exist")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public Boolean existsProductsBySupplier(@PathVariable @NotNull UUID id) {
         log.info("Checking if products exists by supplier {}", id);
         return productService.existBySupplier(id);

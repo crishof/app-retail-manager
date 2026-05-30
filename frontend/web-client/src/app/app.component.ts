@@ -14,22 +14,21 @@ import { filter, map } from 'rxjs/operators';
 export class AppComponent {
   sidebarCollapsed = false;
 
-  private _url = toSignal(
+  private readonly _url = toSignal(
     this.router.events.pipe(
-      filter(e => e instanceof NavigationEnd),
-      map(e => (e as NavigationEnd).urlAfterRedirects)
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+      map(event => event.urlAfterRedirects)
     ),
     { initialValue: this.router.url }
   );
 
-  isLanding = computed(() => {
+  hideShell = computed(() => {
     const raw = this._url();
-    // Extraer solo el pathname sin fragmento ni query: "/" o ""
     const pathname = raw.split('?')[0].split('#')[0];
-    return pathname === '/' || pathname === '';
+    return pathname.startsWith('/landing') || pathname.startsWith('/auth');
   });
 
-  constructor(private router: Router) {}
+  constructor(private readonly router: Router) {}
 
   toggleSidebar() {
     this.sidebarCollapsed = !this.sidebarCollapsed;

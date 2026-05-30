@@ -31,6 +31,9 @@ public class Supplier {
 
     private UUID addressId;
 
+    @Column(name = "tenant_id", nullable = true)
+    private Long tenantId;
+
     @Column(name = "deleted", insertable = false, updatable = false)
     private boolean deleted;
 

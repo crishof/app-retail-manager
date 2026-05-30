@@ -46,7 +46,8 @@ public class JwtService {
         Map<String, Object> claims = Map.of(
                 "uid", user.getId().toString(),
                 "role", user.getRole().name(),
-                "status", user.getStatus().name());
+                "status", user.getStatus().name(),
+                "tenantId", user.getTenantId() != null ? user.getTenantId().toString() : "");
         return buildToken(claims, user.getUsername(), jwtExpiration);
     }
 
@@ -61,6 +62,21 @@ public class JwtService {
     public String getUserName(String token) {
         log.debug("Getting username from token: {}", token);
         return getClaim(token, Claims::getSubject);
+    }
+
+    public String getTenantIdFromJWT(String token) {
+        log.debug("Getting tenantId from token: {}", token);
+        return getClaim(token, claims -> claims.get("tenantId", String.class));
+    }
+
+    public String getRoleFromJWT(String token) {
+        log.debug("Getting role from token: {}", token);
+        return getClaim(token, claims -> claims.get("role", String.class));
+    }
+
+    public String getUserIdFromJWT(String token) {
+        log.debug("Getting userId from token: {}", token);
+        return getClaim(token, claims -> claims.get("uid", String.class));
     }
 
     public Instant getExpiration(String token) {

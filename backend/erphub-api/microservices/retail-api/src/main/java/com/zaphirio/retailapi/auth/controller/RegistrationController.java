@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Groups signup and verification-related endpoints.
  */
 @RestController
-@RequestMapping("/api/v1/auth/registration")
+@RequestMapping({"/api/v1/auth/registration", "/api/v1/registration"})
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Registration", description = "Endpoints for user registration and email verification")
@@ -36,11 +37,12 @@ public class RegistrationController {
      * @return created user and verification instructions
      */
     @PostMapping("/signup")
+    @PreAuthorize("permitAll()")
     @Operation(
             summary = "Register new user",
             description = "Creates a new user account. Email verification is required before login."
     )
-    public ResponseEntity<SignupResponse> signup(
+        public ResponseEntity<SignupResponse> signup(
             @Valid @RequestBody SignupRequest request) {
         log.info("Signup request for email: {}", request.email());
 
@@ -59,6 +61,7 @@ public class RegistrationController {
      * @return authentication tokens
      */
     @PostMapping("/verify-email")
+    @PreAuthorize("permitAll()")
     @Operation(
             summary = "Verify email address",
             description = "Verifies user's email using a 6-digit code sent to their email address."
@@ -82,6 +85,7 @@ public class RegistrationController {
      * @return confirmation message
      */
     @PostMapping("/resend-verification")
+    @PreAuthorize("permitAll()")
     @Operation(
             summary = "Resend verification code",
             description = "Resends the email verification code to the user's email address."

@@ -40,6 +40,7 @@ public class AuthController {
      * @return authentication tokens
      */
     @PostMapping("/login")
+    @PreAuthorize("permitAll()")
     @Operation(summary = "Login", description = "Authenticates a user and returns JWT tokens")
     @ApiResponse(responseCode = "200", description = "Login successful")
     @ApiResponse(responseCode = "401", description = "Invalid credentials")
@@ -57,6 +58,7 @@ public class AuthController {
      * @return confirmation message
      */
     @PostMapping("/logout")
+    @PreAuthorize("permitAll()")
     @Operation(summary = "Logout", description = "Logs out the user by revoking their refresh token")
     @ApiResponse(responseCode = "200", description = "Logout successful")
     public ResponseEntity<MessageResponse> logout(@Valid @RequestBody LogoutRequest request) {
@@ -74,7 +76,7 @@ public class AuthController {
      * @return confirmation message
      */
     @PostMapping("/logout-all")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE')")
     @Operation(summary = "Logout from all devices", description = "Revokes all refresh tokens for the authenticated user")
     @ApiResponse(responseCode = "200", description = "Logged out from all devices")
     @ApiResponse(responseCode = "401", description = "Not authenticated")
@@ -92,6 +94,7 @@ public class AuthController {
      * @return new token pair
      */
     @PostMapping("/refresh")
+    @PreAuthorize("permitAll()")
     @Operation(
             summary = "Refresh access token",
             description = "Generates a new access token using a valid refresh token"
@@ -111,7 +114,7 @@ public class AuthController {
      * @return user details
      */
     @GetMapping("/me")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE')")
     @Operation(
             summary = "Get authenticated user profile",
             description = "Returns details about the currently authenticated user"

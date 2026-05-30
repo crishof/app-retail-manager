@@ -1,7 +1,7 @@
 package com.zaphirio.retailapi.catalog.product.repository;
 
 import com.zaphirio.retailapi.catalog.product.model.ProductPriceLink;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.zaphirio.retailapi.shared.persistence.TenantAwareRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface ProductPriceLinkRepository extends JpaRepository<ProductPriceLink, UUID> {
+public interface ProductPriceLinkRepository extends TenantAwareRepository<ProductPriceLink, UUID> {
 
     Optional<ProductPriceLink> findBySupplierProductIdAndProductId(String supplierProductId, UUID productId);
 

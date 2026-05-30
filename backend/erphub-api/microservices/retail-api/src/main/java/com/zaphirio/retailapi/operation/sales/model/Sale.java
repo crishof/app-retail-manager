@@ -60,4 +60,8 @@ public class Sale {
 
     private double totalPrice;
     private String observations;
+
+    @Column(name = "tenant_id", nullable = true)
+    private Long tenantId;
+
 }

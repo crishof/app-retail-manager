@@ -42,6 +42,7 @@ public class AdminInvitationController {
      * @return created invitation
      */
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(
             summary = "Create user invitation",
             description = "Creates a new invitation and sends it to the specified email. Requires ADMIN role."

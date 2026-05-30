@@ -2,7 +2,7 @@ package com.zaphirio.retailapi.catalog.brand.repository;
 
 
 import com.zaphirio.retailapi.catalog.brand.model.Brand;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.zaphirio.retailapi.shared.persistence.TenantAwareRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface BrandRepository extends JpaRepository<Brand, UUID> {
+public interface BrandRepository extends TenantAwareRepository<Brand, UUID> {
 
     // Find including deleted brands by name
     @Query(value = "SELECT * FROM tbl_brands WHERE name = :name", nativeQuery = true)

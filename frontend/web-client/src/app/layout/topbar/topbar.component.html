@@ -1,74 +1,38 @@
 <header class="topbar" [style.left]="sidebarCollapsed ? 'var(--sidebar-collapsed-width)' : 'var(--sidebar-width)'">
-  <!-- Hamburger -->
   <button class="topbar__toggle" (click)="onToggle()" aria-label="Alternar menú">
     <span class="material-icons">{{ sidebarCollapsed ? 'menu' : 'menu_open' }}</span>
   </button>
 
-  <!-- Brand (visible solo en mobile) -->
-  <a class="topbar__brand" [routerLink]="['/inicio']">RetailManager</a>
+  <div class="topbar__context">
+    <p class="topbar__eyebrow">{{ currentSection() }}</p>
 
-  <div class="topbar__spacer"></div>
+    <nav class="topbar__breadcrumb" aria-label="Ruta activa">
+      @for (crumb of breadcrumbs(); track crumb.label; let last = $last) {
+        @if (crumb.route && !last) {
+          <a class="topbar__breadcrumb-link" [routerLink]="crumb.route">{{ crumb.label }}</a>
+        } @else {
+          <span class="topbar__breadcrumb-current">{{ crumb.label }}</span>
+        }
 
-  <!-- Actions -->
+        @if (!last) {
+          <span class="topbar__breadcrumb-separator">/</span>
+        }
+      }
+    </nav>
+  </div>
+
   <div class="topbar__actions">
+    <a class="topbar__icon-btn" [routerLink]="['/ayuda']">
+      <span class="material-icons">help_outline</span>
+      <span class="topbar__icon-label">Ayuda</span>
+    </a>
 
-    <!-- Búsqueda rápida -->
-    <button class="topbar__icon-btn" aria-label="Buscar" (click)="onSearchButtonClick()">
-      <span class="material-icons">search</span>
-    </button>
-
-    @if (showSearchInput) {
-      <form class="topbar__search-wrap" (ngSubmit)="submitQuickSearch()">
-        <input
-          type="text"
-          class="topbar__search-input"
-          placeholder="Buscar..."
-          [(ngModel)]="quickSearchTerm"
-          name="quickSearchTerm"
-          autofocus
-          (keydown.escape)="toggleSearchInput()"
-        />
-      </form>
-    }
-
-    <!-- Notificaciones -->
-    <button class="topbar__icon-btn topbar__icon-btn--notif" aria-label="Notificaciones">
+    <a class="topbar__icon-btn topbar__icon-btn--notif" [routerLink]="['/notificaciones']">
       <span class="material-icons">notifications</span>
+      <span class="topbar__icon-label">Avisos</span>
       @if (notificationCount > 0) {
         <span class="topbar__badge">{{ notificationCount }}</span>
       }
-    </button>
-
-    <!-- Usuario -->
-    <div class="topbar__user" (click)="toggleUserMenu()" (keydown.enter)="toggleUserMenu()" tabindex="0">
-      <div class="topbar__avatar">
-        <span class="material-icons">person</span>
-      </div>
-      <span class="topbar__username">Admin</span>
-      <span class="material-icons topbar__chevron">expand_more</span>
-
-      @if (showUserMenu) {
-        <div class="topbar__user-menu">
-          <div class="topbar__user-menu-header">
-            <p class="topbar__user-name">Administrador</p>
-            <p class="topbar__user-role">admin&#64;retailmanager.com</p>
-          </div>
-          <hr class="topbar__divider" />
-          <button class="topbar__user-menu-item">
-            <span class="material-icons">account_circle</span>
-            Mi perfil
-          </button>
-          <button class="topbar__user-menu-item">
-            <span class="material-icons">settings</span>
-            Configuración
-          </button>
-          <hr class="topbar__divider" />
-          <button class="topbar__user-menu-item topbar__user-menu-item--danger">
-            <span class="material-icons">logout</span>
-            Cerrar sesión
-          </button>
-        </div>
-      }
-    </div>
+    </a>
   </div>
 </header>

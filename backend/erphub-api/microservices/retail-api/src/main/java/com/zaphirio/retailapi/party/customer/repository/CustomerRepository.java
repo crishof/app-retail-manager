@@ -1,7 +1,7 @@
 package com.zaphirio.retailapi.party.customer.repository;
 
 import com.zaphirio.retailapi.party.customer.model.Customer;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.zaphirio.retailapi.shared.persistence.TenantAwareRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,7 +11,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface CustomerRepository extends JpaRepository<Customer, UUID> {
+public interface CustomerRepository extends TenantAwareRepository<Customer, UUID> {
 
     // Find including deleted customers by dni
     @Query(value = """

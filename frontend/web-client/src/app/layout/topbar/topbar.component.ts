@@ -1,59 +1,38 @@
-import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Component, EventEmitter, Input, Output, computed, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router, RouterLink } from '@angular/router';
+import { filter, map } from 'rxjs/operators';
+import { AuthStore } from '../../core/auth/auth.store';
+import { findNavBreadcrumbs } from '../navigation/navigation.config';
 
 @Component({
   selector: 'app-topbar',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [RouterLink],
   templateUrl: './topbar.component.html',
   styleUrl: './topbar.component.css',
 })
 export class TopbarComponent {
   private readonly router = inject(Router);
+  readonly store = inject(AuthStore);
+
   @Input() sidebarCollapsed = false;
   @Output() toggleSidebar = new EventEmitter<void>();
 
   notificationCount = 3;
-  showUserMenu = false;
-  showSearchInput = false;
-  quickSearchTerm = '';
+
+  private readonly currentUrl = toSignal(
+    this.router.events.pipe(
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+      map((event) => event.urlAfterRedirects),
+    ),
+    { initialValue: this.router.url },
+  );
+
+  readonly breadcrumbs = computed(() => findNavBreadcrumbs(this.currentUrl(), this.store.userRole() ?? 'VIEWER'));
+  readonly currentSection = computed(() => this.breadcrumbs()[0]?.label ?? 'Inicio');
 
   onToggle() {
     this.toggleSidebar.emit();
-  }
-
-  toggleUserMenu() {
-    this.showUserMenu = !this.showUserMenu;
-  }
-
-  toggleSearchInput() {
-    this.showSearchInput = !this.showSearchInput;
-    if (!this.showSearchInput) {
-      this.quickSearchTerm = '';
-    }
-  }
-
-  onSearchButtonClick() {
-    if (this.showSearchInput && this.quickSearchTerm.trim().length > 0) {
-      this.submitQuickSearch();
-      return;
-    }
-
-    this.toggleSearchInput();
-  }
-
-  submitQuickSearch() {
-    const term = this.quickSearchTerm.trim();
-    if (!term) {
-      return;
-    }
-
-    this.router.navigate(['/products'], {
-      queryParams: { q: term },
-    });
-
-    this.showSearchInput = false;
-    this.quickSearchTerm = '';
   }
 }

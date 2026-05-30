@@ -72,5 +72,11 @@ public class StockServiceImpl implements StockService {
                         .build())
                 .toList();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean hasMovementsForProduct(UUID productId) {
+        return movementRepository.existsByProductId(productId);
+    }
 }
 

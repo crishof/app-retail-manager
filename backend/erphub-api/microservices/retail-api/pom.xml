@@ -57,6 +57,18 @@
         </dependency>
 
         <!-- ===============================
+             Flyway / Database Migrations
+        ================================ -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+        </dependency>
+
+        <!-- ===============================
              Spring Cloud / Config & Discovery
         ================================ -->
         <dependency>
@@ -70,17 +82,10 @@
         </dependency>
 
         <!-- ===============================
-             Spring Cloud / Resilience & Feign
+             Spring Cloud / Resilience & Feign (REMOVED - Day 2)
         ================================ -->
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-openfeign</artifactId>
-        </dependency>
+        <!-- Removed spring-cloud-starter-circuitbreaker-resilience4j (no longer needed) -->
+        <!-- Removed spring-cloud-starter-openfeign (replaced with direct service injection) -->
 
         <!-- ===============================
              Observability / Monitoring

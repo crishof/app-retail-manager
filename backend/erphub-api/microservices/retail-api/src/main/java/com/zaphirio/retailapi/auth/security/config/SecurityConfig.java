@@ -47,6 +47,10 @@ public class SecurityConfig {
             "/api/v1/auth/registration/signup",
             "/api/v1/auth/registration/verify-email",
             "/api/v1/auth/registration/resend-verification",
+            // Legacy registration endpoints
+            "/api/v1/registration/signup",
+            "/api/v1/registration/verify-email",
+            "/api/v1/registration/resend-verification",
             // Authentication endpoints
             "/api/v1/auth/login",
             "/api/v1/auth/refresh",
@@ -56,9 +60,7 @@ public class SecurityConfig {
             "/api/v1/auth/password/reset",
             // Invitation endpoints
             "/api/v1/invitations/*/info",
-            "/api/v1/invitations/accept",
-            //FIXME remove
-            "/api/v1/**");
+            "/api/v1/invitations/accept");
 
     private static final List<String> ALLOWED_METHODS = List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS");
     private static final List<String> EXPOSED_HEADERS = List.of("Authorization");
@@ -92,13 +94,23 @@ public class SecurityConfig {
                         exceptions -> exceptions
                                 .authenticationEntryPoint(restAuthenticationEntryPoint)
                                 .accessDeniedHandler(restAccessDeniedHandler))
+                // Security Headers (Day 3, Task 3.4)
+                .headers(headers -> headers
+                        .frameOptions(frameOptions -> frameOptions.deny())
+                        .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'")))
                 .authorizeHttpRequests(
-                        auth -> auth
-                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                                .requestMatchers(PUBLIC_ENDPOINTS.toArray(String[]::new)).permitAll()
-                                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                                .requestMatchers("/actuator/**").hasRole("ADMIN")
-                                .anyRequest().authenticated())
+                        auth -> {
+                            log.info("Configuring public endpoints: {}", PUBLIC_ENDPOINTS);
+                            auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                                    .requestMatchers("/error", "/error/**").permitAll()
+                                    .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/actuator/health").permitAll()
+                                    .requestMatchers("/api/v1/auth/**").permitAll()
+                                    .requestMatchers("/api/v1/registration/**").permitAll()
+                                    .requestMatchers("/api/v1/invitations/**").permitAll()
+                                    .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                                    .requestMatchers("/actuator/**").hasRole("ADMIN")
+                                    .anyRequest().authenticated();
+                        })
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

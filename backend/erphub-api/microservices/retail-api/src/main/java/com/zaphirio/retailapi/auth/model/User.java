@@ -40,6 +40,9 @@ public class User implements Serializable {
     @Column(nullable = false, length = 30)
     private UserStatus status;
 
+    @Column(name = "tenant_id", nullable = true)
+    private Long tenantId;  // Reference to tenant (for multi-tenancy)
+
     @Column(nullable = false)
     private Instant createdAt;
 

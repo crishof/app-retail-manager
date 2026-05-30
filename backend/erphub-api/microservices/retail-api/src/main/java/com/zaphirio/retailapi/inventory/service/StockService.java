@@ -18,4 +18,6 @@ public interface StockService {
     List<Stock> getProductsStock(List<UUID> productIds);
 
     List<StockMovementResponse> getMovementsByReference(UUID referenceId);
+
+    boolean hasMovementsForProduct(UUID productId);
 }

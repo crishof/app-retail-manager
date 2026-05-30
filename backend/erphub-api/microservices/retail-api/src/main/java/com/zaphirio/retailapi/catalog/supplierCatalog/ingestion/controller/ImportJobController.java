@@ -4,6 +4,7 @@ import com.zaphirio.retailapi.catalog.supplierCatalog.ingestion.dto.ImportJobRes
 import com.zaphirio.retailapi.catalog.supplierCatalog.ingestion.job.ImportJob;
 import com.zaphirio.retailapi.catalog.supplierCatalog.ingestion.service.ImportJobService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,6 +22,7 @@ public class ImportJobController {
     private final ImportJobService service;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ImportJobResponse start(
             @RequestParam MultipartFile file,
             @RequestParam UUID supplierId,
@@ -41,11 +43,13 @@ public class ImportJobController {
     }
 
     @GetMapping("/{jobId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE')")
     public ImportJobResponse status(@PathVariable UUID jobId) {
         return ImportJobResponse.from(service.getJob(jobId));
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE')")
     public List<ImportJobResponse> list(
             @RequestParam(required = false) UUID supplierId
     ) {

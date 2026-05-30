@@ -1,14 +1,14 @@
 package com.zaphirio.retailapi.party.branch.repository;
 
 import com.zaphirio.retailapi.party.branch.model.Company;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.zaphirio.retailapi.shared.persistence.TenantAwareRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface CompanyRepository extends JpaRepository<Company, UUID> {
+public interface CompanyRepository extends TenantAwareRepository<Company, UUID> {
 
     Optional<Company> findByNameIgnoreCase(String name);
 

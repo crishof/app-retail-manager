@@ -1,8 +1,7 @@
 package com.zaphirio.retailapi.catalog.product.repository;
 
 import com.zaphirio.retailapi.catalog.product.model.Product;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import com.zaphirio.retailapi.shared.persistence.TenantAwareRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,7 +12,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface ProductRepository extends JpaRepository<Product, UUID>, JpaSpecificationExecutor<Product> {
+public interface ProductRepository extends TenantAwareRepository<Product, UUID> {
 
     // Find including deleted products by id
     @Query(value = "SELECT * FROM tbl_products WHERE id = :id", nativeQuery = true)

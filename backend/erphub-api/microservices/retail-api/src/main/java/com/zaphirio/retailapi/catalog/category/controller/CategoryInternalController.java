@@ -4,6 +4,7 @@ import com.zaphirio.retailapi.catalog.category.service.CategoryInternalService;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,6 +25,7 @@ public class CategoryInternalController {
     // GET ID BY NAME OR CREATE NEW CATEGORY
     // ============================
     @GetMapping("/getByNameOrCreate")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public UUID getByNameOrCreate(@RequestParam String categoryName) {
         log.info("Obtaining existing category or creating a new one");
         return categoryInternalService.getIdOrCreate(categoryName);

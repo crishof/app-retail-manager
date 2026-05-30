@@ -94,6 +94,9 @@ public class Product {
     @Column(length = 20)
     private String mpn;     // Manufacturer Part Number
 
+    @Column(name = "tenant_id", nullable = true)
+    private Long tenantId;
+
     @PrePersist
     protected void onCreate() {
         createdAt = Instant.now();

@@ -1,6 +1,6 @@
 package com.zaphirio.retailapi.catalog.supplierCatalog.importer;
 
-import com.zaphirio.retailapi.shared.client.ProductPriceLinkClient;
+import com.zaphirio.retailapi.catalog.product.service.ProductPriceLinkService;
 import com.zaphirio.retailapi.catalog.supplierCatalog.dto.ImportResult;
 import com.zaphirio.retailapi.catalog.supplierCatalog.model.SupplierPriceItem;
 import com.zaphirio.retailapi.catalog.supplierCatalog.repository.SupplierPriceItemRepository;
@@ -21,7 +21,7 @@ import java.util.UUID;
 public class PriceItemImportService {
 
     private final SupplierPriceItemRepository repository;
-    private final ProductPriceLinkClient productPriceLinkClient;
+    private final ProductPriceLinkService productPriceLinkService;
 
     @Transactional
     public ImportResult importItems(
@@ -57,19 +57,17 @@ public class PriceItemImportService {
                     updated++;
 
                     // Notificar a product-sv si el precio cambió
-                    if (existing.getPrice() != null &&
-                            (previousPrice == null || previousPrice.compareTo(existing.getPrice()) != 0)) {
-                        try {
-                            productPriceLinkClient.notifyPriceUpdate(
-                                    new ProductPriceLinkClient.PriceUpdateRequest(
-                                            existing.getId().toString(),
-                                            existing.getPrice()
-                                    )
-                            );
-                        } catch (Exception e) {
-                            log.warn("Price link notification failed | item={} | error={}", existing.getId(), e.getMessage());
-                        }
-                    }
+                     if (existing.getPrice() != null &&
+                             (previousPrice == null || previousPrice.compareTo(existing.getPrice()) != 0)) {
+                         try {
+                             productPriceLinkService.notifyPriceUpdate(
+                                     existing.getId().toString(),
+                                     existing.getPrice()
+                             );
+                         } catch (Exception e) {
+                             log.warn("Price link notification failed | item={} | error={}", existing.getId(), e.getMessage());
+                         }
+                     }
                 } else {
                     item.setSupplierId(supplierId);
                     repository.save(item);

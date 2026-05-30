@@ -1,7 +1,7 @@
 package com.zaphirio.retailapi.party.supplier.repository;
 
 import com.zaphirio.retailapi.party.supplier.model.Supplier;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.zaphirio.retailapi.shared.persistence.TenantAwareRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface SupplierRepository extends JpaRepository<Supplier, UUID> {
+public interface SupplierRepository extends TenantAwareRepository<Supplier, UUID> {
 
     // Find by name including deleted records
     @Query(value = """

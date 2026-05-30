@@ -9,6 +9,7 @@ import com.zaphirio.retailapi.auth.security.principal.SecurityUser;
 import com.zaphirio.retailapi.auth.util.CodeGeneratorUtil;
 import com.zaphirio.retailapi.auth.util.NormalizationUtil;
 import com.zaphirio.retailapi.shared.exception.BusinessException;
+import com.zaphirio.retailapi.shared.validation.PasswordValidator;
 import io.jsonwebtoken.JwtException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +49,7 @@ public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
     private final EmailService emailService;
     private final JwtService jwtService;
+    private final PasswordValidator passwordValidator;
 
     @Value("${app.email-verification.code-ttl-minutes:10}")
     private long emailVerificationCodeTtlMinutes;
@@ -60,6 +62,12 @@ public class AuthServiceImpl implements AuthService {
         String normalizedEmail = normalizeEmail(request.email());
         log.debug("signup requested for email={}", normalizedEmail);
 
+        // Validate password strength (Day 3, Task 3.3)
+        if (!passwordValidator.isValid(request.password())) {
+            log.debug("signup rejected due to weak password for email={}", normalizedEmail);
+            throw new BusinessException(passwordValidator.getRequirements());
+        }
+
         if (userRepository.existsByEmailIgnoreCase(normalizedEmail)) {
             log.debug("signup rejected because email already exists: {}", normalizedEmail);
             throw new EmailAlreadyExistException("Email " + normalizedEmail + " is already in use");
@@ -68,7 +76,7 @@ public class AuthServiceImpl implements AuthService {
         User user = new User();
         user.setFullName(normalizeFullName(request.fullName()));
         user.setEmail(normalizedEmail);
-        user.setRole(Role.USER);
+        user.setRole(Role.ADMIN);
         user.setStatus(UserStatus.PENDING_VERIFICATION);
 
         User savedUser = userRepository.save(user);
@@ -365,6 +373,12 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException("Passwords do not match");
         }
 
+        // Validate password strength (Day 3, Task 3.3)
+        if (!passwordValidator.isValid(request.newPassword())) {
+            log.debug("resetPassword rejected due to weak password");
+            throw new BusinessException(passwordValidator.getRequirements());
+        }
+
         PasswordResetToken resetToken = passwordResetTokenRepository.findByTokenAndUsedFalse(request.token())
                 .orElseThrow(() -> new InvalidTokenException("Invalid or expired token"));
 
@@ -431,11 +445,17 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthMeResponse me(SecurityUser securityUser) {
         log.debug("me requested for userId={}", securityUser.getId());
+
+        User user = userRepository.findById(securityUser.getId()).orElseThrow(
+            () -> new ResourceNotFoundException("User not found"));
+
         return new AuthMeResponse(
-                securityUser.getId(),
-                securityUser.getEmail(),
-                securityUser.getRole().name(),
-                securityUser.getStatus().name());
+            user.getId(),
+            user.getFullName(),
+            user.getEmail(),
+            user.getRole().name(),
+            user.getStatus().name(),
+            user.getTenantId());
     }
 
 //  ===========

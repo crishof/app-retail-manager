@@ -7,6 +7,7 @@ import com.zaphirio.retailapi.shared.exception.InvalidRequestException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,6 +20,7 @@ public class ImageInternalController {
     private final CloudinaryService cloudinaryService;
 
     @PostMapping("/upload")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<ImageResponse> uploadImage(@RequestParam MultipartFile file, @RequestParam String entityName) {
         validateFile(file);
         validateEntity(entityName);
@@ -32,6 +34,7 @@ public class ImageInternalController {
     }
 
     @PutMapping("/replace")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ImageResponse replaceImage(@RequestParam MultipartFile file, @RequestParam String entityName, @RequestParam String oldUrl) {
         validateFile(file);
         validateEntity(entityName);
@@ -53,6 +56,7 @@ public class ImageInternalController {
     }
 
     @DeleteMapping("/delete")
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteImage(@RequestParam("url") String url, @RequestParam("entityName") String entityName) {
         if (url == null || url.isBlank()) {
             throw new InvalidRequestException("URL is required");
@@ -67,10 +71,47 @@ public class ImageInternalController {
     // Validations
     // -----------------------
 
+    private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    private static final java.util.List<String> ALLOWED_MIME_TYPES = 
+        java.util.Arrays.asList("image/jpeg", "image/png", "image/webp", "image/gif");
+    private static final java.util.List<String> ALLOWED_EXTENSIONS = 
+        java.util.Arrays.asList("jpg", "jpeg", "png", "webp", "gif");
+
     private void validateFile(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             throw new InvalidRequestException("File is missing or empty");
         }
+
+        // Day 3, Task 3.5: File upload validation
+        // Validate file size
+        if (file.getSize() > MAX_FILE_SIZE) {
+            throw new InvalidRequestException("File size exceeds maximum limit of 5MB");
+        }
+
+        // Validate MIME type (content-type)
+        String contentType = file.getContentType();
+        if (contentType == null || !ALLOWED_MIME_TYPES.contains(contentType.toLowerCase())) {
+            throw new InvalidRequestException("Invalid file type. Only JPEG, PNG, WebP, and GIF are allowed");
+        }
+
+        // Validate file extension
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename != null) {
+            String extension = getFileExtension(originalFilename).toLowerCase();
+            if (!ALLOWED_EXTENSIONS.contains(extension)) {
+                throw new InvalidRequestException("Invalid file extension. Only jpg, jpeg, png, webp, and gif are allowed");
+            }
+        }
+
+        log.debug("File validation passed: name={}, size={}, contentType={}", originalFilename, file.getSize(), contentType);
+    }
+
+    private String getFileExtension(String filename) {
+        int lastDotIndex = filename.lastIndexOf('.');
+        if (lastDotIndex > 0 && lastDotIndex < filename.length() - 1) {
+            return filename.substring(lastDotIndex + 1);
+        }
+        return "";
     }
 
     private void validateEntity(String entityName) {

@@ -18,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -31,6 +32,7 @@ import java.util.UUID;
 public class ProductController {
 
     @GetMapping("/status")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE')")
     public String status() {
         return "Product service is running!";
     }
@@ -43,6 +45,7 @@ public class ProductController {
     @Operation(summary = "Get all products with optional filters (paginated)")
     @ApiResponse(responseCode = "200", description = "Products retrieved successfully")
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE')")
     public ResponseEntity<Page<ProductResponse>> getAll(@RequestParam(required = false) UUID brandId,
                                                         @RequestParam(required = false) UUID categoryId,
                                                         @RequestParam(required = false) UUID supplierId,
@@ -66,6 +69,7 @@ public class ProductController {
     @ApiResponse(responseCode = "200", description = "Product retrieved successfully")
     @ApiResponse(responseCode = "404", description = "Product not found")
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE')")
     public ResponseEntity<ProductResponse> getById(@PathVariable UUID id) {
         log.info("Fetching product | id={}", id);
         return ResponseEntity.ok(productService.getById(id));
@@ -78,6 +82,7 @@ public class ProductController {
     @ApiResponse(responseCode = "201", description = "Product created successfully")
     @ApiResponse(responseCode = "400", description = "Invalid input")
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody ProductRequest productRequest) {
         log.info("Creating new product {}", productRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(productService.create(productRequest));
@@ -91,6 +96,7 @@ public class ProductController {
     @ApiResponse(responseCode = "400", description = "Invalid input")
     @ApiResponse(responseCode = "404", description = "Product not found")
     @PatchMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ProductResponse update(@PathVariable UUID id, @RequestBody ProductRequest request) {
         return productService.update(id, request);
     }
@@ -102,6 +108,7 @@ public class ProductController {
     @ApiResponse(responseCode = "204", description = "Product deleted successfully")
     @ApiResponse(responseCode = "404", description = "Product not found")
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable @NotNull UUID id) {
         log.info("Deleting product | id={}", id);
         productService.delete(id);
@@ -115,6 +122,7 @@ public class ProductController {
     @ApiResponse(responseCode = "204", description = "Product deleted successfully")
     @ApiResponse(responseCode = "404", description = "Product not found")
     @DeleteMapping("/{id}/force")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> forceDelete(@PathVariable @NotNull UUID id) {
         log.info("Hard deleting product id={}", id);
         productService.forceDelete(id);
@@ -126,6 +134,7 @@ public class ProductController {
     // ============================
     @Operation(summary = "Restore a deleted product by ID")
     @PatchMapping("/{id}/restore")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<ProductResponse> restore(@PathVariable UUID id) {
 
         return ResponseEntity.ok(productService.restore(id));
@@ -136,6 +145,7 @@ public class ProductController {
     // ============================
     @Operation(summary = "Get total count of products with optional filters")
     @GetMapping("/count")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'EMPLOYEE')")
     public long count(@RequestParam(required = false) UUID brandId,
                       @RequestParam(required = false) UUID categoryId,
                       @RequestParam(required = false) UUID supplierId) {
