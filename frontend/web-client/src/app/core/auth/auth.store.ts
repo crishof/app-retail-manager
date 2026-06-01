@@ -68,6 +68,10 @@ export class AuthStore {
     this.currentUserSignal()?.tenantId || null
   );
 
+  readonly userId = computed(() => 
+    this.currentUserSignal()?.id || null
+  );
+
   readonly hasError = computed(() => 
     this.errorSignal() !== null
   );
