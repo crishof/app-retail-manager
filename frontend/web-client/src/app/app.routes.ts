@@ -90,7 +90,24 @@ export const routes: Routes = [
   // ── Clientes ───────────────────────────────────────
   { path: 'clientes', component: CustomerComponent, canActivate: [authGuard] },
 
+  // ── Ventas (NEW: Invoices & Quotes) ───────────────
+  {
+    path: 'invoices',
+    loadChildren: () => import('./features/invoices/invoices.routes').then(m => m.invoicesRoutes),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'quotes',
+    loadChildren: () => import('./features/quotes/quotes.routes').then(m => m.quotesRoutes),
+    canActivate: [authGuard]
+  },
+
   // ── Almacén ────────────────────────────────────────
+  {
+    path: 'inventory',
+    loadChildren: () => import('./features/inventory/inventory.routes').then(m => m.inventoryRoutes),
+    canActivate: [authGuard]
+  },
   { path: 'almacen/remito',     component: EnConstruccionComponent, canActivate: [authGuard], data: { titulo: 'Remito' } },
   { path: 'almacen/inventario', component: EnConstruccionComponent, canActivate: [authGuard], data: { titulo: 'Inventario' } },
 

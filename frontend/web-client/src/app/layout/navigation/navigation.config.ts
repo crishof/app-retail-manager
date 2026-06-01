@@ -59,18 +59,27 @@ export const APP_NAVIGATION: NavSection[] = [
     caption: 'Operación comercial del día',
     items: [
       {
-        label: 'Comprobantes',
+        label: 'Facturas de venta',
         icon: 'receipt_long',
-        description: 'Alta de comprobantes con selector de tipo dentro del flujo.',
-        route: '/customerInvoice',
-        aliases: ['/comprobantes/nota-credito', '/comprobantes/nota-debito', '/comprobantes/ver'],
+        description: 'Facturas de venta y comprobantes de ventas.',
+        route: '/invoices/sales',
+        aliases: ['/invoices/sales/new', '/invoices/sales/:id'],
         roles: ['ADMIN', 'OPERATOR'],
+      },
+      {
+        label: 'Facturas de compra',
+        icon: 'description',
+        description: 'Facturas de proveedores y comprobantes de compra.',
+        route: '/invoices/purchase',
+        aliases: ['/invoices/purchase/new', '/invoices/purchase/:id'],
+        roles: ['ADMIN', 'OPERATOR', 'VIEWER'],
       },
       {
         label: 'Presupuestos',
         icon: 'request_quote',
         description: 'Cotizaciones previas a la venta y seguimiento comercial.',
-        route: '/comprobantes/presupuesto',
+        route: '/quotes',
+        aliases: ['/quotes/new', '/quotes/:id'],
         roles: ['ADMIN', 'OPERATOR'],
       },
       {
@@ -133,8 +142,9 @@ export const APP_NAVIGATION: NavSection[] = [
       {
         label: 'Inventario',
         icon: 'warehouse',
-        description: 'Disponibilidad, movimientos y control de existencias.',
-        route: '/almacen/inventario',
+        description: 'Sesiones de conteo periódico y control de existencias.',
+        route: '/inventory',
+        aliases: ['/inventory/sessions', '/inventory/sessions/:id'],
         roles: ['ADMIN', 'OPERATOR'],
       },
       {
