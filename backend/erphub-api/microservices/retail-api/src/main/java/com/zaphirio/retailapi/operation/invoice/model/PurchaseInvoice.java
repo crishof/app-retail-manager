@@ -154,4 +154,15 @@ public class PurchaseInvoice {
             this.retentionAmount = amount.multiply(retentionPercentage).divide(new BigDecimal("100"), 2, java.math.RoundingMode.HALF_UP);
         }
     }
+
+    /**
+     * Set the withholding percentage and recalculate amount.
+     * Convenience method for updating retention percentage.
+     *
+     * @param percentage the withholding percentage (e.g., 15.0 for 15%)
+     */
+    public void setRetentionPercentageAndRecalculate(BigDecimal percentage) {
+        this.retentionPercentage = percentage;
+        recalculateRetention();
+    }
 }

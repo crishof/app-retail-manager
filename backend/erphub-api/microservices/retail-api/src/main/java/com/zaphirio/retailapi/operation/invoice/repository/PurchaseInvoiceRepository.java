@@ -62,6 +62,14 @@ public interface PurchaseInvoiceRepository extends TenantAwareRepository<Purchas
     List<PurchaseInvoice> findByStatus(String statusValue);
 
     /**
+     * Find all purchase invoices by any of the given statuses.
+     *
+     * @param statuses the list of statuses
+     * @return list of purchase invoices with any of the specified statuses
+     */
+    List<PurchaseInvoice> findByStatusIn(List<String> statuses);
+
+    /**
      * Find all unpaid or partially paid invoices from a supplier.
      * Useful for AP aging analysis and payment scheduling.
      *

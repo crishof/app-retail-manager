@@ -1,0 +1,31 @@
+package com.zaphirio.retailapi.operation.invoice.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.UUID;
+
+/**
+ * Sales Invoice Item Response DTO.
+ * Represents a line item in a sales invoice response.
+ */
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class SalesInvoiceItemResponse {
+
+    private UUID id;
+    private UUID productId;
+    private String description;
+    private double quantity;
+    private double unitPrice;
+    private double discountPercentage;
+    private String taxRate;
+    private double lineTotal;
+    private double taxAmount;
+    private double lineTotalWithTax;
+    private Integer orderIndex;
+}

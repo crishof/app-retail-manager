@@ -26,6 +26,14 @@ public class Sale {
     private UUID branchId;
     private UUID locationId;
 
+    /**
+     * Sales Invoice ID (1:1 relationship).
+     * References the SalesInvoice entity this sale generates.
+     * Unique constraint ensures 1:1 relationship.
+     */
+    @Column(name = "sales_invoice_id", unique = true)
+    private UUID salesInvoiceId;
+
     private LocalDate saleDate;
 
     private String saleType;
