@@ -1,0 +1,371 @@
+/**
+ * RetailManager Design System - Design Tokens
+ * 
+ * Core design tokens for color, typography, spacing, shadows, and animations
+ * Supports both light and dark themes
+ */
+
+/* =====================================================
+   COLOR PALETTE
+   ===================================================== */
+@layer base {
+  :root {
+    /* Neutral colors - grays for UI */
+    --color-slate-50: #f8fafc;
+    --color-slate-100: #f1f5f9;
+    --color-slate-200: #e2e8f0;
+    --color-slate-300: #cbd5e1;
+    --color-slate-400: #94a3b8;
+    --color-slate-500: #64748b;
+    --color-slate-600: #475569;
+    --color-slate-700: #334155;
+    --color-slate-800: #1e293b;
+    --color-slate-900: #0f172a;
+
+    /* Primary brand color - Business Blue */
+    --color-primary-50: #eff6ff;
+    --color-primary-100: #dbeafe;
+    --color-primary-200: #bfdbfe;
+    --color-primary-300: #93c5fd;
+    --color-primary-400: #60a5fa;
+    --color-primary-500: #3b82f6;  /* Primary */
+    --color-primary-600: #2563eb;  /* Darker for hover */
+    --color-primary-700: #1d4ed8;  /* Darkest */
+    --color-primary-800: #1e40af;
+    --color-primary-900: #1e3a8a;
+
+    /* Success - Emerald */
+    --color-success-50: #f0fdf4;
+    --color-success-500: #10b981;
+    --color-success-600: #059669;
+    --color-success-700: #047857;
+
+    /* Warning - Amber */
+    --color-warning-50: #fffbeb;
+    --color-warning-500: #f59e0b;
+    --color-warning-600: #d97706;
+    --color-warning-700: #b45309;
+
+    /* Danger - Red */
+    --color-danger-50: #fef2f2;
+    --color-danger-500: #ef4444;
+    --color-danger-600: #dc2626;
+    --color-danger-700: #b91c1c;
+
+    /* Info - Sky */
+    --color-info-50: #f0f9ff;
+    --color-info-500: #0ea5e9;
+    --color-info-600: #0284c7;
+    --color-info-700: #0369a1;
+
+    /* Backgrounds */
+    --bg-primary: #ffffff;
+    --bg-secondary: var(--color-slate-50);
+    --bg-tertiary: var(--color-slate-100);
+
+    /* Text colors */
+    --text-primary: var(--color-slate-900);
+    --text-secondary: var(--color-slate-600);
+    --text-tertiary: var(--color-slate-500);
+    --text-muted: var(--color-slate-400);
+
+    /* Borders */
+    --border-color: var(--color-slate-200);
+    --border-color-light: var(--color-slate-100);
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-700));
+    --gradient-success: linear-gradient(135deg, var(--color-success-500), var(--color-success-700));
+    --gradient-danger: linear-gradient(135deg, var(--color-danger-500), var(--color-danger-700));
+  }
+
+  /* Dark mode overrides */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg-primary: #1a1a1a;
+      --bg-secondary: #2a2a2a;
+      --bg-tertiary: #3a3a3a;
+
+      --text-primary: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --text-tertiary: #94a3b8;
+      --text-muted: #64748b;
+
+      --border-color: #334155;
+      --border-color-light: #475569;
+    }
+  }
+}
+
+/* =====================================================
+   TYPOGRAPHY
+   ===================================================== */
+@layer base {
+  html {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-slate-50 text-slate-900;
+  }
+
+  /* Headings */
+  h1 {
+    @apply text-4xl font-bold tracking-tight;
+  }
+
+  h2 {
+    @apply text-3xl font-bold tracking-tight;
+  }
+
+  h3 {
+    @apply text-2xl font-bold tracking-tight;
+  }
+
+  h4 {
+    @apply text-xl font-bold;
+  }
+
+  h5 {
+    @apply text-lg font-bold;
+  }
+
+  h6 {
+    @apply text-base font-bold;
+  }
+
+  /* Body text */
+  p {
+    @apply text-base leading-relaxed;
+  }
+
+  small {
+    @apply text-sm text-slate-600;
+  }
+
+  /* Links */
+  a {
+    @apply text-primary-600 hover:text-primary-700 transition;
+  }
+}
+
+/* =====================================================
+   SPACING SYSTEM (8px base)
+   ===================================================== */
+@layer base {
+  :root {
+    --space-xs: 0.25rem;   /* 4px */
+    --space-sm: 0.5rem;    /* 8px */
+    --space-md: 1rem;      /* 16px */
+    --space-lg: 1.5rem;    /* 24px */
+    --space-xl: 2rem;      /* 32px */
+    --space-2xl: 3rem;     /* 48px */
+    --space-3xl: 4rem;     /* 64px */
+  }
+}
+
+/* =====================================================
+   BORDER RADIUS
+   ===================================================== */
+@layer base {
+  :root {
+    --radius-sm: 0.375rem;    /* 6px */
+    --radius-md: 0.5rem;      /* 8px */
+    --radius-lg: 0.75rem;     /* 12px */
+    --radius-xl: 1rem;        /* 16px */
+    --radius-full: 9999px;    /* Fully rounded */
+  }
+}
+
+/* =====================================================
+   ANIMATIONS & TRANSITIONS
+   ===================================================== */
+@layer base {
+  :root {
+    --transition-fast: 150ms ease-in-out;
+    --transition-base: 200ms ease-in-out;
+    --transition-slow: 300ms ease-in-out;
+  }
+
+  /* Smooth page transitions */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideInUp {
+    from {
+      transform: translateY(10px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideInDown {
+    from {
+      transform: translateY(-10px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -1000px 0;
+    }
+    100% {
+      background-position: 1000px 0;
+    }
+  }
+}
+
+/* =====================================================
+   COMPONENT UTILITIES
+   ===================================================== */
+@layer components {
+  /* Card/Panel base */
+  .card {
+    @apply bg-white rounded-lg border border-slate-200 shadow-sm;
+  }
+
+  .card-lg {
+    @apply bg-white rounded-lg border border-slate-200 shadow-lg;
+  }
+
+  /* Button variants */
+  .btn-primary {
+    @apply px-4 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 bg-slate-100 text-slate-900 rounded-lg font-medium hover:bg-slate-200 transition;
+  }
+
+  .btn-danger {
+    @apply px-4 py-2 bg-danger-600 text-white rounded-lg font-medium hover:bg-danger-700 transition;
+  }
+
+  .btn-success {
+    @apply px-4 py-2 bg-success-600 text-white rounded-lg font-medium hover:bg-success-700 transition;
+  }
+
+  /* Form inputs */
+  .input {
+    @apply px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition;
+  }
+
+  .input-error {
+    @apply border-danger-500 focus:ring-danger-500;
+  }
+
+  /* Badge styles */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-primary {
+    @apply badge bg-primary-100 text-primary-800;
+  }
+
+  .badge-success {
+    @apply badge bg-success-100 text-success-800;
+  }
+
+  .badge-danger {
+    @apply badge bg-danger-100 text-danger-800;
+  }
+
+  .badge-warning {
+    @apply badge bg-warning-100 text-warning-800;
+  }
+
+  /* Tables */
+  .table-header {
+    @apply bg-slate-50 border-b border-slate-200 px-6 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider;
+  }
+
+  .table-cell {
+    @apply px-6 py-4 text-sm text-slate-900;
+  }
+
+  .table-row-hover {
+    @apply border-b border-slate-200 hover:bg-slate-50 transition;
+  }
+}
+
+/* =====================================================
+   RESPONSIVE UTILITIES
+   ===================================================== */
+@layer base {
+  /* Mobile-first breakpoints */
+  /* xs: 0px, sm: 640px, md: 768px, lg: 1024px, xl: 1280px, 2xl: 1536px */
+
+  @media (max-width: 640px) {
+    html {
+      @apply text-sm;
+    }
+
+    h1 {
+      @apply text-2xl;
+    }
+
+    h2 {
+      @apply text-xl;
+    }
+  }
+}
+
+/* =====================================================
+   PRINT STYLES
+   ===================================================== */
+@media print {
+  body {
+    background: white;
+  }
+
+  .no-print {
+    display: none;
+  }
+
+  a {
+    text-decoration: underline;
+  }
+
+  table {
+    border-collapse: collapse;
+  }
+
+  th, td {
+    border: 1px solid #000;
+    padding: 12px;
+  }
+}
