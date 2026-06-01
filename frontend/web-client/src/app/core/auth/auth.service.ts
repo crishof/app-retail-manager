@@ -14,6 +14,7 @@ interface LoginRequest {
 
 interface AuthResponse {
   accessToken: string;
+  refreshToken?: string;
   user: User;
 }
 
@@ -85,6 +86,7 @@ export class AuthService {
    */
   private checkExistingSession(): void {
     const token = this.tokenService.getAccessToken();
+    const refreshToken = this.tokenService.getRefreshToken();
     const fallbackUser = this.buildUserFromToken();
 
     if (fallbackUser && !this.store.currentUser()) {
@@ -110,15 +112,18 @@ export class AuthService {
         }
       });
     } else if (token && this.tokenService.isTokenExpired()) {
+      if (!refreshToken) {
+        this.handleSessionExpired();
+        return;
+      }
+
       // Token expired - try to refresh
       this.refreshToken().subscribe({
         next: () => {
           this.isLoggedInSubject.next(true);
         },
         error: () => {
-          this.tokenService.clearAccessToken();
-          this.store.clear();
-          this.isLoggedInSubject.next(false);
+          this.handleSessionExpired();
         }
       });
     }
@@ -141,6 +146,9 @@ export class AuthService {
       tap(response => {
         // Store token
         this.tokenService.setAccessToken(response.accessToken);
+        if (response.refreshToken) {
+          this.tokenService.setRefreshToken(response.refreshToken);
+        }
         
         // Update state
         this.store.setCurrentUser(response.user ?? this.buildUserFromToken());
@@ -163,7 +171,14 @@ export class AuthService {
    * Clears all auth state and tokens
    */
   logout(): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/logout`, {}, this.authHttpOptions).pipe(
+    const refreshToken = this.tokenService.getRefreshToken();
+
+    if (!refreshToken) {
+      this.clearAuthState();
+      return of(void 0);
+    }
+
+    return this.http.post<void>(`${this.apiUrl}/logout`, { refreshToken }, this.authHttpOptions).pipe(
       tap(() => {
         this.clearAuthState();
       }),
@@ -232,6 +247,9 @@ export class AuthService {
     return this.http.post<AuthResponse>(verificationUrl, request).pipe(
       tap(response => {
         this.tokenService.setAccessToken(response.accessToken);
+        if (response.refreshToken) {
+          this.tokenService.setRefreshToken(response.refreshToken);
+        }
         this.store.setCurrentUser(response.user ?? this.buildUserFromToken());
         this.store.setIsLoading(false);
         this.isLoggedInSubject.next(true);
@@ -302,12 +320,22 @@ export class AuthService {
   /**
    * Refresh access token
    * Called when current token is near expiration
-   * Uses refresh token (sent via HttpOnly cookie)
+    * Uses refresh token sent in request body (backend DTO contract)
    */
   refreshToken(): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/refresh`, {}, this.authHttpOptions).pipe(
+    const refreshToken = this.tokenService.getRefreshToken();
+
+    if (!refreshToken) {
+      this.clearAuthState();
+      return throwError(() => new Error('Refresh token not available'));
+    }
+
+    return this.http.post<AuthResponse>(`${this.apiUrl}/refresh`, { refreshToken }, this.authHttpOptions).pipe(
       tap(response => {
         this.tokenService.setAccessToken(response.accessToken);
+        if (response.refreshToken) {
+          this.tokenService.setRefreshToken(response.refreshToken);
+        }
         this.store.setCurrentUser(response.user ?? this.buildUserFromToken());
       }),
       catchError(error => {
@@ -368,9 +396,16 @@ export class AuthService {
    * Called on logout and session expiration
    */
   private clearAuthState(): void {
-    this.tokenService.clearAccessToken();
+    this.tokenService.clearTokens();
     this.store.clear();
     this.isLoggedInSubject.next(false);
+  }
+
+  /**
+   * Force local session cleanup when backend refresh/logout cannot be completed
+   */
+  handleSessionExpired(): void {
+    this.clearAuthState();
   }
 
   private buildUserFromToken(): User | null {

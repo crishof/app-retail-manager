@@ -55,6 +55,10 @@ export class WorkspaceContextService {
   });
 
   initialize(companyHint?: string): void {
+    if (!this.isBrowser) {
+      return;
+    }
+
     if (this.initializedSignal()) {
       return;
     }

@@ -57,6 +57,15 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     catchError((error: HttpErrorResponse) => {
       // Handle 401 Unauthorized (token expired or invalid)
       if (error.status === 401 && !isAuthRoute && !isRefreshing) {
+        if (!tokenService.getRefreshToken()) {
+          authService.handleSessionExpired();
+          router.navigate(['/landing/login']);
+          return throwError(() => ({
+            ...error,
+            userMessage: 'Your session has expired. Please log in again.',
+          }));
+        }
+
         isRefreshing = true;
 
         // Attempt to refresh token
@@ -70,17 +79,18 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
             // Retry original request with new token
             return next(addToken(req, response.accessToken));
           }),
-          catchError(() => {
+          catchError((refreshError: HttpErrorResponse) => {
             isRefreshing = false;
-            
-            // Refresh failed - force logout
-            authService.logout().subscribe({
-              complete: () => {
-                router.navigate(['/landing/login']);
-              }
-            });
 
-            return throwError(() => new Error('Session expired. Please log in again.'));
+            // Refresh failed - clear local session and redirect
+            authService.handleSessionExpired();
+            router.navigate(['/landing/login']);
+
+            return throwError(() => ({
+              ...refreshError,
+              status: 401,
+              userMessage: 'Your session has expired. Please log in again.',
+            }));
           })
         );
       }

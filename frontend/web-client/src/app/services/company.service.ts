@@ -1,6 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable, inject } from "@angular/core";
 import { Observable } from "rxjs";
+import { finalize, shareReplay } from "rxjs/operators";
 import { ICompany, ICompanyRequest } from "../model/company.model";
 import { environment } from '../../environments/environment';
 
@@ -10,9 +11,21 @@ import { environment } from '../../environments/environment';
 export class CompanyService {
   private readonly _http = inject(HttpClient);
   private readonly _urlBase = `${environment.gatewayUrl}/api/v1/companies`;
+  private companiesInFlight$: Observable<ICompany[]> | null = null;
 
   getCompanies(): Observable<ICompany[]> {
-    return this._http.get<ICompany[]>(this._urlBase);
+    if (this.companiesInFlight$) {
+      return this.companiesInFlight$;
+    }
+
+    this.companiesInFlight$ = this._http.get<ICompany[]>(this._urlBase).pipe(
+      shareReplay({ bufferSize: 1, refCount: true }),
+      finalize(() => {
+        this.companiesInFlight$ = null;
+      }),
+    );
+
+    return this.companiesInFlight$;
   }
 
   getCompany(id: string): Observable<ICompany> {

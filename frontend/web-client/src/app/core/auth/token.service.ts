@@ -18,18 +18,18 @@ interface TokenPayload {
  * 
  * Security considerations:
  * - Uses sessionStorage for access tokens (cleared on tab close)
- * - Refresh tokens handled via HttpOnly cookies (secure, server-only)
+ * - Uses sessionStorage for refresh token required by backend DTO contract
  * - Platform detection for SSR safety (no localStorage on server)
  * - Token expiration checking
  */
 @Injectable({ providedIn: 'root' })
 export class TokenService {
-  private platformId = inject(PLATFORM_ID);
+  private readonly platformId = inject(PLATFORM_ID);
   private readonly ACCESS_TOKEN_KEY = 'access_token';
+  private readonly REFRESH_TOKEN_KEY = 'refresh_token';
 
   /**
    * Store access token in sessionStorage
-   * Note: Refresh token comes via HttpOnly cookie (automatic)
    */
   setAccessToken(token: string): void {
     if (isPlatformBrowser(this.platformId)) {
@@ -54,6 +54,42 @@ export class TokenService {
     if (isPlatformBrowser(this.platformId)) {
       sessionStorage.removeItem(this.ACCESS_TOKEN_KEY);
     }
+  }
+
+  /**
+   * Store refresh token in sessionStorage
+   */
+  setRefreshToken(token: string): void {
+    if (isPlatformBrowser(this.platformId)) {
+      sessionStorage.setItem(this.REFRESH_TOKEN_KEY, token);
+    }
+  }
+
+  /**
+   * Retrieve refresh token from sessionStorage
+   */
+  getRefreshToken(): string | null {
+    if (isPlatformBrowser(this.platformId)) {
+      return sessionStorage.getItem(this.REFRESH_TOKEN_KEY);
+    }
+    return null;
+  }
+
+  /**
+   * Remove refresh token from sessionStorage
+   */
+  clearRefreshToken(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      sessionStorage.removeItem(this.REFRESH_TOKEN_KEY);
+    }
+  }
+
+  /**
+   * Remove all auth tokens from sessionStorage
+   */
+  clearTokens(): void {
+    this.clearAccessToken();
+    this.clearRefreshToken();
   }
 
   /**
