@@ -38,12 +38,14 @@ import { of } from 'rxjs';
           <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <input
               type="text"
-              [(ngModel)]="searchTerm()"
+              [value]="searchTerm()"
+              (input)="searchTerm.set($any($event.target).value)"
               placeholder="Search by quotation number or customer..."
               class="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <select
-              [(ngModel)]="statusFilter()"
+              [value]="statusFilter()"
+              (change)="statusFilter.set($any($event.target).value)"
               class="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">All Statuses</option>
@@ -55,7 +57,8 @@ import { of } from 'rxjs';
               <option value="CONVERTED_TO_SALE">Converted</option>
             </select>
             <select
-              [(ngModel)]="dateFilter()"
+              [value]="dateFilter()"
+              (change)="dateFilter.set($any($event.target).value)"
               class="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">All Quotes</option>
