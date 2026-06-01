@@ -99,11 +99,11 @@ import { of } from 'rxjs';
                 </div>
                 <div>
                   <p class="text-sm text-slate-600 font-medium">Start Date</p>
-                  <p class="text-lg font-semibold text-slate-900 mt-1">{{ session()?.startDate | date: 'medium' || 'Not started' }}</p>
+                  <p class="text-lg font-semibold text-slate-900 mt-1">{{ session()?.startDate ? (session()!.startDate | date: 'medium') : 'Not started' }}</p>
                 </div>
                 <div>
                   <p class="text-sm text-slate-600 font-medium">End Date</p>
-                  <p class="text-lg font-semibold text-slate-900 mt-1">{{ session()?.endDate | date: 'medium' || '—' }}</p>
+                  <p class="text-lg font-semibold text-slate-900 mt-1">{{ session()?.endDate ? (session()!.endDate | date: 'medium') : '—' }}</p>
                 </div>
               </div>
             </div>
@@ -122,7 +122,7 @@ import { of } from 'rxjs';
                 }
               </div>
 
-              @if (!session()?.items || session()!.items.length === 0) {
+              @if (!session()?.items || session()!.items!.length === 0) {
                 <p class="text-slate-500 text-center py-8">No items in this session yet.</p>
               } @else {
                 <div class="overflow-x-auto">

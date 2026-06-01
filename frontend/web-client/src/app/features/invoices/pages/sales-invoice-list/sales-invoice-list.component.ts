@@ -35,33 +35,36 @@ import { of } from 'rxjs';
       <!-- Filters & Search -->
       <div class="max-w-7xl mx-auto px-6 py-6">
         <div class="bg-white rounded-lg border border-slate-200 p-4">
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <input
-              type="text"
-              [(ngModel)]="searchTerm()"
-              placeholder="Search by invoice number or customer..."
-              class="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <select
-              [(ngModel)]="statusFilter()"
-              class="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">All Statuses</option>
-              <option value="DRAFT">Draft</option>
-              <option value="ISSUED">Issued</option>
-              <option value="PAID">Paid</option>
-              <option value="CANCELLED">Cancelled</option>
-            </select>
-            <select
-              [(ngModel)]="paymentStatusFilter()"
-              class="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">All Payment Status</option>
-              <option value="PENDING">Pending</option>
-              <option value="PARTIAL">Partial</option>
-              <option value="PAID">Paid</option>
-            </select>
-          </div>
+           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+             <input
+               type="text"
+               [value]="searchTerm()"
+               (input)="searchTerm.set($any($event.target).value)"
+               placeholder="Search by invoice number or customer..."
+               class="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+             />
+             <select
+               [value]="statusFilter()"
+               (change)="statusFilter.set($any($event.target).value)"
+               class="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+             >
+               <option value="">All Statuses</option>
+               <option value="DRAFT">Draft</option>
+               <option value="ISSUED">Issued</option>
+               <option value="PAID">Paid</option>
+               <option value="CANCELLED">Cancelled</option>
+             </select>
+             <select
+               [value]="paymentStatusFilter()"
+               (change)="paymentStatusFilter.set($any($event.target).value)"
+               class="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+             >
+               <option value="">All Payment Status</option>
+               <option value="PENDING">Pending</option>
+               <option value="PARTIAL">Partial</option>
+               <option value="PAID">Paid</option>
+             </select>
+           </div>
         </div>
       </div>
 
@@ -134,31 +137,31 @@ import { of } from 'rxjs';
             </div>
           </div>
 
-          <!-- Summary Stats -->
-          <div class="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="bg-white rounded-lg border border-slate-200 p-4">
-              <p class="text-slate-600 text-sm">Total Invoices</p>
-              <p class="text-2xl font-bold text-slate-900 mt-1">{{ filteredInvoices().length }}</p>
-            </div>
-            <div class="bg-white rounded-lg border border-slate-200 p-4">
-              <p class="text-slate-600 text-sm">Total Amount</p>
-              <p class="text-2xl font-bold text-slate-900 mt-1">
-                {{ (filteredInvoices() | totalAmount) | currency }}
-              </p>
-            </div>
-            <div class="bg-white rounded-lg border border-slate-200 p-4">
-              <p class="text-slate-600 text-sm">Unpaid</p>
-              <p class="text-2xl font-bold text-red-600 mt-1">
-                {{ (filteredInvoices() | filterByPaymentStatus: 'PENDING' | length) }}
-              </p>
-            </div>
-            <div class="bg-white rounded-lg border border-slate-200 p-4">
-              <p class="text-slate-600 text-sm">Paid</p>
-              <p class="text-2xl font-bold text-green-600 mt-1">
-                {{ (filteredInvoices() | filterByPaymentStatus: 'PAID' | length) }}
-              </p>
-            </div>
-          </div>
+           <!-- Summary Stats -->
+           <div class="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+             <div class="bg-white rounded-lg border border-slate-200 p-4">
+               <p class="text-slate-600 text-sm">Total Invoices</p>
+               <p class="text-2xl font-bold text-slate-900 mt-1">{{ filteredInvoices().length }}</p>
+             </div>
+             <div class="bg-white rounded-lg border border-slate-200 p-4">
+               <p class="text-slate-600 text-sm">Total Amount</p>
+               <p class="text-2xl font-bold text-slate-900 mt-1">
+                 {{ totalAmountFormatted() }}
+               </p>
+             </div>
+             <div class="bg-white rounded-lg border border-slate-200 p-4">
+               <p class="text-slate-600 text-sm">Unpaid</p>
+               <p class="text-2xl font-bold text-red-600 mt-1">
+                 {{ unpaidCount() }}
+               </p>
+             </div>
+             <div class="bg-white rounded-lg border border-slate-200 p-4">
+               <p class="text-slate-600 text-sm">Paid</p>
+               <p class="text-2xl font-bold text-green-600 mt-1">
+                 {{ paidCount() }}
+               </p>
+             </div>
+           </div>
         }
       </div>
     </div>
@@ -191,6 +194,19 @@ export class SalesInvoiceListComponent implements OnInit {
       (!status || inv.status === status) &&
       (!paymentStatus || inv.paymentStatus === paymentStatus)
     );
+  });
+
+  totalAmountFormatted = computed(() => {
+    const total = this.filteredInvoices().reduce((sum, inv) => sum + (inv.totalPrice || 0), 0);
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(total);
+  });
+
+  unpaidCount = computed(() => {
+    return this.filteredInvoices().filter(inv => inv.paymentStatus === 'PENDING').length;
+  });
+
+  paidCount = computed(() => {
+    return this.filteredInvoices().filter(inv => inv.paymentStatus === 'PAID').length;
   });
 
   ngOnInit() {

@@ -35,41 +35,45 @@ import { of } from 'rxjs';
       <!-- Filters & Search -->
       <div class="max-w-7xl mx-auto px-6 py-6">
         <div class="bg-white rounded-lg border border-slate-200 p-4">
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <input
-              type="text"
-              [(ngModel)]="searchTerm()"
-              placeholder="Search by invoice number or supplier..."
-              class="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <select
-              [(ngModel)]="statusFilter()"
-              class="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">All Statuses</option>
-              <option value="DRAFT">Draft</option>
-              <option value="ISSUED">Issued</option>
-              <option value="PAID">Paid</option>
-              <option value="CANCELLED">Cancelled</option>
-            </select>
-            <select
-              [(ngModel)]="paymentStatusFilter()"
-              class="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">All Payment Status</option>
-              <option value="PENDING">Pending</option>
-              <option value="PARTIAL">Partial</option>
-              <option value="PAID">Paid</option>
-            </select>
-            <select
-              [(ngModel)]="withHoldingFilter()"
-              class="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">All Invoices</option>
-              <option value="true">With Withholding</option>
-              <option value="false">Without Withholding</option>
-            </select>
-          </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <input
+                type="text"
+                [value]="searchTerm()"
+                (input)="searchTerm.set($any($event.target).value)"
+                placeholder="Search by invoice number or supplier..."
+                class="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <select
+                [value]="statusFilter()"
+                (change)="statusFilter.set($any($event.target).value)"
+                class="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">All Statuses</option>
+                <option value="DRAFT">Draft</option>
+                <option value="ISSUED">Issued</option>
+                <option value="PAID">Paid</option>
+                <option value="CANCELLED">Cancelled</option>
+              </select>
+              <select
+                [value]="paymentStatusFilter()"
+                (change)="paymentStatusFilter.set($any($event.target).value)"
+                class="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">All Payment Status</option>
+                <option value="PENDING">Pending</option>
+                <option value="PARTIAL">Partial</option>
+                <option value="PAID">Paid</option>
+              </select>
+              <select
+                [value]="withHoldingFilter()"
+                (change)="withHoldingFilter.set($any($event.target).value)"
+                class="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">All Invoices</option>
+                <option value="true">With Withholding</option>
+                <option value="false">Without Withholding</option>
+              </select>
+            </div>
         </div>
       </div>
 
@@ -153,31 +157,31 @@ import { of } from 'rxjs';
             </div>
           </div>
 
-          <!-- Summary Stats -->
-          <div class="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="bg-white rounded-lg border border-slate-200 p-4">
-              <p class="text-slate-600 text-sm">Total Invoices</p>
-              <p class="text-2xl font-bold text-slate-900 mt-1">{{ filteredInvoices().length }}</p>
-            </div>
-            <div class="bg-white rounded-lg border border-slate-200 p-4">
-              <p class="text-slate-600 text-sm">Total Amount</p>
-              <p class="text-2xl font-bold text-slate-900 mt-1">
-                {{ getTotalAmount() | currency }}
-              </p>
-            </div>
-            <div class="bg-white rounded-lg border border-slate-200 p-4">
-              <p class="text-slate-600 text-sm">Total Withholding</p>
-              <p class="text-2xl font-bold text-orange-600 mt-1">
-                {{ getTotalWithholding() | currency }}
-              </p>
-            </div>
-            <div class="bg-white rounded-lg border border-slate-200 p-4">
-              <p class="text-slate-600 text-sm">Unpaid</p>
-              <p class="text-2xl font-bold text-red-600 mt-1">
-                {{ getUnpaidCount() }}
-              </p>
-            </div>
-          </div>
+           <!-- Summary Stats -->
+           <div class="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+             <div class="bg-white rounded-lg border border-slate-200 p-4">
+               <p class="text-slate-600 text-sm">Total Invoices</p>
+               <p class="text-2xl font-bold text-slate-900 mt-1">{{ filteredInvoices().length }}</p>
+             </div>
+             <div class="bg-white rounded-lg border border-slate-200 p-4">
+               <p class="text-slate-600 text-sm">Total Amount</p>
+               <p class="text-2xl font-bold text-slate-900 mt-1">
+                 {{ totalAmountFormatted() }}
+               </p>
+             </div>
+             <div class="bg-white rounded-lg border border-slate-200 p-4">
+               <p class="text-slate-600 text-sm">Total Withholding</p>
+               <p class="text-2xl font-bold text-orange-600 mt-1">
+                 {{ totalWithholdingFormatted() }}
+               </p>
+             </div>
+             <div class="bg-white rounded-lg border border-slate-200 p-4">
+               <p class="text-slate-600 text-sm">Unpaid</p>
+               <p class="text-2xl font-bold text-red-600 mt-1">
+                 {{ unpaidCount() }}
+               </p>
+             </div>
+           </div>
         }
       </div>
     </div>
@@ -217,6 +221,20 @@ export class PurchaseInvoiceListComponent implements OnInit {
     );
   });
 
+  totalAmountFormatted = computed(() => {
+    const total = this.filteredInvoices().reduce((sum, inv) => sum + inv.totalPrice, 0);
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(total);
+  });
+
+  totalWithholdingFormatted = computed(() => {
+    const total = this.filteredInvoices().reduce((sum, inv) => sum + inv.retentionAmount, 0);
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(total);
+  });
+
+  unpaidCount = computed(() => {
+    return this.filteredInvoices().filter(inv => inv.paymentStatus === 'PENDING' || inv.paymentStatus === 'PARTIAL').length;
+  });
+
   ngOnInit() {
     this.loadInvoices();
   }
@@ -236,18 +254,6 @@ export class PurchaseInvoiceListComponent implements OnInit {
         finalize(() => this.isLoading.set(false))
       )
       .subscribe(invoices => this.invoices.set(invoices));
-  }
-
-  getTotalAmount(): number {
-    return this.filteredInvoices().reduce((sum, inv) => sum + inv.totalPrice, 0);
-  }
-
-  getTotalWithholding(): number {
-    return this.filteredInvoices().reduce((sum, inv) => sum + inv.retentionAmount, 0);
-  }
-
-  getUnpaidCount(): number {
-    return this.filteredInvoices().filter(inv => inv.paymentStatus === 'PENDING' || inv.paymentStatus === 'PARTIAL').length;
   }
 
   getStatusBadgeClass(status: string): string {

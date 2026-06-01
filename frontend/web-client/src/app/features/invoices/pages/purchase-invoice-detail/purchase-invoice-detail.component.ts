@@ -191,17 +191,18 @@ import { of } from 'rxjs';
         <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
             <h2 class="text-2xl font-bold text-slate-900 mb-4">Edit Retention</h2>
-            <div class="mb-4">
-              <label class="block text-sm text-slate-600 font-medium mb-2">Retention Percentage (%)</label>
-              <input
-                type="number"
-                [(ngModel)]="newRetentionPercentage()"
-                min="0"
-                max="100"
-                step="0.01"
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-              />
-            </div>
+             <div class="mb-4">
+               <label class="block text-sm text-slate-600 font-medium mb-2">Retention Percentage (%)</label>
+               <input
+                 type="number"
+                 [value]="newRetentionPercentage()"
+                 (input)="newRetentionPercentage.set(+($any($event.target).value))"
+                 min="0"
+                 max="100"
+                 step="0.01"
+                 class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+               />
+             </div>
             <div class="flex gap-3">
               <button
                 (click)="saveRetention()"

@@ -35,36 +35,40 @@ import { of } from 'rxjs';
       <!-- Filters & Search -->
       <div class="max-w-7xl mx-auto px-6 py-6">
         <div class="bg-white rounded-lg border border-slate-200 p-4">
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <input
-              type="text"
-              [(ngModel)]="searchTerm()"
-              placeholder="Search by description, branch, or deposit..."
-              class="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <select
-              [(ngModel)]="statusFilter()"
-              class="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">All Statuses</option>
-              <option value="DRAFT">Draft</option>
-              <option value="IN_PROGRESS">In Progress</option>
-              <option value="COMPLETED">Completed</option>
-              <option value="CONFIRMED">Confirmed</option>
-            </select>
-            <input
-              type="date"
-              [(ngModel)]="startDateFilter()"
-              placeholder="Start date"
-              class="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <input
-              type="date"
-              [(ngModel)]="endDateFilter()"
-              placeholder="End date"
-              class="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+           <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+             <input
+               type="text"
+               [value]="searchTerm()"
+               (input)="searchTerm.set($any($event.target).value)"
+               placeholder="Search by description, branch, or deposit..."
+               class="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+             />
+             <select
+               [value]="statusFilter()"
+               (change)="statusFilter.set($any($event.target).value)"
+               class="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+             >
+               <option value="">All Statuses</option>
+               <option value="DRAFT">Draft</option>
+               <option value="IN_PROGRESS">In Progress</option>
+               <option value="COMPLETED">Completed</option>
+               <option value="CONFIRMED">Confirmed</option>
+             </select>
+             <input
+               type="date"
+               [value]="startDateFilter()"
+               (change)="startDateFilter.set($any($event.target).value)"
+               placeholder="Start date"
+               class="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+             />
+             <input
+               type="date"
+               [value]="endDateFilter()"
+               (change)="endDateFilter.set($any($event.target).value)"
+               placeholder="End date"
+               class="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+             />
+           </div>
         </div>
       </div>
 
@@ -135,25 +139,25 @@ import { of } from 'rxjs';
             </div>
           </div>
 
-          <!-- Summary Stats -->
-          <div class="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="bg-white rounded-lg border border-slate-200 p-4">
-              <p class="text-slate-600 text-sm">Total Sessions</p>
-              <p class="text-2xl font-bold text-slate-900 mt-1">{{ filteredSessions().length }}</p>
-            </div>
-            <div class="bg-white rounded-lg border border-slate-200 p-4">
-              <p class="text-slate-600 text-sm">In Progress</p>
-              <p class="text-2xl font-bold text-orange-600 mt-1">{{ getInProgressCount() }}</p>
-            </div>
-            <div class="bg-white rounded-lg border border-slate-200 p-4">
-              <p class="text-slate-600 text-sm">Completed</p>
-              <p class="text-2xl font-bold text-blue-600 mt-1">{{ getCompletedCount() }}</p>
-            </div>
-            <div class="bg-white rounded-lg border border-slate-200 p-4">
-              <p class="text-slate-600 text-sm">Confirmed</p>
-              <p class="text-2xl font-bold text-green-600 mt-1">{{ getConfirmedCount() }}</p>
-            </div>
-          </div>
+           <!-- Summary Stats -->
+           <div class="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+             <div class="bg-white rounded-lg border border-slate-200 p-4">
+               <p class="text-slate-600 text-sm">Total Sessions</p>
+               <p class="text-2xl font-bold text-slate-900 mt-1">{{ filteredSessions().length }}</p>
+             </div>
+             <div class="bg-white rounded-lg border border-slate-200 p-4">
+               <p class="text-slate-600 text-sm">In Progress</p>
+               <p class="text-2xl font-bold text-orange-600 mt-1">{{ inProgressCount() }}</p>
+             </div>
+             <div class="bg-white rounded-lg border border-slate-200 p-4">
+               <p class="text-slate-600 text-sm">Completed</p>
+               <p class="text-2xl font-bold text-blue-600 mt-1">{{ completedCount() }}</p>
+             </div>
+             <div class="bg-white rounded-lg border border-slate-200 p-4">
+               <p class="text-slate-600 text-sm">Confirmed</p>
+               <p class="text-2xl font-bold text-green-600 mt-1">{{ confirmedCount() }}</p>
+             </div>
+           </div>
         }
       </div>
     </div>
@@ -203,6 +207,18 @@ export class InventorySessionListComponent implements OnInit {
     });
   });
 
+  inProgressCount = computed(() => {
+    return this.filteredSessions().filter(s => s.status === 'IN_PROGRESS').length;
+  });
+
+  completedCount = computed(() => {
+    return this.filteredSessions().filter(s => s.status === 'COMPLETED').length;
+  });
+
+  confirmedCount = computed(() => {
+    return this.filteredSessions().filter(s => s.status === 'CONFIRMED').length;
+  });
+
   ngOnInit() {
     this.loadSessions();
   }
@@ -222,18 +238,6 @@ export class InventorySessionListComponent implements OnInit {
         finalize(() => this.isLoading.set(false))
       )
       .subscribe(sessions => this.sessions.set(sessions));
-  }
-
-  getInProgressCount(): number {
-    return this.filteredSessions().filter(s => s.status === 'IN_PROGRESS').length;
-  }
-
-  getCompletedCount(): number {
-    return this.filteredSessions().filter(s => s.status === 'COMPLETED').length;
-  }
-
-  getConfirmedCount(): number {
-    return this.filteredSessions().filter(s => s.status === 'CONFIRMED').length;
   }
 
   getStatusBadgeClass(status: string): string {

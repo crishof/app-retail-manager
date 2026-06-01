@@ -140,31 +140,31 @@ import { of } from 'rxjs';
             </div>
           </div>
 
-          <!-- Summary Stats -->
-          <div class="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="bg-white rounded-lg border border-slate-200 p-4">
-              <p class="text-slate-600 text-sm">Total Quotations</p>
-              <p class="text-2xl font-bold text-slate-900 mt-1">{{ filteredQuotes().length }}</p>
-            </div>
-            <div class="bg-white rounded-lg border border-slate-200 p-4">
-              <p class="text-slate-600 text-sm">Total Value</p>
-              <p class="text-2xl font-bold text-slate-900 mt-1">
-                {{ getTotalValue() | currency }}
-              </p>
-            </div>
-            <div class="bg-white rounded-lg border border-slate-200 p-4">
-              <p class="text-slate-600 text-sm">Active</p>
-              <p class="text-2xl font-bold text-blue-600 mt-1">
-                {{ getActiveCount() }}
-              </p>
-            </div>
-            <div class="bg-white rounded-lg border border-slate-200 p-4">
-              <p class="text-slate-600 text-sm">Converted to Sale</p>
-              <p class="text-2xl font-bold text-green-600 mt-1">
-                {{ getConvertedCount() }}
-              </p>
-            </div>
-          </div>
+           <!-- Summary Stats -->
+           <div class="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+             <div class="bg-white rounded-lg border border-slate-200 p-4">
+               <p class="text-slate-600 text-sm">Total Quotations</p>
+               <p class="text-2xl font-bold text-slate-900 mt-1">{{ filteredQuotes().length }}</p>
+             </div>
+             <div class="bg-white rounded-lg border border-slate-200 p-4">
+               <p class="text-slate-600 text-sm">Total Value</p>
+               <p class="text-2xl font-bold text-slate-900 mt-1">
+                 {{ totalValueFormatted() }}
+               </p>
+             </div>
+             <div class="bg-white rounded-lg border border-slate-200 p-4">
+               <p class="text-slate-600 text-sm">Active</p>
+               <p class="text-2xl font-bold text-blue-600 mt-1">
+                 {{ activeCount() }}
+               </p>
+             </div>
+             <div class="bg-white rounded-lg border border-slate-200 p-4">
+               <p class="text-slate-600 text-sm">Converted to Sale</p>
+               <p class="text-2xl font-bold text-green-600 mt-1">
+                 {{ convertedCount() }}
+               </p>
+             </div>
+           </div>
         }
       </div>
     </div>
@@ -200,6 +200,23 @@ export class QuoteListComponent implements OnInit {
     );
   });
 
+  totalValueFormatted = computed(() => {
+    const total = this.filteredQuotes().reduce((sum, quote) => sum + quote.totalPrice, 0);
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(total);
+  });
+
+  activeCount = computed(() => {
+    const today = new Date();
+    return this.filteredQuotes().filter(quote => {
+      const expDate = new Date(quote.expirationDate);
+      return expDate > today && quote.status !== 'CONVERTED_TO_SALE';
+    }).length;
+  });
+
+  convertedCount = computed(() => {
+    return this.filteredQuotes().filter(quote => quote.status === 'CONVERTED_TO_SALE').length;
+  });
+
   ngOnInit() {
     this.loadQuotes();
   }
@@ -231,22 +248,6 @@ export class QuoteListComponent implements OnInit {
       return expirationDate <= today && quote.status !== 'CONVERTED_TO_SALE';
     }
     return true;
-  }
-
-  getTotalValue(): number {
-    return this.filteredQuotes().reduce((sum, quote) => sum + quote.totalPrice, 0);
-  }
-
-  getActiveCount(): number {
-    const today = new Date();
-    return this.filteredQuotes().filter(quote => {
-      const expDate = new Date(quote.expirationDate);
-      return expDate > today && quote.status !== 'CONVERTED_TO_SALE';
-    }).length;
-  }
-
-  getConvertedCount(): number {
-    return this.filteredQuotes().filter(quote => quote.status === 'CONVERTED_TO_SALE').length;
   }
 
   getStatusBadgeClass(status: string): string {
