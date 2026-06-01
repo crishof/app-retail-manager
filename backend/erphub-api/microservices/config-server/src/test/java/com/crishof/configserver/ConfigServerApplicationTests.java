@@ -1,4 +1,4 @@
-package com.crishof.configserver;
+package com.zaphirio.configserver;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

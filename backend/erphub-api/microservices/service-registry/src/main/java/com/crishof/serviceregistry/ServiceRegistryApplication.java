@@ -1,4 +1,4 @@
-package com.crishof.serviceregistry;
+package com.zaphirio.serviceregistry;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

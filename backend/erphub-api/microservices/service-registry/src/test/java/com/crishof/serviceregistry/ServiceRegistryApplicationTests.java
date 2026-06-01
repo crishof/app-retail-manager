@@ -1,4 +1,4 @@
-package com.crishof.serviceregistry;
+package com.zaphirio.serviceregistry;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

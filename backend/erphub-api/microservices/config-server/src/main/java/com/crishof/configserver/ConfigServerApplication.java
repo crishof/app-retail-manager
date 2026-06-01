@@ -1,4 +1,4 @@
-package com.crishof.configserver;
+package com.zaphirio.configserver;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

@@ -30,7 +30,7 @@ app:
 logging:
   level:
     root: WARN
-    com.crishof: INFO
+    com.zaphirio: INFO
 
 springdoc:
   api-docs:

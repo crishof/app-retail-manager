@@ -40,7 +40,7 @@ spring:
 logging:
   level:
     root: WARN
-    com.crishof: INFO
+    com.zaphirio: INFO
 
 management:
   endpoint:
