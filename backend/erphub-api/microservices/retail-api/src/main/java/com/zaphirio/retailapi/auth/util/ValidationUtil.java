@@ -12,7 +12,8 @@ public class ValidationUtil {
     public static final int MIN_PASSWORD_LENGTH = 8;
     public static final int MAX_PASSWORD_LENGTH = 72;
     public static final int VERIFICATION_CODE_LENGTH = 6;
-    public static final int FULL_NAME_MAX_LENGTH = 120;
+    public static final int FIRST_NAME_MAX_LENGTH = 50;
+    public static final int LAST_NAME_MAX_LENGTH = 50;
     public static final int EMAIL_MAX_LENGTH = 150;
 
     /**
@@ -54,19 +55,64 @@ public class ValidationUtil {
     }
 
     /**
-     * Validates full name.
+     * Validates first name.
+     *
+     * @param firstName first name to validate
+     * @throws BusinessException when value is invalid
+     */
+    public static void validateFirstName(String firstName) {
+        if (firstName == null || firstName.isBlank()) {
+            throw new BusinessException("First name cannot be null or empty");
+        }
+
+        if (firstName.length() > FIRST_NAME_MAX_LENGTH) {
+            throw new BusinessException(
+                    "First name must not exceed " + FIRST_NAME_MAX_LENGTH + " characters");
+        }
+
+        if (firstName.length() < 1) {
+            throw new BusinessException("First name must be at least 1 character");
+        }
+    }
+
+    /**
+     * Validates last name.
+     *
+     * @param lastName last name to validate
+     * @throws BusinessException when value is invalid
+     */
+    public static void validateLastName(String lastName) {
+        if (lastName == null || lastName.isBlank()) {
+            throw new BusinessException("Last name cannot be null or empty");
+        }
+
+        if (lastName.length() > LAST_NAME_MAX_LENGTH) {
+            throw new BusinessException(
+                    "Last name must not exceed " + LAST_NAME_MAX_LENGTH + " characters");
+        }
+
+        if (lastName.length() < 1) {
+            throw new BusinessException("Last name must be at least 1 character");
+        }
+    }
+
+    /**
+     * Validates full name (for backward compatibility - uses firstName + lastName).
      *
      * @param fullName full name to validate
      * @throws BusinessException when value is invalid
+     * @deprecated Use validateFirstName() and validateLastName() instead
      */
+    @Deprecated(forRemoval = true)
     public static void validateFullName(String fullName) {
         if (fullName == null || fullName.isBlank()) {
             throw new BusinessException("Full name cannot be null or empty");
         }
 
-        if (fullName.length() > FULL_NAME_MAX_LENGTH) {
+        int maxLength = FIRST_NAME_MAX_LENGTH + LAST_NAME_MAX_LENGTH + 1; // +1 for space
+        if (fullName.length() > maxLength) {
             throw new BusinessException(
-                    "Full name must not exceed " + FULL_NAME_MAX_LENGTH + " characters");
+                    "Full name must not exceed " + maxLength + " characters");
         }
 
         if (fullName.length() < 2) {

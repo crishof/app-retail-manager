@@ -6,9 +6,13 @@ import jakarta.validation.constraints.Size;
 
 public record SignupRequest(
 
-        @NotBlank(message = "Full name is required")
-        @Size(max = 120, message = "Full name must not exceed 120 characters")
-        String fullName,
+        @NotBlank(message = "First name is required")
+        @Size(max = 50, message = "First name must not exceed 50 characters")
+        String firstName,
+
+        @NotBlank(message = "Last name is required")
+        @Size(max = 50, message = "Last name must not exceed 50 characters")
+        String lastName,
 
         @NotBlank(message = "Email is required")
         @Email(message = "Email format is invalid")

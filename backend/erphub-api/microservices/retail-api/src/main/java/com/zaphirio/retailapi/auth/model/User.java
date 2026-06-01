@@ -26,8 +26,11 @@ public class User implements Serializable {
     @GeneratedValue
     private UUID id;
 
-    @Column(nullable = false, length = 120)
-    private String fullName;
+    @Column(nullable = false, length = 50)
+    private String firstName;
+
+    @Column(nullable = false, length = 50)
+    private String lastName;
 
     @Column(nullable = false, unique = true, length = 150)
     private String email;
@@ -59,5 +62,13 @@ public class User implements Serializable {
     @PreUpdate
     void onUpdate() {
         updatedAt = Instant.now();
+    }
+
+    /**
+     * Helper method to get full name (firstName + lastName)
+     * @return concatenated full name
+     */
+    public String getFullName() {
+        return this.firstName + " " + this.lastName;
     }
 }

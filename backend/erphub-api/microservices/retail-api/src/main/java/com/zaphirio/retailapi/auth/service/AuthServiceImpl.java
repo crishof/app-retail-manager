@@ -74,7 +74,8 @@ public class AuthServiceImpl implements AuthService {
         }
 
         User user = new User();
-        user.setFullName(normalizeFullName(request.fullName()));
+        user.setFirstName(normalizeFirstName(request.firstName()));
+        user.setLastName(normalizeLastName(request.lastName()));
         user.setEmail(normalizedEmail);
         user.setRole(Role.ADMIN);
         user.setStatus(UserStatus.PENDING_VERIFICATION);
@@ -261,7 +262,8 @@ public class AuthServiceImpl implements AuthService {
         }
 
         User user = new User();
-        user.setFullName(normalizeFullName(request.fullName()));
+        user.setFirstName(normalizeFirstName(request.firstName()));
+        user.setLastName(normalizeLastName(request.lastName()));
         user.setEmail(normalizedEmail);
         user.setRole(invitationToken.getRole());
         user.setStatus(UserStatus.ACTIVE);
@@ -451,7 +453,8 @@ public class AuthServiceImpl implements AuthService {
 
         return new AuthMeResponse(
             user.getId(),
-            user.getFullName(),
+            user.getFirstName(),
+            user.getLastName(),
             user.getEmail(),
             user.getRole().name(),
             user.getStatus().name(),
@@ -604,21 +607,30 @@ public class AuthServiceImpl implements AuthService {
         return normalizedEmail;
     }
 
-    private String normalizeFullName(String fullName) {
-        String normalizedFullName = fullName == null ? "" : fullName.trim().replaceAll("\\s+", " ");
-        if (!normalizedFullName.isEmpty()) {
+    private String normalizeFirstName(String firstName) {
+        String normalized = firstName == null ? "" : firstName.trim().replaceAll("\\s+", " ");
+        if (!normalized.isEmpty()) {
             try {
-                String previousValue = normalizedFullName;
-                normalizedFullName = NormalizationUtil.normalizeFullName(normalizedFullName);
-                if (!normalizedFullName.equals(previousValue)) {
-                    log.debug("normalizeFullName utility produced canonical value for input");
-                }
+                normalized = NormalizationUtil.normalizeFullName(normalized);
             } catch (IllegalArgumentException ex) {
-                log.debug("normalizeFullName kept non-canonical value after format check failed");
+                log.debug("normalizeFirstName kept non-canonical value after format check failed");
             }
         }
-        log.debug("normalizeFullName inputPresent={} output={}", fullName != null, normalizedFullName);
-        return normalizedFullName;
+        log.debug("normalizeFirstName inputPresent={} output={}", firstName != null, normalized);
+        return normalized;
+    }
+
+    private String normalizeLastName(String lastName) {
+        String normalized = lastName == null ? "" : lastName.trim().replaceAll("\\s+", " ");
+        if (!normalized.isEmpty()) {
+            try {
+                normalized = NormalizationUtil.normalizeFullName(normalized);
+            } catch (IllegalArgumentException ex) {
+                log.debug("normalizeLastName kept non-canonical value after format check failed");
+            }
+        }
+        log.debug("normalizeLastName inputPresent={} output={}", lastName != null, normalized);
+        return normalized;
     }
 
 }

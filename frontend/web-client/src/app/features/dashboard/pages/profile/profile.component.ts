@@ -24,9 +24,9 @@ import { AuthStore } from '../../../../core/auth/auth.store';
             <!-- Avatar Section -->
             <div class="flex items-center gap-6">
               <div class="w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full flex items-center justify-center flex-shrink-0">
-                <span class="text-3xl font-bold text-white">
-                  {{ (store.currentUser()?.fullName || 'U').charAt(0).toUpperCase() }}
-                </span>
+                 <span class="text-3xl font-bold text-white">
+                   {{ (store.currentUser()?.firstName || 'U').charAt(0).toUpperCase() }}
+                 </span>
               </div>
               <div class="flex-1">
                 <p class="text-sm text-gray-600 mb-2">Profile Picture</p>
@@ -41,10 +41,16 @@ import { AuthStore } from '../../../../core/auth/auth.store';
             <!-- User Details Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-                <p class="px-4 py-3 bg-gray-50 rounded-lg text-gray-900 font-medium">
-                  {{ store.currentUser()?.fullName || 'N/A' }}
-                </p>
+                 <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                 <p class="px-4 py-3 bg-gray-50 rounded-lg text-gray-900 font-medium">
+                   {{ store.currentUser()?.firstName || 'N/A' }}
+                 </p>
+              </div>
+              <div class="md:col-span-2">
+                 <label class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                 <p class="px-4 py-3 bg-gray-50 rounded-lg text-gray-900 font-medium">
+                   {{ store.currentUser()?.lastName || 'N/A' }}
+                 </p>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>

@@ -19,7 +19,8 @@ interface AuthResponse {
 }
 
 interface SignupRequest {
-  fullName: string;
+  firstName: string;
+  lastName: string;
   email: string;
   password: string;
 }
@@ -433,7 +434,8 @@ export class AuthService {
     return {
       id: payload.uid || payload.sub || email || 'session-user',
       email,
-      fullName: '',
+      firstName: '',
+      lastName: '',
       role,
       tenantId: payload.tenantId || 'default-tenant',
       status,

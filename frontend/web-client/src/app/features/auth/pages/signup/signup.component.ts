@@ -243,7 +243,8 @@ export class SignupComponent implements OnInit {
     this.store.clearError();
 
     const signupData = {
-      fullName: `${this.form.value.firstName.trim()} ${this.form.value.lastName.trim()}`,
+      firstName: this.form.value.firstName.trim(),
+      lastName: this.form.value.lastName.trim(),
       email: this.form.value.email,
       password: this.form.value.password
     };

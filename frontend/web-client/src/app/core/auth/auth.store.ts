@@ -6,9 +6,8 @@ import { Injectable, computed, signal } from '@angular/core';
 export interface User {
   id: string;
   email: string;
-  fullName?: string;
-  firstName?: string;
-  lastName?: string;
+  firstName: string;
+  lastName: string;
   companyName?: string;
   role: 'ADMIN' | 'OPERATOR' | 'VIEWER';
   tenantId: string;
@@ -54,7 +53,7 @@ export class AuthStore {
       return 'Usuario';
     }
 
-    return user.fullName?.trim() || 'Usuario';
+    return `${user.firstName} ${user.lastName}`.trim() || 'Usuario';
   });
 
   readonly userEmail = computed(() => 

@@ -6,7 +6,8 @@ import java.util.UUID;
 
 public record AuthResponse(
         UUID userId,
-        String fullName,
+        String firstName,
+        String lastName,
         String email,
         String role,
         String status,
@@ -17,7 +18,8 @@ public record AuthResponse(
     public static AuthResponse from(User user, String accessToken, String refreshToken) {
         return new AuthResponse(
                 user.getId(),
-                user.getFullName(),
+                user.getFirstName(),
+                user.getLastName(),
                 user.getEmail(),
                 user.getRole().name(),
                 user.getStatus().name(),

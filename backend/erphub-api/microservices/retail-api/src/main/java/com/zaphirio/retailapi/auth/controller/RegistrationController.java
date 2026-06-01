@@ -47,7 +47,8 @@ public class RegistrationController {
         log.info("Signup request for email: {}", request.email());
 
         ValidationUtil.validateEmail(request.email());
-        ValidationUtil.validateFullName(request.fullName());
+        ValidationUtil.validateFirstName(request.firstName());
+        ValidationUtil.validateLastName(request.lastName());
         ValidationUtil.validatePassword(request.password());
 
         SignupResponse response = authService.signup(request);
