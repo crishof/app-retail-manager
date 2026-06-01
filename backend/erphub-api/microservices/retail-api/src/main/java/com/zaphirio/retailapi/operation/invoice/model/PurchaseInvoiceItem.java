@@ -47,19 +47,19 @@ public class PurchaseInvoiceItem {
     /**
      * Quantity purchased.
      */
-    @Column(name = "quantity", precision = 15, scale = 4, nullable = false)
+    @Column(name = "quantity", nullable = false)
     private double quantity;
 
     /**
      * Unit price (supplier's price, before tax).
      */
-    @Column(name = "unit_price", precision = 15, scale = 2, nullable = false)
+    @Column(name = "unit_price", nullable = false)
     private double unitPrice;
 
     /**
      * Line discount percentage (from supplier, if any).
      */
-    @Column(name = "discount_percentage", precision = 5, scale = 2)
+    @Column(name = "discount_percentage")
     private double discountPercentage = 0;
 
     /**
@@ -71,7 +71,7 @@ public class PurchaseInvoiceItem {
     /**
      * Line total (before tax).
      */
-    @Column(name = "line_total", precision = 15, scale = 2, nullable = false)
+    @Column(name = "line_total", nullable = false)
     private double lineTotal;
 
     /**
