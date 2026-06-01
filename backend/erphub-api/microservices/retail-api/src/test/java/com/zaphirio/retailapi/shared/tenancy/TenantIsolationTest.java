@@ -257,7 +257,8 @@ class TenantIsolationTest {
     private UUID createUser(String email, Long tenantId) {
         User user = new User();
         user.setEmail(email);
-        user.setFullName("Test User " + email);
+        user.setFirstName("Test");
+        user.setLastName("User");
         user.setRole(Role.ADMIN);
         user.setStatus(UserStatus.ACTIVE);
         user.setTenantId(tenantId);
