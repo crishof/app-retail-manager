@@ -23,7 +23,7 @@ import { of } from 'rxjs';
               <p class="text-slate-500 mt-1">Manage and track supplier invoices</p>
             </div>
             <button
-              routerLink="new"
+              routerLink="/supplierInvoice"
               class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition"
             >
               + New Invoice
@@ -195,7 +195,6 @@ import { of } from 'rxjs';
 export class PurchaseInvoiceListComponent implements OnInit {
   private readonly invoiceService = inject(PurchaseInvoiceService);
   private readonly authStore = inject(AuthStore);
-  private readonly router = inject(Router);
 
   invoices = signal<PurchaseInvoice[]>([]);
   isLoading = signal(false);

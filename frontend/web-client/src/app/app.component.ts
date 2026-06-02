@@ -25,7 +25,7 @@ export class AppComponent {
   hideShell = computed(() => {
     const raw = this._url();
     const pathname = raw.split('?')[0].split('#')[0];
-    return pathname.startsWith('/landing') || pathname.startsWith('/auth');
+    return pathname === '/' || pathname === '' || pathname.startsWith('/landing') || pathname.startsWith('/auth');
   });
 
   constructor(private readonly router: Router) {}

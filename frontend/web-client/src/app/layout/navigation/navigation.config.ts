@@ -59,20 +59,12 @@ export const APP_NAVIGATION: NavSection[] = [
     caption: 'Operación comercial del día',
     items: [
       {
-        label: 'Facturas de venta',
+        label: 'Factura de venta',
         icon: 'receipt_long',
-        description: 'Facturas de venta y comprobantes de ventas.',
-        route: '/invoices/sales',
-        aliases: ['/invoices/sales/new', '/invoices/sales/:id'],
+        description: 'Carga y gestión de comprobantes de venta.',
+        route: '/customerInvoice',
+        aliases: ['/comprobantes/ver', '/comprobantes/nota-credito', '/comprobantes/nota-debito', '/comprobantes/presupuesto'],
         roles: ['ADMIN', 'OPERATOR'],
-      },
-      {
-        label: 'Facturas de compra',
-        icon: 'description',
-        description: 'Facturas de proveedores y comprobantes de compra.',
-        route: '/invoices/purchase',
-        aliases: ['/invoices/purchase/new', '/invoices/purchase/:id'],
-        roles: ['ADMIN', 'OPERATOR', 'VIEWER'],
       },
       {
         label: 'Presupuestos',

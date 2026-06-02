@@ -53,7 +53,7 @@ export const routes: Routes = [
   },
 
   // ── Entrada ────────────────────────────────────────
-  { path: '', redirectTo: 'landing/login', pathMatch: 'full' },
+  { path: '', redirectTo: 'landing', pathMatch: 'full' },
 
   // ── Catálogo ───────────────────────────────────────
   { path: 'products',          component: ProductsComponent, canActivate: [authGuard] },

@@ -3,6 +3,7 @@ import { LoginComponent } from './pages/login/login.component';
 import { SignupComponent } from './pages/signup/signup.component';
 import { PasswordRecoveryComponent } from './pages/password-recovery/password-recovery.component';
 import { EmailVerificationComponent } from './pages/email-verification/email-verification.component';
+import { LandingHomeComponent } from './pages/landing-home/landing-home.component';
 import { noAuthGuard } from '../../core/auth/auth.guard';
 
 export const authRoutes: Routes = [
@@ -11,8 +12,8 @@ export const authRoutes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'login',
-        pathMatch: 'full'
+        component: LandingHomeComponent,
+        data: { title: 'RetailManager' }
       },
       {
         path: 'login',
