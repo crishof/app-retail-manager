@@ -37,7 +37,7 @@ export interface NavBreadcrumb {
   route?: string;
 }
 
-const ALL_ROLES: NavRole[] = ['ADMIN', 'OPERATOR', 'VIEWER'];
+const ALL_ROLES: NavRole[] = ['ADMIN', 'MANAGER', 'USER'];
 
 export const APP_NAVIGATION: NavSection[] = [
   {
@@ -64,7 +64,7 @@ export const APP_NAVIGATION: NavSection[] = [
         description: 'Carga y gestión de comprobantes de venta.',
         route: '/customerInvoice',
         aliases: ['/comprobantes/ver', '/comprobantes/nota-credito', '/comprobantes/nota-debito', '/comprobantes/presupuesto'],
-        roles: ['ADMIN', 'OPERATOR'],
+        roles: ['ADMIN', 'MANAGER', 'USER'],
       },
       {
         label: 'Presupuestos',
@@ -72,14 +72,14 @@ export const APP_NAVIGATION: NavSection[] = [
         description: 'Cotizaciones previas a la venta y seguimiento comercial.',
         route: '/quotes',
         aliases: ['/quotes/new', '/quotes/:id'],
-        roles: ['ADMIN', 'OPERATOR'],
+        roles: ['ADMIN', 'MANAGER', 'USER'],
       },
       {
         label: 'Clientes',
         icon: 'groups',
         description: 'Base de clientes, contacto comercial y consulta de fichas.',
         route: '/clientes',
-        roles: ['ADMIN', 'OPERATOR'],
+        roles: ['ADMIN', 'MANAGER', 'USER'],
       },
       {
         label: 'Recibos y pagos',
@@ -87,7 +87,7 @@ export const APP_NAVIGATION: NavSection[] = [
         description: 'Cobros, cancelaciones y movimientos asociados a comprobantes.',
         route: '/comprobantes/recibos',
         aliases: ['/comprobantes/pagos'],
-        roles: ['ADMIN', 'OPERATOR'],
+        roles: ['ADMIN', 'MANAGER', 'USER'],
       },
     ],
   },
@@ -101,21 +101,21 @@ export const APP_NAVIGATION: NavSection[] = [
         description: 'Ficha del proveedor con cuenta corriente y datos comerciales.',
         route: '/supplier',
         aliases: ['/supplier/cuenta-corriente'],
-        roles: ['ADMIN', 'OPERATOR', 'VIEWER'],
+        roles: ['ADMIN', 'MANAGER', 'USER'],
       },
       {
         label: 'Facturas proveedor',
         icon: 'description',
         description: 'Carga y control documental de compras de proveedores.',
         route: '/supplierInvoice',
-        roles: ['ADMIN', 'OPERATOR', 'VIEWER'],
+        roles: ['ADMIN', 'MANAGER', 'USER'],
       },
       {
         label: 'Listas de precios',
         icon: 'price_check',
         description: 'Matrices de costo y actualización de precios por proveedor.',
         route: '/supplierPriceList',
-        roles: ['ADMIN', 'OPERATOR', 'VIEWER'],
+        roles: ['ADMIN', 'MANAGER', 'USER'],
       },
     ],
   },
@@ -129,7 +129,7 @@ export const APP_NAVIGATION: NavSection[] = [
         description: 'Catálogo central con marcas y categorías dentro del mismo dominio.',
         route: '/products',
         aliases: ['/products/', '/brand', '/category'],
-        roles: ['ADMIN', 'OPERATOR'],
+        roles: ['ADMIN', 'MANAGER', 'USER'],
       },
       {
         label: 'Inventario',
@@ -137,14 +137,14 @@ export const APP_NAVIGATION: NavSection[] = [
         description: 'Sesiones de conteo periódico y control de existencias.',
         route: '/inventory',
         aliases: ['/inventory/sessions', '/inventory/sessions/:id'],
-        roles: ['ADMIN', 'OPERATOR'],
+        roles: ['ADMIN', 'MANAGER', 'USER'],
       },
       {
         label: 'Remitos',
         icon: 'local_shipping',
         description: 'Despachos, remitos y transferencias de mercadería.',
         route: '/almacen/remito',
-        roles: ['ADMIN', 'OPERATOR'],
+        roles: ['ADMIN', 'MANAGER', 'USER'],
       },
     ],
   },
@@ -157,7 +157,7 @@ export const APP_NAVIGATION: NavSection[] = [
         icon: 'point_of_sale',
         description: 'Apertura, cierre y arqueos diarios por sucursal.',
         route: '/caja',
-        roles: ['ADMIN', 'OPERATOR'],
+        roles: ['ADMIN', 'MANAGER', 'USER'],
       },
       {
         label: 'Informes',
@@ -165,7 +165,7 @@ export const APP_NAVIGATION: NavSection[] = [
         description: 'Análisis de ventas, movimientos y exportables operativos.',
         route: '/informes/ventas',
         aliases: ['/informes/movimientos', '/informes/excel'],
-        roles: ['ADMIN', 'VIEWER'],
+        roles: ['ADMIN', 'MANAGER'],
       },
       {
         label: 'Libro IVA',
@@ -173,21 +173,21 @@ export const APP_NAVIGATION: NavSection[] = [
         description: 'Libro IVA con foco en normativa española y fiscalidad vigente.',
         route: '/contabilidad/libro-iva',
         badge: 'ES',
-        roles: ['ADMIN', 'VIEWER'],
+        roles: ['ADMIN', 'MANAGER'],
       },
       {
         label: 'Retenciones',
         icon: 'gavel',
         description: 'Gestión de retenciones e impuestos asociados.',
         route: '/contabilidad/retenciones',
-        roles: ['ADMIN', 'VIEWER'],
+        roles: ['ADMIN', 'MANAGER'],
       },
       {
         label: 'Libro Mayor',
         icon: 'auto_stories',
         description: 'Mayor contable y trazabilidad contable avanzada.',
         route: '/contabilidad/libro-mayor',
-        roles: ['ADMIN', 'VIEWER'],
+        roles: ['ADMIN', 'MANAGER'],
       },
       {
         label: 'Facturación electrónica',
@@ -195,7 +195,7 @@ export const APP_NAVIGATION: NavSection[] = [
         description: 'Preparado para VeriFactu/AEAT y obligación antifraude.',
         route: '/contabilidad/facturacion-electronica',
         badge: 'AEAT',
-        roles: ['ADMIN', 'VIEWER'],
+        roles: ['ADMIN', 'MANAGER'],
       },
     ],
   },
@@ -243,14 +243,14 @@ export const APP_NAVIGATION: NavSection[] = [
         icon: 'build',
         description: 'Seguimiento de intervenciones y soporte técnico.',
         route: '/servicio-tecnico',
-        roles: ['ADMIN', 'OPERATOR'],
+        roles: ['ADMIN', 'MANAGER', 'USER'],
       },
       {
         label: 'Turnos',
         icon: 'event',
         description: 'Agenda operativa y reservas del servicio técnico.',
         route: '/servicio-tecnico/turnos',
-        roles: ['ADMIN', 'OPERATOR'],
+        roles: ['ADMIN', 'MANAGER', 'USER'],
       },
     ],
   },

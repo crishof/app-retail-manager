@@ -29,7 +29,7 @@ export class TopbarComponent {
     { initialValue: this.router.url },
   );
 
-  readonly breadcrumbs = computed(() => findNavBreadcrumbs(this.currentUrl(), this.store.userRole() ?? 'VIEWER'));
+  readonly breadcrumbs = computed(() => findNavBreadcrumbs(this.currentUrl(), this.store.userRole() ?? 'USER'));
   readonly currentSection = computed(() => this.breadcrumbs()[0]?.label ?? 'Inicio');
 
   onToggle() {

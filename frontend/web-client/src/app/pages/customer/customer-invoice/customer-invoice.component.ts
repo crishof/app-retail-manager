@@ -1,6 +1,6 @@
 import { CommonModule } from "@angular/common";
 import { Component, OnDestroy, OnInit, inject } from "@angular/core";
-import { ActivatedRoute, RouterLink } from "@angular/router";
+import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import {
   FormBuilder,
   FormControl,
@@ -46,6 +46,7 @@ export class CustomerInvoiceComponent implements OnInit, OnDestroy {
   private invoicePrefillSubscription?: Subscription;
   private lastPrefilledProductId: string | null = null;
   private readonly _route = inject(ActivatedRoute);
+  private readonly _router = inject(Router);
   private readonly _productService = inject(ProductService);
   private readonly _customerInvoiceService = inject(CustomerInvoiceService);
   private readonly _branchService = inject(BranchService);
@@ -72,6 +73,7 @@ export class CustomerInvoiceComponent implements OnInit, OnDestroy {
   isSaving = false;
   saveSuccess = false;
   saveError = '';
+  showInvoiceIssuedModal = false;
 
   customerSearchQuery = '';
   showCustomerDropdown = false;
@@ -409,7 +411,8 @@ initForm(): void {
         });
 
         this.isSaving = false;
-        this.saveSuccess = true;
+        this.saveSuccess = false;
+        this.showInvoiceIssuedModal = true;
         this.invoiceItems = [];
         this.incrementNextInvoiceNumber(currentInvoiceType);
         const branchId = this.selectedBranchId;
@@ -422,7 +425,6 @@ initForm(): void {
         if (this.productSearchQuery.length >= 2) {
           this.searchProductsWithStock(this.productSearchQuery);
         }
-        setTimeout(() => (this.saveSuccess = false), 4000);
       },
       error: (err) => {
         this.isSaving = false;
@@ -912,5 +914,16 @@ initForm(): void {
     }
     const trimmed = value.trim();
     return trimmed.length ? trimmed : null;
+  }
+
+  closeIssuedModalAndGoProducts(): void {
+    this.showInvoiceIssuedModal = false;
+    this._router.navigate(['/products']);
+  }
+
+  printIssuedInvoice(): void {
+    if (typeof window !== 'undefined') {
+      window.print();
+    }
   }
 }

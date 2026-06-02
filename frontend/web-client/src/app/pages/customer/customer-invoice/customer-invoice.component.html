@@ -687,4 +687,36 @@
       </div>
     }
   </form>
+
+  @if (showInvoiceIssuedModal) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+      <div class="w-full max-w-md rounded-xl bg-white shadow-2xl border border-gray-200 overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-200 bg-emerald-50">
+          <h3 class="text-base font-semibold text-emerald-700">Factura emitida correctamente</h3>
+          <p class="text-xs text-emerald-600 mt-1">El comprobante se guardó con éxito.</p>
+        </div>
+
+        <div class="px-5 py-4 flex items-center justify-end gap-2">
+          <button
+            type="button"
+            (click)="printIssuedInvoice()"
+            class="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-300 text-gray-700 text-sm hover:bg-gray-50 transition"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2m-10 0h8v4H8v-4z" />
+            </svg>
+            Imprimir
+          </button>
+
+          <button
+            type="button"
+            (click)="closeIssuedModalAndGoProducts()"
+            class="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 transition"
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+  }
 </div>

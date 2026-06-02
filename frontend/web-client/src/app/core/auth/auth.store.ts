@@ -9,7 +9,7 @@ export interface User {
   firstName: string;
   lastName: string;
   companyName?: string;
-  role: 'ADMIN' | 'OPERATOR' | 'VIEWER';
+  role: 'ADMIN' | 'MANAGER' | 'USER';
   tenantId: string;
   status: 'ACTIVE' | 'INACTIVE' | 'PENDING_VERIFICATION';
   createdAt: string;
@@ -53,7 +53,7 @@ export class AuthStore {
       return 'Usuario';
     }
 
-    return `${user.firstName} ${user.lastName}`.trim() || 'Usuario';
+    return user.firstName?.trim() || 'Usuario';
   });
 
   readonly userEmail = computed(() => 
@@ -83,7 +83,13 @@ export class AuthStore {
    */
   setCurrentUser(user: User | null): void {
     const normalizedUser = user
-      ? { ...user, role: this.normalizeRole((user as { role?: unknown }).role) }
+      ? {
+          ...user,
+          firstName: user.firstName?.trim() || '',
+          lastName: user.lastName?.trim() || '',
+          companyName: user.companyName?.trim() || undefined,
+          role: this.normalizeRole((user as { role?: unknown }).role),
+        }
       : null;
 
     this.currentUserSignal.set(normalizedUser);
@@ -92,13 +98,13 @@ export class AuthStore {
   }
 
   private normalizeRole(role: unknown): User['role'] {
-    const value = typeof role === 'string' ? role.toUpperCase() : 'VIEWER';
+    const value = typeof role === 'string' ? role.toUpperCase() : 'USER';
 
-    if (value === 'ADMIN' || value === 'OPERATOR' || value === 'VIEWER') {
+    if (value === 'ADMIN' || value === 'MANAGER' || value === 'USER') {
       return value;
     }
 
-    return 'VIEWER';
+    return 'USER';
   }
 
   /**

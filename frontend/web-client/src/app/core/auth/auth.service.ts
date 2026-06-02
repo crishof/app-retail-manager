@@ -4,7 +4,7 @@ import { environment } from '../../../environments/environment';
 import { TokenService } from './token.service';
 import { AuthStore, User } from './auth.store';
 import { Observable, BehaviorSubject, of, throwError } from 'rxjs';
-import { tap, catchError } from 'rxjs/operators';
+import { tap, catchError, map } from 'rxjs/operators';
 
 // API Request/Response interfaces
 interface LoginRequest {
@@ -16,6 +16,28 @@ interface AuthResponse {
   accessToken: string;
   refreshToken?: string;
   user: User;
+}
+
+interface BackendAuthResponse {
+  userId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: 'ADMIN' | 'MANAGER' | 'USER';
+  status: User['status'];
+  accessToken: string;
+  refreshToken: string;
+  tokenType: string;
+}
+
+interface BackendAuthMeResponse {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: 'ADMIN' | 'MANAGER' | 'USER';
+  status: User['status'];
+  tenantId: number;
 }
 
 interface SignupRequest {
@@ -88,11 +110,6 @@ export class AuthService {
   private checkExistingSession(): void {
     const token = this.tokenService.getAccessToken();
     const refreshToken = this.tokenService.getRefreshToken();
-    const fallbackUser = this.buildUserFromToken();
-
-    if (fallbackUser && !this.store.currentUser()) {
-      this.store.setCurrentUser(fallbackUser);
-    }
     
     if (token && !this.tokenService.isTokenExpired()) {
       // Token exists and valid - fetch current user
@@ -143,7 +160,8 @@ export class AuthService {
 
     const request: LoginRequest = { email, password };
 
-    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, request, this.authHttpOptions).pipe(
+    return this.http.post<BackendAuthResponse>(`${this.apiUrl}/login`, request, this.authHttpOptions).pipe(
+      map((response) => this.mapAuthResponse(response)),
       tap(response => {
         // Store token
         this.tokenService.setAccessToken(response.accessToken);
@@ -152,7 +170,7 @@ export class AuthService {
         }
         
         // Update state
-        this.store.setCurrentUser(response.user ?? this.buildUserFromToken());
+        this.store.setCurrentUser(response.user);
         this.store.setIsLoading(false);
         
         // Emit login event
@@ -245,13 +263,14 @@ export class AuthService {
     const request: VerifyEmailRequest = { email, code };
     const verificationUrl = `${this.apiUrl}/registration/verify-email`;
 
-    return this.http.post<AuthResponse>(verificationUrl, request).pipe(
+    return this.http.post<BackendAuthResponse>(verificationUrl, request).pipe(
+      map((response) => this.mapAuthResponse(response)),
       tap(response => {
         this.tokenService.setAccessToken(response.accessToken);
         if (response.refreshToken) {
           this.tokenService.setRefreshToken(response.refreshToken);
         }
-        this.store.setCurrentUser(response.user ?? this.buildUserFromToken());
+        this.store.setCurrentUser(response.user);
         this.store.setIsLoading(false);
         this.isLoggedInSubject.next(true);
       }),
@@ -331,13 +350,14 @@ export class AuthService {
       return throwError(() => new Error('Refresh token not available'));
     }
 
-    return this.http.post<AuthResponse>(`${this.apiUrl}/refresh`, { refreshToken }, this.authHttpOptions).pipe(
+    return this.http.post<BackendAuthResponse>(`${this.apiUrl}/refresh`, { refreshToken }, this.authHttpOptions).pipe(
+      map((response) => this.mapAuthResponse(response)),
       tap(response => {
         this.tokenService.setAccessToken(response.accessToken);
         if (response.refreshToken) {
           this.tokenService.setRefreshToken(response.refreshToken);
         }
-        this.store.setCurrentUser(response.user ?? this.buildUserFromToken());
+        this.store.setCurrentUser(response.user);
       }),
       catchError(error => {
         // Refresh failed - force logout
@@ -352,17 +372,12 @@ export class AuthService {
    * Used to validate session and get user details
    */
   getCurrentUser(): Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}/me`).pipe(
+    return this.http.get<BackendAuthMeResponse>(`${this.apiUrl}/me`).pipe(
+      map((response) => this.mapMeResponse(response)),
       tap(user => {
         this.store.setCurrentUser(user);
       }),
       catchError(error => {
-        const fallbackUser = this.buildUserFromToken();
-        if (fallbackUser) {
-          this.store.setCurrentUser(fallbackUser);
-          return of(fallbackUser);
-        }
-
         this.store.clear();
         return throwError(() => error);
       })
@@ -409,37 +424,46 @@ export class AuthService {
     this.clearAuthState();
   }
 
-  private buildUserFromToken(): User | null {
-    const payload = this.tokenService.getTokenPayload();
-    if (!payload) {
-      return null;
+  private mapAuthResponse(response: BackendAuthResponse): AuthResponse {
+    if (!response.firstName || !response.lastName || !response.email || !response.role) {
+      throw new Error('Invalid auth DTO: missing required user fields');
     }
 
-    const normalizedRole = String(payload.role ?? 'VIEWER').toUpperCase();
-    const role: User['role'] =
-      normalizedRole === 'ADMIN' || normalizedRole === 'OPERATOR' || normalizedRole === 'VIEWER'
-        ? normalizedRole
-        : 'VIEWER';
+    return {
+      accessToken: response.accessToken,
+      refreshToken: response.refreshToken,
+      user: {
+        id: response.userId,
+        email: response.email,
+        firstName: response.firstName,
+        lastName: response.lastName,
+        role: response.role,
+        status: response.status,
+        tenantId: this.getTenantIdFromToken(),
+        createdAt: new Date().toISOString(),
+      },
+    };
+  }
 
-    const normalizedStatus = String(payload.status ?? 'ACTIVE').toUpperCase();
-    const status: User['status'] =
-      normalizedStatus === 'ACTIVE' || normalizedStatus === 'INACTIVE' || normalizedStatus === 'PENDING_VERIFICATION'
-        ? normalizedStatus
-        : 'ACTIVE';
-
-    const tokenSub = payload.sub || '';
-    const emailFromSub = tokenSub.includes('@') ? tokenSub : '';
-    const email = payload.email || emailFromSub;
+  private mapMeResponse(response: BackendAuthMeResponse): User {
+    if (!response.firstName || !response.lastName || !response.email || !response.role) {
+      throw new Error('Invalid /me DTO: missing required user fields');
+    }
 
     return {
-      id: payload.uid || payload.sub || email || 'session-user',
-      email,
-      firstName: '',
-      lastName: '',
-      role,
-      tenantId: payload.tenantId || 'default-tenant',
-      status,
+      id: response.id,
+      email: response.email,
+      firstName: response.firstName,
+      lastName: response.lastName,
+      role: response.role,
+      status: response.status,
+      tenantId: String(response.tenantId),
       createdAt: new Date().toISOString(),
     };
+  }
+
+  private getTenantIdFromToken(): string {
+    const payload = this.tokenService.getTokenPayload();
+    return payload?.tenantId || '';
   }
 }

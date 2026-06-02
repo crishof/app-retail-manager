@@ -59,7 +59,12 @@ export class WorkspaceContextService {
       return;
     }
 
-    if (this.initializedSignal()) {
+    if (!this.authStore.isAuthenticated()) {
+      this.resetContextState();
+      return;
+    }
+
+    if (this.initializedSignal() && this.companiesSignal().length > 0) {
       return;
     }
 
@@ -101,8 +106,19 @@ export class WorkspaceContextService {
         this.selectedBranchIdSignal.set(null);
         this.errorSignal.set(null);
         this.loadingSignal.set(false);
+        this.initializedSignal.set(false);
       },
     });
+  }
+
+  private resetContextState(): void {
+    this.initializedSignal.set(false);
+    this.companiesSignal.set([]);
+    this.branchesSignal.set([]);
+    this.selectedCompanyIdSignal.set(null);
+    this.selectedBranchIdSignal.set(null);
+    this.loadingSignal.set(false);
+    this.errorSignal.set(null);
   }
 
   selectCompany(companyId: string): void {

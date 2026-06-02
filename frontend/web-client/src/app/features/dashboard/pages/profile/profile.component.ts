@@ -67,7 +67,7 @@ import { AuthStore } from '../../../../core/auth/auth.store';
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
                 <p class="px-4 py-3 bg-gray-50 rounded-lg text-gray-900 font-medium">
-                  {{ roleLabel[store.currentUser()?.role || 'VIEWER'] || 'Consulta' }}
+                  {{ roleLabel[store.currentUser()?.role || 'USER'] || 'Usuario' }}
                 </p>
               </div>
               <div>
@@ -125,7 +125,7 @@ export class ProfileComponent {
 
   readonly roleLabel: Record<string, string> = {
     ADMIN: 'Administrador',
-    OPERATOR: 'Operador',
-    VIEWER: 'Consulta',
+    MANAGER: 'Manager',
+    USER: 'Usuario',
   };
 }

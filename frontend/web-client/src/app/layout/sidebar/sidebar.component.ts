@@ -37,17 +37,17 @@ export class SidebarComponent {
     { initialValue: this.router.url },
   );
 
-  readonly sections = computed(() => getVisibleNavSections(this.store.userRole() ?? 'VIEWER'));
-  readonly paletteResults = computed(() => searchPaletteItems(this.store.userRole() ?? 'VIEWER', this.paletteQuery()));
+  readonly sections = computed(() => getVisibleNavSections(this.store.userRole() ?? 'USER'));
+  readonly paletteResults = computed(() => searchPaletteItems(this.store.userRole() ?? 'USER', this.paletteQuery()));
   readonly userRoleLabel = computed(() => {
-    const role = this.store.userRole() ?? 'VIEWER';
+    const role = this.store.userRole() ?? 'USER';
     const labels: Record<string, string> = {
       ADMIN: 'Administrador',
-      OPERATOR: 'Operador',
-      VIEWER: 'Consulta',
+      MANAGER: 'Manager',
+      USER: 'Usuario',
     };
 
-    return labels[role] ?? 'Consulta';
+    return labels[role] ?? 'Usuario';
   });
 
   constructor() {
