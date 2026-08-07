@@ -67,6 +67,13 @@
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-database-postgresql</artifactId>
         </dependency>
+        <!-- Spring Boot 4 split autoconfiguration into modules: this one provides
+             FlywayAutoConfiguration so migrations actually run at startup.
+             Without it, flyway-core is on the classpath but never executes. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-flyway</artifactId>
+        </dependency>
 
         <!-- ===============================
              Spring Cloud / Config & Discovery

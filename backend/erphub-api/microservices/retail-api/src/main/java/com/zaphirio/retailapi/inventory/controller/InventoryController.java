@@ -18,7 +18,7 @@ import java.util.UUID;
  * Handles inventory sessions (periodic conteo) and items with 3 location counts.
  */
 @RestController
-@RequestMapping("/api/inventory")
+@RequestMapping("/api/v1/inventory")
 @RequiredArgsConstructor
 @Slf4j
 public class InventoryController {
@@ -34,7 +34,7 @@ public class InventoryController {
     public ResponseEntity<InventorySessionResponse> createSession(
             @Valid @RequestBody CreateInventorySessionRequest request,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("POST /api/inventory/sessions - Create new inventory session");
+        log.info("POST /api/v1/inventory/sessions - Create new inventory session");
         InventorySessionResponse response = inventoryService.createSession(request, tenantId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -46,7 +46,7 @@ public class InventoryController {
     public ResponseEntity<InventorySessionResponse> getSessionById(
             @PathVariable UUID id,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("GET /api/inventory/sessions/{} - Fetch session", id);
+        log.info("GET /api/v1/inventory/sessions/{} - Fetch session", id);
         InventorySessionResponse response = inventoryService.getSessionById(id, tenantId);
         return ResponseEntity.ok(response);
     }
@@ -57,7 +57,7 @@ public class InventoryController {
     @GetMapping("/sessions")
     public ResponseEntity<List<InventorySessionResponse>> getAllSessions(
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("GET /api/inventory/sessions - Fetch all sessions");
+        log.info("GET /api/v1/inventory/sessions - Fetch all sessions");
         List<InventorySessionResponse> responses = inventoryService.getAllSessions(tenantId);
         return ResponseEntity.ok(responses);
     }
@@ -69,7 +69,7 @@ public class InventoryController {
     public ResponseEntity<List<InventorySessionResponse>> getSessionsByBranch(
             @PathVariable UUID branchId,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("GET /api/inventory/sessions/branch/{} - Fetch by branch", branchId);
+        log.info("GET /api/v1/inventory/sessions/branch/{} - Fetch by branch", branchId);
         List<InventorySessionResponse> responses = inventoryService.getSessionsByBranch(branchId, tenantId);
         return ResponseEntity.ok(responses);
     }
@@ -81,7 +81,7 @@ public class InventoryController {
     public ResponseEntity<List<InventorySessionResponse>> getSessionsByDeposit(
             @PathVariable UUID depositId,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("GET /api/inventory/sessions/deposit/{} - Fetch by deposit", depositId);
+        log.info("GET /api/v1/inventory/sessions/deposit/{} - Fetch by deposit", depositId);
         List<InventorySessionResponse> responses = inventoryService.getSessionsByDeposit(depositId, tenantId);
         return ResponseEntity.ok(responses);
     }
@@ -93,7 +93,7 @@ public class InventoryController {
     public ResponseEntity<List<InventorySessionResponse>> getSessionsByStatus(
             @PathVariable String status,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("GET /api/inventory/sessions/status/{} - Fetch by status", status);
+        log.info("GET /api/v1/inventory/sessions/status/{} - Fetch by status", status);
         List<InventorySessionResponse> responses = inventoryService.getSessionsByStatus(status, tenantId);
         return ResponseEntity.ok(responses);
     }
@@ -104,7 +104,7 @@ public class InventoryController {
     @GetMapping("/sessions/active")
     public ResponseEntity<List<InventorySessionResponse>> getActiveSessions(
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("GET /api/inventory/sessions/active - Fetch active sessions");
+        log.info("GET /api/v1/inventory/sessions/active - Fetch active sessions");
         List<InventorySessionResponse> responses = inventoryService.getActiveSessions(tenantId);
         return ResponseEntity.ok(responses);
     }
@@ -117,7 +117,7 @@ public class InventoryController {
             @RequestParam LocalDate startDate,
             @RequestParam LocalDate endDate,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("GET /api/inventory/sessions/date-range - Fetch between {} and {}", startDate, endDate);
+        log.info("GET /api/v1/inventory/sessions/date-range - Fetch between {} and {}", startDate, endDate);
         List<InventorySessionResponse> responses = inventoryService.getSessionsByDateRange(startDate, endDate, tenantId);
         return ResponseEntity.ok(responses);
     }
@@ -130,7 +130,7 @@ public class InventoryController {
             @PathVariable UUID id,
             @Valid @RequestBody UpdateInventorySessionRequest request,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("PUT /api/inventory/sessions/{} - Update session", id);
+        log.info("PUT /api/v1/inventory/sessions/{} - Update session", id);
         InventorySessionResponse response = inventoryService.updateSession(id, request, tenantId);
         return ResponseEntity.ok(response);
     }
@@ -143,7 +143,7 @@ public class InventoryController {
             @PathVariable UUID id,
             @RequestParam UUID userId,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("POST /api/inventory/sessions/{}/start - Start count", id);
+        log.info("POST /api/v1/inventory/sessions/{}/start - Start count", id);
         InventorySessionResponse response = inventoryService.startSession(id, userId, tenantId);
         return ResponseEntity.ok(response);
     }
@@ -155,7 +155,7 @@ public class InventoryController {
     public ResponseEntity<InventorySessionResponse> completeSession(
             @PathVariable UUID id,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("POST /api/inventory/sessions/{}/complete - Complete count", id);
+        log.info("POST /api/v1/inventory/sessions/{}/complete - Complete count", id);
         InventorySessionResponse response = inventoryService.completeSession(id, tenantId);
         return ResponseEntity.ok(response);
     }
@@ -168,7 +168,7 @@ public class InventoryController {
             @PathVariable UUID id,
             @RequestParam UUID userId,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("POST /api/inventory/sessions/{}/confirm - Confirm count", id);
+        log.info("POST /api/v1/inventory/sessions/{}/confirm - Confirm count", id);
         InventorySessionResponse response = inventoryService.confirmSession(id, userId, tenantId);
         return ResponseEntity.ok(response);
     }
@@ -180,7 +180,7 @@ public class InventoryController {
     public ResponseEntity<Void> deleteSession(
             @PathVariable UUID id,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("DELETE /api/inventory/sessions/{} - Delete session", id);
+        log.info("DELETE /api/v1/inventory/sessions/{} - Delete session", id);
         inventoryService.deleteSession(id, tenantId);
         return ResponseEntity.noContent().build();
     }
@@ -195,7 +195,7 @@ public class InventoryController {
             @PathVariable UUID sessionId,
             @Valid @RequestBody CreateInventoryItemRequest request,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("POST /api/inventory/sessions/{}/items - Add item", sessionId);
+        log.info("POST /api/v1/inventory/sessions/{}/items - Add item", sessionId);
         InventoryItemResponse response = inventoryService.addItem(sessionId, request, tenantId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -207,7 +207,7 @@ public class InventoryController {
     public ResponseEntity<InventoryItemResponse> getItemById(
             @PathVariable UUID id,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("GET /api/inventory/items/{} - Fetch item", id);
+        log.info("GET /api/v1/inventory/items/{} - Fetch item", id);
         InventoryItemResponse response = inventoryService.getItemById(id, tenantId);
         return ResponseEntity.ok(response);
     }
@@ -219,7 +219,7 @@ public class InventoryController {
     public ResponseEntity<List<InventoryItemResponse>> getItemsBySession(
             @PathVariable UUID sessionId,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("GET /api/inventory/sessions/{}/items - Fetch items", sessionId);
+        log.info("GET /api/v1/inventory/sessions/{}/items - Fetch items", sessionId);
         List<InventoryItemResponse> responses = inventoryService.getItemsBySession(sessionId, tenantId);
         return ResponseEntity.ok(responses);
     }
@@ -231,7 +231,7 @@ public class InventoryController {
     public ResponseEntity<List<InventoryItemResponse>> getDiscrepanciesBySession(
             @PathVariable UUID sessionId,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("GET /api/inventory/sessions/{}/discrepancies - Fetch discrepancies", sessionId);
+        log.info("GET /api/v1/inventory/sessions/{}/discrepancies - Fetch discrepancies", sessionId);
         List<InventoryItemResponse> responses = inventoryService.getDiscrepanciesBySession(sessionId, tenantId);
         return ResponseEntity.ok(responses);
     }
@@ -244,7 +244,7 @@ public class InventoryController {
             @PathVariable UUID id,
             @Valid @RequestBody UpdateInventoryItemRequest request,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("PUT /api/inventory/items/{} - Update item", id);
+        log.info("PUT /api/v1/inventory/items/{} - Update item", id);
         InventoryItemResponse response = inventoryService.updateItem(id, request, tenantId);
         return ResponseEntity.ok(response);
     }
@@ -256,7 +256,7 @@ public class InventoryController {
     public ResponseEntity<Void> deleteItem(
             @PathVariable UUID id,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("DELETE /api/inventory/items/{} - Delete item", id);
+        log.info("DELETE /api/v1/inventory/items/{} - Delete item", id);
         inventoryService.deleteItem(id, tenantId);
         return ResponseEntity.noContent().build();
     }

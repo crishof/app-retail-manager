@@ -18,7 +18,7 @@ import java.util.UUID;
  * Endpoints: GET, POST, PUT, DELETE for quotes and status transitions.
  */
 @RestController
-@RequestMapping("/api/quotes")
+@RequestMapping("/api/v1/quotes")
 @RequiredArgsConstructor
 @Slf4j
 public class QuoteController {
@@ -32,7 +32,7 @@ public class QuoteController {
     public ResponseEntity<QuoteResponse> create(
             @Valid @RequestBody CreateQuoteRequest request,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("POST /api/quotes - Create new quote");
+        log.info("POST /api/v1/quotes - Create new quote");
         QuoteResponse response = quoteService.create(request, tenantId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -44,7 +44,7 @@ public class QuoteController {
     public ResponseEntity<QuoteResponse> getById(
             @PathVariable UUID id,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("GET /api/quotes/{} - Fetch quote", id);
+        log.info("GET /api/v1/quotes/{} - Fetch quote", id);
         QuoteResponse response = quoteService.getById(id, tenantId);
         return ResponseEntity.ok(response);
     }
@@ -55,7 +55,7 @@ public class QuoteController {
     @GetMapping
     public ResponseEntity<List<QuoteResponse>> getAll(
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("GET /api/quotes - Fetch all quotes");
+        log.info("GET /api/v1/quotes - Fetch all quotes");
         List<QuoteResponse> responses = quoteService.getAll(tenantId);
         return ResponseEntity.ok(responses);
     }
@@ -67,7 +67,7 @@ public class QuoteController {
     public ResponseEntity<List<QuoteResponse>> getByCustomer(
             @PathVariable UUID customerId,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("GET /api/quotes/customer/{} - Fetch by customer", customerId);
+        log.info("GET /api/v1/quotes/customer/{} - Fetch by customer", customerId);
         List<QuoteResponse> responses = quoteService.getByCustomerId(customerId, tenantId);
         return ResponseEntity.ok(responses);
     }
@@ -80,7 +80,7 @@ public class QuoteController {
             @PathVariable UUID customerId,
             @PathVariable UUID branchId,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("GET /api/quotes/customer/{}/branch/{} - Fetch by customer and branch", customerId, branchId);
+        log.info("GET /api/v1/quotes/customer/{}/branch/{} - Fetch by customer and branch", customerId, branchId);
         List<QuoteResponse> responses = quoteService.getByCustomerIdAndBranchId(customerId, branchId, tenantId);
         return ResponseEntity.ok(responses);
     }
@@ -92,7 +92,7 @@ public class QuoteController {
     public ResponseEntity<List<QuoteResponse>> getByStatus(
             @PathVariable String status,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("GET /api/quotes/status/{} - Fetch by status", status);
+        log.info("GET /api/v1/quotes/status/{} - Fetch by status", status);
         List<QuoteResponse> responses = quoteService.getByStatus(status, tenantId);
         return ResponseEntity.ok(responses);
     }
@@ -103,7 +103,7 @@ public class QuoteController {
     @GetMapping("/active")
     public ResponseEntity<List<QuoteResponse>> getActive(
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("GET /api/quotes/active - Fetch active quotes");
+        log.info("GET /api/v1/quotes/active - Fetch active quotes");
         List<QuoteResponse> responses = quoteService.getActive(tenantId);
         return ResponseEntity.ok(responses);
     }
@@ -116,7 +116,7 @@ public class QuoteController {
             @RequestParam LocalDate startDate,
             @RequestParam LocalDate endDate,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("GET /api/quotes/date-range - Fetch between {} and {}", startDate, endDate);
+        log.info("GET /api/v1/quotes/date-range - Fetch between {} and {}", startDate, endDate);
         List<QuoteResponse> responses = quoteService.getByDateRange(startDate, endDate, tenantId);
         return ResponseEntity.ok(responses);
     }
@@ -128,7 +128,7 @@ public class QuoteController {
     public ResponseEntity<List<QuoteResponse>> getExpiringQuotes(
             @RequestParam(defaultValue = "7") int days,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("GET /api/quotes/expiring - Fetch expiring in {} days", days);
+        log.info("GET /api/v1/quotes/expiring - Fetch expiring in {} days", days);
         List<QuoteResponse> responses = quoteService.getExpiringQuotes(days, tenantId);
         return ResponseEntity.ok(responses);
     }
@@ -141,7 +141,7 @@ public class QuoteController {
             @PathVariable UUID id,
             @Valid @RequestBody UpdateQuoteRequest request,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("PUT /api/quotes/{} - Update quote", id);
+        log.info("PUT /api/v1/quotes/{} - Update quote", id);
         QuoteResponse response = quoteService.update(id, request, tenantId);
         return ResponseEntity.ok(response);
     }
@@ -153,7 +153,7 @@ public class QuoteController {
     public ResponseEntity<QuoteResponse> sendQuote(
             @PathVariable UUID id,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("POST /api/quotes/{}/send - Send quote to customer", id);
+        log.info("POST /api/v1/quotes/{}/send - Send quote to customer", id);
         QuoteResponse response = quoteService.sendQuote(id, tenantId);
         return ResponseEntity.ok(response);
     }
@@ -165,7 +165,7 @@ public class QuoteController {
     public ResponseEntity<QuoteResponse> acceptQuote(
             @PathVariable UUID id,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("POST /api/quotes/{}/accept - Accept quote", id);
+        log.info("POST /api/v1/quotes/{}/accept - Accept quote", id);
         QuoteResponse response = quoteService.acceptQuote(id, tenantId);
         return ResponseEntity.ok(response);
     }
@@ -177,7 +177,7 @@ public class QuoteController {
     public ResponseEntity<QuoteResponse> rejectQuote(
             @PathVariable UUID id,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("POST /api/quotes/{}/reject - Reject quote", id);
+        log.info("POST /api/v1/quotes/{}/reject - Reject quote", id);
         QuoteResponse response = quoteService.rejectQuote(id, tenantId);
         return ResponseEntity.ok(response);
     }
@@ -190,7 +190,7 @@ public class QuoteController {
             @PathVariable UUID id,
             @RequestParam UUID saleId,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("POST /api/quotes/{}/convert-to-sale - Convert quote to sale {}", id, saleId);
+        log.info("POST /api/v1/quotes/{}/convert-to-sale - Convert quote to sale {}", id, saleId);
         QuoteResponse response = quoteService.convertToSale(id, saleId, tenantId);
         return ResponseEntity.ok(response);
     }
@@ -202,7 +202,7 @@ public class QuoteController {
     public ResponseEntity<Void> delete(
             @PathVariable UUID id,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("DELETE /api/quotes/{} - Delete quote", id);
+        log.info("DELETE /api/v1/quotes/{} - Delete quote", id);
         quoteService.delete(id, tenantId);
         return ResponseEntity.noContent().build();
     }

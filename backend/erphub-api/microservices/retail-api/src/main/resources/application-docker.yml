@@ -5,7 +5,7 @@ server:
 spring:
   datasource:
     # Docker: connect to postgres service in Docker Compose network
-    url: jdbc:postgresql://postgres:5432/retail_db
+    url: jdbc:postgresql://postgres:5432/${POSTGRES_DB:retail_db}
     username: ${POSTGRES_USER:admin}
     password: ${POSTGRES_PASSWORD:root1234}
     driver-class-name: org.postgresql.Driver
@@ -25,7 +25,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate  # Flyway (V1__baseline_schema) owns the schema; Hibernate only validates
     show-sql: false
     properties:
       hibernate:
@@ -74,7 +74,11 @@ logging:
 
 # JWT Configuration
 jwt:
-  secret_key: ${BASE64_SECRET_KEY:vzxp+DRFX2QpTbzrY+l0nQ10fs9Cepmc3v5/mslcDno=}
+  # Local/docker only: no committed key. If BASE64_SECRET_KEY is unset, JwtService uses
+  # an insecure built-in fallback (allow-insecure-fallback=true below). Provide the env
+  # var (docker/compose/.env) to override.
+  secret_key: ${BASE64_SECRET_KEY:}
+  allow-insecure-fallback: true
   expiration: ${JWT_EXPIRATION:3600000}
   refresh-expiration: ${JWT_REFRESH_EXPIRATION:86400000}
 

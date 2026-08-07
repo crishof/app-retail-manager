@@ -67,7 +67,7 @@ export interface UpdatePurchaseInvoiceRequest {
 @Injectable({ providedIn: 'root' })
 export class PurchaseInvoiceService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/api/purchase-invoices`;
+  private readonly apiUrl = `${environment.apiUrl}/purchase-invoices`;
 
   /**
    * Create a new purchase invoice.

@@ -60,7 +60,7 @@ export interface UpdateInventoryItemRequest {
 @Injectable({ providedIn: 'root' })
 export class InventoryService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/api/inventory`;
+  private readonly apiUrl = `${environment.apiUrl}/inventory`;
 
   // ==================== SESSION ENDPOINTS ====================
 

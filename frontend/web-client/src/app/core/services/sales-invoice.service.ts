@@ -57,7 +57,7 @@ export interface CreateSalesInvoiceRequest {
 @Injectable({ providedIn: 'root' })
 export class SalesInvoiceService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/api/sales-invoices`;
+  private readonly apiUrl = `${environment.apiUrl}/sales-invoices`;
 
   /**
    * Create a new sales invoice.

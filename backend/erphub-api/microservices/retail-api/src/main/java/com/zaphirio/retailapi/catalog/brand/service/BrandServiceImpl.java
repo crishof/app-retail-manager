@@ -14,6 +14,7 @@ import com.zaphirio.retailapi.catalog.brand.model.Brand;
 import com.zaphirio.retailapi.catalog.brand.repository.BrandRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -39,7 +40,8 @@ public class BrandServiceImpl implements BrandService {
     private final ImageServiceClient imageClient;
     private final ProductServiceClient productClient;
     private final BrandDeletionService brandDeletionService;
-    private final BrandEventPublisher eventPublisher;
+    // Optional: only present when rabbitmq.event-sync.enabled=true (MVP runs without a broker).
+    private final ObjectProvider<BrandEventPublisher> eventPublisher;
 
 
     @Override
@@ -134,7 +136,8 @@ public class BrandServiceImpl implements BrandService {
         Brand updated = brandRepository.save(brand);
 
         log.info("Publishing brand update");
-        eventPublisher.publishBrandUpdated(new BrandUpdatedEvent(updated.getId(), updated.getName(), false, Instant.now()));
+        eventPublisher.ifAvailable(publisher ->
+                publisher.publishBrandUpdated(new BrandUpdatedEvent(updated.getId(), updated.getName(), false, Instant.now())));
 
 
         log.info("Brand updated successfully | id={}", id);

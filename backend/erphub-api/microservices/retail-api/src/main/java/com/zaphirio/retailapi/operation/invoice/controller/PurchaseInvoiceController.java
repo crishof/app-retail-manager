@@ -19,7 +19,7 @@ import java.util.UUID;
  * Endpoints: GET, POST, PUT, DELETE for purchase invoices and withholding management.
  */
 @RestController
-@RequestMapping("/api/purchase-invoices")
+@RequestMapping("/api/v1/purchase-invoices")
 @RequiredArgsConstructor
 @Slf4j
 public class PurchaseInvoiceController {
@@ -33,7 +33,7 @@ public class PurchaseInvoiceController {
     public ResponseEntity<PurchaseInvoiceResponse> create(
             @Valid @RequestBody CreatePurchaseInvoiceRequest request,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("POST /api/purchase-invoices - Create new purchase invoice");
+        log.info("POST /api/v1/purchase-invoices - Create new purchase invoice");
         PurchaseInvoiceResponse response = purchaseInvoiceService.create(request, tenantId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -45,7 +45,7 @@ public class PurchaseInvoiceController {
     public ResponseEntity<PurchaseInvoiceResponse> getById(
             @PathVariable UUID id,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("GET /api/purchase-invoices/{} - Fetch invoice", id);
+        log.info("GET /api/v1/purchase-invoices/{} - Fetch invoice", id);
         PurchaseInvoiceResponse response = purchaseInvoiceService.getById(id, tenantId);
         return ResponseEntity.ok(response);
     }
@@ -56,7 +56,7 @@ public class PurchaseInvoiceController {
     @GetMapping
     public ResponseEntity<List<PurchaseInvoiceResponse>> getAll(
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("GET /api/purchase-invoices - Fetch all invoices");
+        log.info("GET /api/v1/purchase-invoices - Fetch all invoices");
         List<PurchaseInvoiceResponse> responses = purchaseInvoiceService.getAll(tenantId);
         return ResponseEntity.ok(responses);
     }
@@ -68,7 +68,7 @@ public class PurchaseInvoiceController {
     public ResponseEntity<List<PurchaseInvoiceResponse>> getBySupplier(
             @PathVariable UUID supplierId,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("GET /api/purchase-invoices/supplier/{} - Fetch by supplier", supplierId);
+        log.info("GET /api/v1/purchase-invoices/supplier/{} - Fetch by supplier", supplierId);
         List<PurchaseInvoiceResponse> responses = purchaseInvoiceService.getBySupplierId(supplierId, tenantId);
         return ResponseEntity.ok(responses);
     }
@@ -80,7 +80,7 @@ public class PurchaseInvoiceController {
     public ResponseEntity<PurchaseInvoiceResponse> getBySupplierNumber(
             @PathVariable String supplierNumber,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("GET /api/purchase-invoices/supplier-number/{} - Fetch by supplier number", supplierNumber);
+        log.info("GET /api/v1/purchase-invoices/supplier-number/{} - Fetch by supplier number", supplierNumber);
         PurchaseInvoiceResponse response = purchaseInvoiceService.getBySupplierInvoiceNumber(supplierNumber, tenantId);
         return ResponseEntity.ok(response);
     }
@@ -91,7 +91,7 @@ public class PurchaseInvoiceController {
     @GetMapping("/unpaid")
     public ResponseEntity<List<PurchaseInvoiceResponse>> getUnpaid(
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("GET /api/purchase-invoices/unpaid - Fetch all unpaid invoices");
+        log.info("GET /api/v1/purchase-invoices/unpaid - Fetch all unpaid invoices");
         List<PurchaseInvoiceResponse> responses = purchaseInvoiceService.getUnpaid(tenantId);
         return ResponseEntity.ok(responses);
     }
@@ -103,7 +103,7 @@ public class PurchaseInvoiceController {
     public ResponseEntity<List<PurchaseInvoiceResponse>> getUnpaidBySupplier(
             @PathVariable UUID supplierId,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("GET /api/purchase-invoices/supplier/{}/unpaid", supplierId);
+        log.info("GET /api/v1/purchase-invoices/supplier/{}/unpaid", supplierId);
         List<PurchaseInvoiceResponse> responses = purchaseInvoiceService.getUnpaidBySupplierId(supplierId, tenantId);
         return ResponseEntity.ok(responses);
     }
@@ -116,7 +116,7 @@ public class PurchaseInvoiceController {
             @RequestParam LocalDate startDate,
             @RequestParam LocalDate endDate,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("GET /api/purchase-invoices/date-range - Fetch between {} and {}", startDate, endDate);
+        log.info("GET /api/v1/purchase-invoices/date-range - Fetch between {} and {}", startDate, endDate);
         List<PurchaseInvoiceResponse> responses = purchaseInvoiceService.getByDateRange(startDate, endDate, tenantId);
         return ResponseEntity.ok(responses);
     }
@@ -127,7 +127,7 @@ public class PurchaseInvoiceController {
     @GetMapping("/with-withholding")
     public ResponseEntity<List<PurchaseInvoiceResponse>> getWithWithholding(
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("GET /api/purchase-invoices/with-withholding - Fetch invoices with withholding");
+        log.info("GET /api/v1/purchase-invoices/with-withholding - Fetch invoices with withholding");
         List<PurchaseInvoiceResponse> responses = purchaseInvoiceService.getWithWithholding(tenantId);
         return ResponseEntity.ok(responses);
     }
@@ -140,7 +140,7 @@ public class PurchaseInvoiceController {
             @PathVariable UUID id,
             @Valid @RequestBody UpdatePurchaseInvoiceRequest request,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("PUT /api/purchase-invoices/{} - Update invoice", id);
+        log.info("PUT /api/v1/purchase-invoices/{} - Update invoice", id);
         PurchaseInvoiceResponse response = purchaseInvoiceService.update(id, request, tenantId);
         return ResponseEntity.ok(response);
     }
@@ -153,7 +153,7 @@ public class PurchaseInvoiceController {
             @PathVariable UUID id,
             @RequestParam BigDecimal percentage,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("PUT /api/purchase-invoices/{}/retention - Update retention to {}%", id, percentage);
+        log.info("PUT /api/v1/purchase-invoices/{}/retention - Update retention to {}%", id, percentage);
         PurchaseInvoiceResponse response = purchaseInvoiceService.updateRetention(id, percentage, tenantId);
         return ResponseEntity.ok(response);
     }
@@ -165,7 +165,7 @@ public class PurchaseInvoiceController {
     public ResponseEntity<PurchaseInvoiceResponse> cancel(
             @PathVariable UUID id,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("POST /api/purchase-invoices/{}/cancel - Cancel invoice", id);
+        log.info("POST /api/v1/purchase-invoices/{}/cancel - Cancel invoice", id);
         PurchaseInvoiceResponse response = purchaseInvoiceService.cancel(id, tenantId);
         return ResponseEntity.ok(response);
     }
@@ -177,7 +177,7 @@ public class PurchaseInvoiceController {
     public ResponseEntity<Void> delete(
             @PathVariable UUID id,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("DELETE /api/purchase-invoices/{} - Delete invoice", id);
+        log.info("DELETE /api/v1/purchase-invoices/{} - Delete invoice", id);
         purchaseInvoiceService.delete(id, tenantId);
         return ResponseEntity.noContent().build();
     }

@@ -2,6 +2,7 @@ package com.zaphirio.retailapi.shared.audit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zaphirio.retailapi.shared.security.TenantContext;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,13 +29,12 @@ import java.util.UUID;
 @Service
 @Transactional
 @Slf4j
+@RequiredArgsConstructor
 public class AuditService {
 
-    @Autowired
-    private AuditLogRepository auditLogRepository;
+    private final AuditLogRepository auditLogRepository;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
     /**
      * Log an entity creation event.

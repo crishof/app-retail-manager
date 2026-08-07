@@ -74,6 +74,22 @@ public class TenantFilter extends OncePerRequestFilter {
             String tenantId = TenantContext.getTenantId();
             log.debug("TenantFilter: tenant ID validated for path {}: tenant={}", requestPath, tenantId);
 
+            // Anti-spoofing: several controllers read the tenant from an X-Tenant-ID request
+            // header (@RequestHeader) and trust it blindly. If the client sends that header it
+            // MUST match the tenant derived from the authenticated JWT; otherwise a caller could
+            // read/write another tenant's data by forging the header. Reject the mismatch here,
+            // centrally, so the controllers cannot be tricked.
+            String headerTenant = request.getHeader("X-Tenant-ID");
+            if (headerTenant != null && !headerTenant.isBlank()
+                    && !headerTenant.trim().equals(tenantId)) {
+                log.warn("TenantFilter: X-Tenant-ID header '{}' does not match JWT tenant '{}' for path {} — rejecting",
+                        headerTenant, tenantId, requestPath);
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"X-Tenant-ID does not match authenticated tenant.\"}");
+                return;
+            }
+
             // Continue filter chain with validated tenant context
             filterChain.doFilter(request, response);
 

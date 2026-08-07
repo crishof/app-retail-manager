@@ -56,7 +56,7 @@ export interface UpdateQuoteRequest {
 @Injectable({ providedIn: 'root' })
 export class QuoteService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/api/quotes`;
+  private readonly apiUrl = `${environment.apiUrl}/quotes`;
 
   /**
    * Create a new quote.

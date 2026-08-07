@@ -31,10 +31,11 @@ public class JwtService {
 
     public JwtService(@Value("${jwt.secret_key:}") String secretKeyValue,
                       @Value("${jwt.expiration}") long jwtExpiration,
-                      @Value("${jwt.refresh-expiration}") long refreshExpiration) {
+                      @Value("${jwt.refresh-expiration}") long refreshExpiration,
+                      @Value("${jwt.allow-insecure-fallback:false}") boolean allowInsecureFallback) {
         this.jwtExpiration = jwtExpiration;
         this.refreshExpiration = refreshExpiration;
-        this.signingKey = buildSigningKey(secretKeyValue);
+        this.signingKey = buildSigningKey(secretKeyValue, allowInsecureFallback);
 
         log.info("JWT access token expiration (ms): {}", jwtExpiration);
         log.info("JWT refresh token expiration (ms): {}", refreshExpiration);
@@ -128,12 +129,18 @@ public class JwtService {
                 .compact();
     }
 
-    private SecretKey buildSigningKey(String secretKeyValue) {
-        log.debug("Building signing key from value: {}", secretKeyValue);
+    private SecretKey buildSigningKey(String secretKeyValue, boolean allowInsecureFallback) {
         String normalizedSecret = secretKeyValue;
 
         if (!StringUtils.hasText(normalizedSecret)) {
-            log.warn("JWT secret key is empty; using development fallback key. Configure jwt.secret_key in production.");
+            if (!allowInsecureFallback) {
+                throw new IllegalStateException(
+                        "JWT secret key is not configured. Set the BASE64_SECRET_KEY environment variable "
+                        + "(Base64-encoded, at least 256 bits). The insecure development fallback is disabled; "
+                        + "enable it with jwt.allow-insecure-fallback=true ONLY for local development.");
+            }
+            log.warn("JWT secret key is empty; using the INSECURE development fallback key. "
+                    + "This must never happen outside local development. Set BASE64_SECRET_KEY to override.");
             normalizedSecret = DEV_FALLBACK_SECRET_BASE64;
         }
 

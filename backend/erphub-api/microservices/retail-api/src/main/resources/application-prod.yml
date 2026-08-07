@@ -1,13 +1,15 @@
 server:
-  port: 9020
+  # Railway (y otros PaaS) inyectan el puerto vía $PORT; 9020 es solo fallback local.
+  port: ${PORT:9020}
   shutdown: graceful
 
 spring:
   datasource:
     # Production: external PostgreSQL
-    url: jdbc:postgresql://${POSTGRES_HOST:postgres}:${POSTGRES_PORT:5432}/retail_db
+    url: jdbc:postgresql://${POSTGRES_HOST:postgres}:${POSTGRES_PORT:5432}/${POSTGRES_DB:retail_db}
     username: ${POSTGRES_USER:admin}
-    password: ${POSTGRES_PASSWORD:root1234}
+    # No default: startup MUST fail if POSTGRES_PASSWORD is not provided in production.
+    password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 20
@@ -82,7 +84,9 @@ logging:
 
 # JWT Configuration
 jwt:
-  secret_key: ${BASE64_SECRET_KEY:vzxp+DRFX2QpTbzrY+l0nQ10fs9Cepmc3v5/mslcDno=}
+  # No default: startup MUST fail if BASE64_SECRET_KEY is not provided in production.
+  # allow-insecure-fallback stays false here, so an empty key also fails fast (see JwtService).
+  secret_key: ${BASE64_SECRET_KEY}
   expiration: ${JWT_EXPIRATION:3600000}
   refresh-expiration: ${JWT_REFRESH_EXPIRATION:86400000}
 

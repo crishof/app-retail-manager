@@ -18,7 +18,7 @@ import java.util.UUID;
  * Endpoints: GET, POST, PUT, DELETE for sales invoices and payments.
  */
 @RestController
-@RequestMapping("/api/sales-invoices")
+@RequestMapping("/api/v1/sales-invoices")
 @RequiredArgsConstructor
 @Slf4j
 public class SalesInvoiceController {
@@ -32,7 +32,7 @@ public class SalesInvoiceController {
     public ResponseEntity<SalesInvoiceResponse> create(
             @Valid @RequestBody CreateSalesInvoiceRequest request,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("POST /api/sales-invoices - Create new sales invoice");
+        log.info("POST /api/v1/sales-invoices - Create new sales invoice");
         SalesInvoiceResponse response = salesInvoiceService.create(request, tenantId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -44,7 +44,7 @@ public class SalesInvoiceController {
     public ResponseEntity<SalesInvoiceResponse> getById(
             @PathVariable UUID id,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("GET /api/sales-invoices/{} - Fetch invoice", id);
+        log.info("GET /api/v1/sales-invoices/{} - Fetch invoice", id);
         SalesInvoiceResponse response = salesInvoiceService.getById(id, tenantId);
         return ResponseEntity.ok(response);
     }
@@ -55,7 +55,7 @@ public class SalesInvoiceController {
     @GetMapping
     public ResponseEntity<List<SalesInvoiceResponse>> getAll(
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("GET /api/sales-invoices - Fetch all invoices");
+        log.info("GET /api/v1/sales-invoices - Fetch all invoices");
         List<SalesInvoiceResponse> responses = salesInvoiceService.getAll(tenantId);
         return ResponseEntity.ok(responses);
     }
@@ -67,7 +67,7 @@ public class SalesInvoiceController {
     public ResponseEntity<List<SalesInvoiceResponse>> getByCustomer(
             @PathVariable UUID customerId,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("GET /api/sales-invoices/customer/{} - Fetch by customer", customerId);
+        log.info("GET /api/v1/sales-invoices/customer/{} - Fetch by customer", customerId);
         List<SalesInvoiceResponse> responses = salesInvoiceService.getByCustomerId(customerId, tenantId);
         return ResponseEntity.ok(responses);
     }
@@ -79,7 +79,7 @@ public class SalesInvoiceController {
     public ResponseEntity<SalesInvoiceResponse> getBySaleId(
             @PathVariable UUID saleId,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("GET /api/sales-invoices/sale/{} - Fetch by sale", saleId);
+        log.info("GET /api/v1/sales-invoices/sale/{} - Fetch by sale", saleId);
         SalesInvoiceResponse response = salesInvoiceService.getBySaleId(saleId, tenantId);
         return ResponseEntity.ok(response);
     }
@@ -91,7 +91,7 @@ public class SalesInvoiceController {
     public ResponseEntity<List<SalesInvoiceResponse>> getUnpaidByCustomer(
             @PathVariable UUID customerId,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("GET /api/sales-invoices/customer/{}/unpaid", customerId);
+        log.info("GET /api/v1/sales-invoices/customer/{}/unpaid", customerId);
         List<SalesInvoiceResponse> responses = salesInvoiceService.getUnpaidByCustomerId(customerId, tenantId);
         return ResponseEntity.ok(responses);
     }
@@ -104,7 +104,7 @@ public class SalesInvoiceController {
             @RequestParam LocalDate startDate,
             @RequestParam LocalDate endDate,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("GET /api/sales-invoices/date-range - Fetch between {} and {}", startDate, endDate);
+        log.info("GET /api/v1/sales-invoices/date-range - Fetch between {} and {}", startDate, endDate);
         List<SalesInvoiceResponse> responses = salesInvoiceService.getByDateRange(startDate, endDate, tenantId);
         return ResponseEntity.ok(responses);
     }
@@ -117,7 +117,7 @@ public class SalesInvoiceController {
             @PathVariable UUID id,
             @Valid @RequestBody UpdateSalesInvoiceRequest request,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("PUT /api/sales-invoices/{} - Update invoice", id);
+        log.info("PUT /api/v1/sales-invoices/{} - Update invoice", id);
         SalesInvoiceResponse response = salesInvoiceService.update(id, request, tenantId);
         return ResponseEntity.ok(response);
     }
@@ -130,7 +130,7 @@ public class SalesInvoiceController {
             @PathVariable UUID id,
             @RequestParam double amount,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("POST /api/sales-invoices/{}/payments - Record payment of {}", id, amount);
+        log.info("POST /api/v1/sales-invoices/{}/payments - Record payment of {}", id, amount);
         SalesInvoiceResponse response = salesInvoiceService.recordPayment(id, amount, tenantId);
         return ResponseEntity.ok(response);
     }
@@ -142,7 +142,7 @@ public class SalesInvoiceController {
     public ResponseEntity<SalesInvoiceResponse> cancel(
             @PathVariable UUID id,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("POST /api/sales-invoices/{}/cancel - Cancel invoice", id);
+        log.info("POST /api/v1/sales-invoices/{}/cancel - Cancel invoice", id);
         SalesInvoiceResponse response = salesInvoiceService.cancel(id, tenantId);
         return ResponseEntity.ok(response);
     }
@@ -154,7 +154,7 @@ public class SalesInvoiceController {
     public ResponseEntity<Void> delete(
             @PathVariable UUID id,
             @RequestHeader(value = "X-Tenant-ID", required = true) Long tenantId) {
-        log.info("DELETE /api/sales-invoices/{} - Delete invoice", id);
+        log.info("DELETE /api/v1/sales-invoices/{} - Delete invoice", id);
         salesInvoiceService.delete(id, tenantId);
         return ResponseEntity.noContent().build();
     }
