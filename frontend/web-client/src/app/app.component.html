@@ -1,17 +1,17 @@
 @if (!hideShell()) {
-  <app-sidebar [collapsed]="sidebarCollapsed"></app-sidebar>
+  <app-sidebar></app-sidebar>
 }
 
-<div [class]="hideShell() ? '' : 'app-shell'" [class.app-shell--collapsed]="!hideShell() && sidebarCollapsed">
+<div
+  [class]="hideShell() ? '' : 'app-shell'"
+  [class.app-shell--panel-collapsed]="!hideShell() && shell.panelCollapsed()"
+  [class.app-shell--narrow]="!hideShell() && shell.isNarrow()"
+>
   @if (!hideShell()) {
-    <app-topbar
-      [sidebarCollapsed]="sidebarCollapsed"
-      (toggleSidebar)="toggleSidebar()"
-    ></app-topbar>
+    <app-topbar></app-topbar>
   }
 
   <main [class]="hideShell() ? '' : 'app-shell__content'">
     <router-outlet></router-outlet>
   </main>
 </div>
-

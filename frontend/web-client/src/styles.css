@@ -14,9 +14,13 @@
 
 /* ─── CSS Custom Properties ─────────────────────────── */
 :root {
+  /* Shell: rail (secciones) + panel contextual (ítems) */
+  --rail-w: 58px;
+  --panel-w: 216px;
+  --topbar-height: 56px;
+  /* legacy (referencias remanentes hasta migrar pantallas) */
   --sidebar-width: 256px;
   --sidebar-collapsed-width: 64px;
-  --topbar-height: 56px;
 
   --color-primary:      #0d9488; /* teal-600  */
   --color-primary-dark: #0f766e; /* teal-700  */

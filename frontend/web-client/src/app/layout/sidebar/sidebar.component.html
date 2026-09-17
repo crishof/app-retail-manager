@@ -1,338 +1,135 @@
-<aside
-  class="sidebar"
-  [class.sidebar--collapsed]="collapsed"
-  aria-label="Menú de navegación principal"
+<div
+  class="nav"
+  [class.nav--panel-collapsed]="shell.panelCollapsed()"
+  [class.nav--drawer-open]="shell.drawerOpen()"
+  [class.nav--narrow]="shell.isNarrow()"
 >
-  <a class="sidebar__header" [routerLink]="['/dashboard']" title="Ir al inicio">
-    <div class="sidebar__logo">
-      <div class="sidebar__logo-icon-wrap">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M4 4h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4zM4 10h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4zM4 16h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4z"
-          />
-        </svg>
-      </div>
+  <!-- ── RAIL (secciones) ─────────────────────────────────────────── -->
+  <aside class="rail" aria-label="Secciones">
+    <a class="rail__logo" [routerLink]="['/dashboard']" (click)="onNavigate()" title="Inicio" aria-label="Inicio">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M4 4h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4zM4 10h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4zM4 16h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4z" />
+      </svg>
+    </a>
 
-      @if (!collapsed) {
-        <div class="sidebar__logo-copy">
-          <span class="sidebar__logo-text"
-            >Retail<span class="sidebar__logo-accent">Manager</span></span
-          >
-          <span class="sidebar__logo-subtitle">Gestión Comercial</span>
-        </div>
-      }
-    </div>
-  </a>
-
-  @if (!collapsed) {
-    <section class="sidebar__context" aria-label="Contexto activo">
-      <div class="sidebar__context-header">
-        <div>
-          <p class="sidebar__context-kicker">Contexto activo</p>
-        </div>
-        @if (workspace.isLoading()) {
-          <span class="sidebar__context-status">Sincronizando</span>
-        }
-      </div>
-
-      <label class="sidebar__field">
-        <span class="sidebar__field-label">Empresa</span>
-        @if (workspace.companies().length > 0) {
-          <select
-            class="sidebar__select"
-            [ngModel]="workspace.selectedCompanyId()"
-            (ngModelChange)="onCompanyChange($event)"
-          >
-            @for (company of workspace.companies(); track company.id) {
-              <option [value]="company.id">
-                {{ company.legalName || company.name }}
-              </option>
-            }
-          </select>
-        } @else {
-          <div class="sidebar__fallback-field">
-            {{ workspace.selectedCompanyLabel() }}
-          </div>
-        }
-      </label>
-
-      <label class="sidebar__field">
-        <span class="sidebar__field-label">Sucursal</span>
-        @if (workspace.branches().length > 0) {
-          <select
-            class="sidebar__select"
-            [ngModel]="workspace.selectedBranchId()"
-            (ngModelChange)="onBranchChange($event)"
-          >
-            @for (branch of workspace.branches(); track branch.id) {
-              <option [value]="branch.id">
-                {{ branch.code }} - {{ branch.name }}
-              </option>
-            }
-          </select>
-        } @else {
-          <div class="sidebar__fallback-field">
-            {{ workspace.selectedBranchLabel() }}
-          </div>
-        }
-      </label>
-
-      @if (workspace.error()) {
-        <p class="sidebar__context-error">{{ workspace.error() }}</p>
-      }
-    </section>
-
-    <button
-      class="sidebar__palette-trigger"
-      type="button"
-      (click)="openPalette()"
-      aria-label="Abrir búsqueda global"
-    >
-      <span class="material-icons">search</span>
-      <span class="sidebar__palette-copy">
-        <span class="sidebar__palette-title">Búsqueda global</span>
-        <span class="sidebar__palette-subtitle"
-          >Comandos, pantallas y accesos rápidos</span
-        >
-      </span>
-      <span class="sidebar__palette-shortcut">⌘K</span>
-    </button>
-  } @else {
-    <button
-      class="sidebar__palette-trigger sidebar__palette-trigger--collapsed"
-      type="button"
-      (click)="openPalette()"
-      aria-label="Abrir búsqueda global"
-    >
-      <span class="material-icons">search</span>
-    </button>
-  }
-
-  <nav class="sidebar__nav">
-    @for (section of sections(); track section.title) {
-      <section class="sidebar__section">
-        @if (!collapsed) {
-          <div class="sidebar__section-header">
-            <p class="sidebar__section-label">{{ section.title }}</p>
-            <span class="sidebar__section-caption">{{ section.caption }}</span>
-          </div>
-        }
-
-        <div class="sidebar__items">
-          @for (item of section.items; track item.label) {
-            <div
-              class="sidebar__item-group"
-              [class.sidebar__item-group--active]="isActive(item)"
-            >
-              @if (item.externalUrl) {
-                <a
-                  class="sidebar__item"
-                  [class.sidebar__item--active]="isActive(item)"
-                  [href]="item.externalUrl"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  [title]="collapsed ? item.label : ''"
-                >
-                  <span class="material-icons sidebar__item-icon">{{
-                    item.icon
-                  }}</span>
-                  @if (!collapsed) {
-                    <span class="sidebar__item-copy">
-                      <span class="sidebar__item-label">{{ item.label }}</span>
-                      <span class="sidebar__item-description">{{
-                        item.description
-                      }}</span>
-                    </span>
-                    @if (item.badge) {
-                      <span class="sidebar__item-badge">{{ item.badge }}</span>
-                    }
-                  }
-                </a>
-              } @else {
-                <a
-                  class="sidebar__item"
-                  [class.sidebar__item--active]="isActive(item)"
-                  [routerLink]="item.route"
-                  [title]="collapsed ? item.label : ''"
-                >
-                  <span class="material-icons sidebar__item-icon">{{
-                    item.icon
-                  }}</span>
-                  @if (!collapsed) {
-                    <span class="sidebar__item-copy">
-                      <span class="sidebar__item-label">{{ item.label }}</span>
-                      <!--
-                        <span class="sidebar__item-description">{{
-                          item.description
-                        }}</span>
-                        -->
-                    </span>
-                    @if (item.badge) {
-                      <span class="sidebar__item-badge">{{ item.badge }}</span>
-                    }
-                  }
-                </a>
-              }
-
-              @if (!collapsed && item.children?.length) {
-                <div class="sidebar__subitems">
-                  @for (child of item.children; track child.label) {
-                    <a
-                      class="sidebar__subitem"
-                      [class.sidebar__subitem--active]="isActive(child)"
-                      [routerLink]="child.route"
-                    >
-                      <span class="material-icons sidebar__subitem-icon">{{
-                        child.icon
-                      }}</span>
-                      <span>{{ child.label }}</span>
-                    </a>
-                  }
-                </div>
-              }
-            </div>
-          }
-        </div>
-      </section>
-    }
-  </nav>
-
-  <footer class="sidebar__footer">
-    @if (!collapsed) {
-      <div class="sidebar__account-wrap">
+    <nav class="rail__sections" aria-label="Secciones principales">
+      @for (section of sections(); track section.title) {
         <button
-          class="sidebar__account-trigger"
           type="button"
-          (click)="toggleAccountMenu($event)"
-          aria-label="Abrir menú de usuario"
+          class="rail__section"
+          [class.rail__section--active]="isSectionActive(section)"
+          [attr.aria-current]="isSectionActive(section) ? 'true' : null"
+          [title]="section.title"
+          (click)="selectSection(section)"
         >
-          <div class="sidebar__account-avatar">
-            {{ (store.userDisplayName() || "U").charAt(0).toUpperCase() }}
-          </div>
-          <div class="sidebar__account-copy">
-            <p class="sidebar__account-name">{{ store.userDisplayName() }}</p>
-            <span class="sidebar__account-role">{{ userRoleLabel() }}</span>
-          </div>
-          <span class="material-icons sidebar__account-chevron"
-            >expand_less</span
-          >
+          <span class="material-icons">{{ section.icon || 'circle' }}</span>
+          <span class="rail__section-sr">{{ section.title }}</span>
+        </button>
+      }
+    </nav>
+
+    <div class="rail__foot">
+      <button type="button" class="rail__icon-btn" (click)="openPalette()" title="Búsqueda global · ⌘K" aria-label="Abrir búsqueda global">
+        <span class="material-icons">search</span>
+      </button>
+
+      <div class="rail__account">
+        <button type="button" class="rail__avatar" (click)="toggleAccountMenu($event)"
+          [attr.aria-expanded]="accountMenuOpen()" aria-label="Menú de usuario">
+          {{ (store.userDisplayName() || 'U').charAt(0).toUpperCase() }}
         </button>
 
         @if (accountMenuOpen()) {
-          <div class="sidebar__account-menu">
-            <div class="sidebar__account-menu-header">
-              <div class="sidebar__account-menu-topline">
-                <div>
-                  <p class="sidebar__account-name">
-                    {{ store.userDisplayName() }}
-                  </p>
-                  <p class="sidebar__account-meta">
-                    {{ store.userEmail() || "Sin correo asociado" }}
-                  </p>
-                </div>
-                <span class="sidebar__account-role">{{ userRoleLabel() }}</span>
-              </div>
-              <p class="sidebar__account-company">
-                {{ workspace.selectedCompanyLabel() }}
-              </p>
-              <p class="sidebar__account-branch">
-                {{ workspace.selectedBranchLabel() }}
-              </p>
+          <div class="account-menu" role="menu">
+            <div class="account-menu__head">
+              <p class="account-menu__name">{{ store.userDisplayName() }}</p>
+              <p class="account-menu__meta">{{ store.userEmail() || 'Sin correo asociado' }}</p>
+              <span class="account-menu__role">{{ userRoleLabel() }}</span>
+              <p class="account-menu__ctx">{{ workspace.selectedCompanyLabel() }} · {{ workspace.selectedBranchLabel() }}</p>
             </div>
-
-            <a
-              class="sidebar__account-link"
-              [routerLink]="['/dashboard/profile']"
-              (click)="closeAccountMenu()"
-            >
-              <span class="material-icons">account_circle</span>
-              Mi perfil
+            <a class="account-menu__link" [routerLink]="['/dashboard/profile']" (click)="closeAccountMenu()">
+              <span class="material-icons">account_circle</span> Mi perfil
             </a>
-            <a
-              class="sidebar__account-link"
-              [routerLink]="['/dashboard/settings']"
-              (click)="closeAccountMenu()"
-            >
-              <span class="material-icons">settings</span>
-              Configuración
+            <a class="account-menu__link" [routerLink]="['/dashboard/settings']" (click)="closeAccountMenu()">
+              <span class="material-icons">settings</span> Configuración
             </a>
-            <button
-              class="sidebar__account-link sidebar__account-link--danger"
-              type="button"
-              (click)="logout()"
-            >
-              <span class="material-icons">logout</span>
-              Cerrar sesión
+            <button type="button" class="account-menu__link account-menu__link--danger" (click)="logout()">
+              <span class="material-icons">logout</span> Cerrar sesión
             </button>
           </div>
         }
       </div>
-    }
-  </footer>
+    </div>
+  </aside>
 
-  @if (paletteOpen()) {
-    <button
-      class="sidebar__palette-backdrop"
-      type="button"
-      (click)="closePalette()"
-      aria-label="Cerrar búsqueda global"
-    ></button>
-    <dialog class="sidebar__palette" open aria-label="Búsqueda global">
-      <div
-        class="sidebar__palette-box"
-        (click)="$event.stopPropagation()"
-        (keydown.escape)="closePalette()"
-      >
-        <div class="sidebar__palette-input-wrap">
-          <span class="material-icons">search</span>
-          <input
-            class="sidebar__palette-input"
-            type="text"
-            [ngModel]="paletteQuery()"
-            (ngModelChange)="paletteQuery.set($event)"
-            placeholder="Ir a productos, libro IVA, proveedores, configuración..."
-            autofocus
-          />
-          <button
-            class="sidebar__palette-close"
-            type="button"
-            (click)="closePalette()"
-            aria-label="Cerrar búsqueda global"
-          >
-            Esc
-          </button>
-        </div>
+  <!-- ── PANEL contextual (ítems de la sección activa) ────────────── -->
+  @if (shell.drawerOpen()) {
+    <button type="button" class="nav__backdrop" (click)="shell.closeDrawer()" aria-label="Cerrar menú"></button>
+  }
 
-        <div class="sidebar__palette-results">
-          @for (
-            item of paletteResults();
-            track item.section + item.label + item.route + item.externalUrl
-          ) {
-            <button
-              class="sidebar__palette-result"
-              type="button"
-              (click)="navigate(item)"
-            >
-              <span class="material-icons sidebar__palette-result-icon">{{
-                item.icon
-              }}</span>
-              <span class="sidebar__palette-result-copy">
-                <span class="sidebar__palette-result-title">{{
-                  item.label
-                }}</span>
-                <span class="sidebar__palette-result-meta">{{
-                  item.trail.join(" / ")
-                }}</span>
-                <span class="sidebar__palette-result-description">{{
-                  item.description
-                }}</span>
-              </span>
-              @if (item.badge) {
-                <span class="sidebar__item-badge">{{ item.badge }}</span>
+  <aside class="panel" aria-label="Navegación de sección">
+    <header class="panel__head">
+      <p class="panel__title">{{ activeSection()?.title }}</p>
+      <p class="panel__caption">{{ activeSection()?.caption }}</p>
+    </header>
+
+    <nav class="panel__items">
+      @for (item of activeSection()?.items ?? []; track item.label) {
+        @if (item.externalUrl) {
+          <a class="panel__item" [href]="item.externalUrl" target="_blank" rel="noopener noreferrer" (click)="onNavigate()">
+            <span class="material-icons panel__item-icon">{{ item.icon }}</span>
+            <span class="panel__item-label">{{ item.label }}</span>
+            @if (item.badge) { <span class="panel__badge">{{ item.badge }}</span> }
+            <span class="material-icons panel__item-ext">north_east</span>
+          </a>
+        } @else {
+          <a class="panel__item" [class.panel__item--active]="isActive(item)"
+            [routerLink]="item.route" (click)="onNavigate()">
+            <span class="material-icons panel__item-icon">{{ item.icon }}</span>
+            <span class="panel__item-label">{{ item.label }}</span>
+            @if (item.badge) { <span class="panel__badge">{{ item.badge }}</span> }
+          </a>
+
+          @if (item.children?.length) {
+            <div class="panel__subitems">
+              @for (child of item.children; track child.label) {
+                <a class="panel__subitem" [class.panel__subitem--active]="isActive(child)"
+                  [routerLink]="child.route" (click)="onNavigate()">
+                  <span class="material-icons panel__subitem-icon">{{ child.icon }}</span>
+                  <span>{{ child.label }}</span>
+                </a>
               }
+            </div>
+          }
+        }
+      }
+    </nav>
+  </aside>
+
+  <!-- ── Command palette (⌘K) ─────────────────────────────────────── -->
+  @if (paletteOpen()) {
+    <button class="palette__backdrop" type="button" (click)="closePalette()" aria-label="Cerrar búsqueda global"></button>
+    <dialog class="palette" open aria-label="Búsqueda global">
+      <div class="palette__box" (click)="$event.stopPropagation()" (keydown.escape)="closePalette()">
+        <div class="palette__input-wrap">
+          <span class="material-icons">search</span>
+          <input class="palette__input" type="text"
+            [ngModel]="paletteQuery()" (ngModelChange)="paletteQuery.set($event)"
+            placeholder="Ir a productos, libro IVA, proveedores, configuración..." autofocus />
+          <button class="palette__close" type="button" (click)="closePalette()" aria-label="Cerrar">Esc</button>
+        </div>
+        <div class="palette__results">
+          @for (item of paletteResults(); track item.section + item.label + item.route + item.externalUrl) {
+            <button class="palette__result" type="button" (click)="navigate(item)">
+              <span class="material-icons palette__result-icon">{{ item.icon }}</span>
+              <span class="palette__result-copy">
+                <span class="palette__result-title">{{ item.label }}</span>
+                <span class="palette__result-meta">{{ item.trail.join(' / ') }}</span>
+              </span>
+              @if (item.badge) { <span class="panel__badge">{{ item.badge }}</span> }
             </button>
           } @empty {
-            <div class="sidebar__palette-empty">
+            <div class="palette__empty">
               <span class="material-icons">manage_search</span>
               <p>No hay coincidencias para esta búsqueda.</p>
             </div>
@@ -341,4 +138,4 @@
       </div>
     </dialog>
   }
-</aside>
+</div>

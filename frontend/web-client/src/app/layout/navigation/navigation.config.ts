@@ -18,6 +18,8 @@ export interface NavItem {
 export interface NavSection {
   title: string;
   caption: string;
+  /** Ícono (Material Icons) para el rail de navegación. */
+  icon?: string;
   items: NavItem[];
 }
 
@@ -43,6 +45,7 @@ export const APP_NAVIGATION: NavSection[] = [
   {
     title: 'Inicio',
     caption: 'Visión general operativa',
+    icon: 'dashboard',
     items: [
       {
         label: 'Dashboard',
@@ -57,6 +60,7 @@ export const APP_NAVIGATION: NavSection[] = [
   {
     title: 'Ventas',
     caption: 'Operación comercial del día',
+    icon: 'point_of_sale',
     items: [
       {
         label: 'Factura de venta',
@@ -94,6 +98,7 @@ export const APP_NAVIGATION: NavSection[] = [
   {
     title: 'Compras',
     caption: 'Abastecimiento y proveedores',
+    icon: 'shopping_cart',
     items: [
       {
         label: 'Proveedores',
@@ -122,6 +127,7 @@ export const APP_NAVIGATION: NavSection[] = [
   {
     title: 'Almacén',
     caption: 'Catálogo, stock y logística',
+    icon: 'warehouse',
     items: [
       {
         label: 'Productos',
@@ -151,6 +157,7 @@ export const APP_NAVIGATION: NavSection[] = [
   {
     title: 'Finanzas',
     caption: 'Caja, fiscalidad y reporting',
+    icon: 'account_balance',
     items: [
       {
         label: 'Caja diaria',
@@ -202,6 +209,7 @@ export const APP_NAVIGATION: NavSection[] = [
   {
     title: 'Ecommerce',
     caption: 'Canal online y catálogo digital',
+    icon: 'storefront',
     items: [
       {
         label: 'Órdenes ecommerce',
@@ -237,6 +245,7 @@ export const APP_NAVIGATION: NavSection[] = [
   {
     title: 'Servicio Técnico',
     caption: 'Posventa y soporte',
+    icon: 'build',
     items: [
       {
         label: 'Órdenes de trabajo',
@@ -257,6 +266,7 @@ export const APP_NAVIGATION: NavSection[] = [
   {
     title: 'Configuración',
     caption: 'Gobierno del sistema',
+    icon: 'settings',
     items: [
       {
         label: 'General',

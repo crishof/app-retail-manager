@@ -5,6 +5,7 @@ import { TopbarComponent } from './layout/topbar/topbar.component';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map } from 'rxjs/operators';
 import { ThemeService } from './core/services/theme.service';
+import { ShellStateService } from './core/services/shell-state.service';
 
 @Component({
   selector: "app-root",
@@ -16,8 +17,7 @@ export class AppComponent {
   private readonly router = inject(Router);
   // Instancia el servicio de tema en el arranque para aplicar data-theme.
   private readonly theme = inject(ThemeService);
-
-  sidebarCollapsed = false;
+  readonly shell = inject(ShellStateService);
 
   private readonly _url = toSignal(
     this.router.events.pipe(
@@ -32,8 +32,4 @@ export class AppComponent {
     const pathname = raw.split('?')[0].split('#')[0];
     return pathname === '/' || pathname === '' || pathname.startsWith('/landing') || pathname.startsWith('/auth');
   });
-
-  toggleSidebar() {
-    this.sidebarCollapsed = !this.sidebarCollapsed;
-  }
 }

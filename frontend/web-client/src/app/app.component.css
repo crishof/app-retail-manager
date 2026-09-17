@@ -4,29 +4,22 @@
 }
 
 .app-shell {
-  margin-left: var(--sidebar-width);
+  margin-left: calc(var(--rail-w) + var(--panel-w));
   min-height: 100vh;
-  transition: margin-left .2s ease;
-  background: var(--color-bg);
+  transition: margin-left .16s ease;
+  background: var(--canvas);
 }
 
-.app-shell--collapsed {
-  margin-left: var(--sidebar-collapsed-width);
+/* Panel colapsado (escritorio) o cajón (angosto): sólo queda el rail. */
+.app-shell--panel-collapsed,
+.app-shell--narrow {
+  margin-left: var(--rail-w);
 }
 
+/* Sin dependencia de calc(100vh - chrome): el topbar es fijo y sólo aporta
+   padding superior; la altura la resuelve el flujo normal del contenido. */
 .app-shell__content {
-  padding-top: var(--topbar-height);
-  padding: var(--topbar-height) 1.5rem 1.5rem;
-  min-height: calc(100vh - var(--topbar-height));
-}
-
-@media (max-width: 767px) {
-  .app-shell {
-    margin-left: 0;
-  }
-  .app-shell--collapsed {
-    margin-left: 0;
-  }
+  padding: calc(var(--topbar-height) + 1.25rem) 1.5rem 1.5rem;
 }
 
 /* NAVBAR */

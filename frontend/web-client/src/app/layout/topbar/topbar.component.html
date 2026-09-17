@@ -1,11 +1,12 @@
-<header class="topbar" [style.left]="sidebarCollapsed ? 'var(--sidebar-collapsed-width)' : 'var(--sidebar-width)'">
-  <button class="topbar__toggle" (click)="onToggle()" aria-label="Alternar menú">
-    <span class="material-icons">{{ sidebarCollapsed ? 'menu' : 'menu_open' }}</span>
-  </button>
+<header class="topbar">
+  @if (shell.isNarrow()) {
+    <button class="topbar__toggle" (click)="shell.toggleDrawer()" aria-label="Abrir menú de sección">
+      <span class="material-icons">{{ shell.drawerOpen() ? 'menu_open' : 'menu' }}</span>
+    </button>
+  }
 
   <div class="topbar__context">
     <p class="topbar__eyebrow">{{ currentSection() }}</p>
-
     <nav class="topbar__breadcrumb" aria-label="Ruta activa">
       @for (crumb of breadcrumbs(); track crumb.label; let last = $last) {
         @if (crumb.route && !last) {
@@ -13,12 +14,37 @@
         } @else {
           <span class="topbar__breadcrumb-current">{{ crumb.label }}</span>
         }
-
-        @if (!last) {
-          <span class="topbar__breadcrumb-separator">/</span>
-        }
+        @if (!last) { <span class="topbar__breadcrumb-separator">/</span> }
       }
     </nav>
+  </div>
+
+  <!-- Contexto de trabajo: Empresa / Sucursal -->
+  <div class="topbar__workspace">
+    <label class="topbar__ws-field">
+      <span class="topbar__ws-label">Empresa</span>
+      @if (workspace.companies().length > 0) {
+        <select class="topbar__ws-select" [ngModel]="workspace.selectedCompanyId()" (ngModelChange)="onCompanyChange($event)">
+          @for (company of workspace.companies(); track company.id) {
+            <option [value]="company.id">{{ company.legalName || company.name }}</option>
+          }
+        </select>
+      } @else {
+        <span class="topbar__ws-value">{{ workspace.selectedCompanyLabel() }}</span>
+      }
+    </label>
+    <label class="topbar__ws-field">
+      <span class="topbar__ws-label">Sucursal</span>
+      @if (workspace.branches().length > 0) {
+        <select class="topbar__ws-select" [ngModel]="workspace.selectedBranchId()" (ngModelChange)="onBranchChange($event)">
+          @for (branch of workspace.branches(); track branch.id) {
+            <option [value]="branch.id">{{ branch.code }} - {{ branch.name }}</option>
+          }
+        </select>
+      } @else {
+        <span class="topbar__ws-value">{{ workspace.selectedBranchLabel() }}</span>
+      }
+    </label>
   </div>
 
   <div class="topbar__actions">
@@ -30,17 +56,14 @@
       [attr.aria-label]="theme.isDark() ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
     >
       <span class="material-icons">{{ theme.isDark() ? 'light_mode' : 'dark_mode' }}</span>
-      <span class="topbar__icon-label">{{ theme.isDark() ? 'Claro' : 'Oscuro' }}</span>
     </button>
 
-    <a class="topbar__icon-btn" [routerLink]="['/ayuda']">
+    <a class="topbar__icon-btn" [routerLink]="['/ayuda']" aria-label="Ayuda">
       <span class="material-icons">help_outline</span>
-      <span class="topbar__icon-label">Ayuda</span>
     </a>
 
-    <a class="topbar__icon-btn topbar__icon-btn--notif" [routerLink]="['/notificaciones']">
+    <a class="topbar__icon-btn topbar__icon-btn--notif" [routerLink]="['/notificaciones']" aria-label="Avisos">
       <span class="material-icons">notifications</span>
-      <span class="topbar__icon-label">Avisos</span>
       @if (notificationCount > 0) {
         <span class="topbar__badge">{{ notificationCount }}</span>
       }
