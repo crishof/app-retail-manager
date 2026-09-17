@@ -1,5 +1,5 @@
 import { Component, HostListener, inject, OnDestroy, OnInit } from "@angular/core";
-import { CommonModule } from "@angular/common";
+
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, Router } from "@angular/router";
 import { forkJoin, of, Subscription } from "rxjs";
@@ -31,12 +31,11 @@ interface ProductColumnOption {
   selector: "app-products",
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     ProductNavbarComponent,
     ProductListComponent,
-    ProductDetailsComponent,
-  ],
+    ProductDetailsComponent
+],
   templateUrl: "./products.component.html",
   styleUrl: "./products.component.css",
 })

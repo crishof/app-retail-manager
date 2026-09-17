@@ -5,7 +5,7 @@
     class="g-3 needs-validation"
     novalidate
     (submit)="updateBrand($event)"
-  >
+    >
     <!-- BRAND NAME -->
     <div class="mb-3">
       <label for="brandNameInput" class="form-label">Brand Name</label>
@@ -17,11 +17,13 @@
         formControlName="brandName"
         placeholder="Type new brand name here"
         [ngClass]="{ 'is-invalid': hasErrors('brandName', 'required') }"
-      />
+        />
 
-      <div *ngIf="hasErrors('brandName', 'required')" class="invalid-feedback">
-        Brand name cannot be empty
-      </div>
+      @if (hasErrors('brandName', 'required')) {
+        <div class="invalid-feedback">
+          Brand name cannot be empty
+        </div>
+      }
     </div>
 
     <!-- LOGO -->
@@ -33,13 +35,15 @@
         id="formFile"
         accept="image/*"
         (change)="onFileSelected($event)"
-      />
+        />
     </div>
 
     <!-- ERROR MESSAGE -->
-    <div *ngIf="errorMessage" class="alert alert-danger">
-      {{ errorMessage }}
-    </div>
+    @if (errorMessage) {
+      <div class="alert alert-danger">
+        {{ errorMessage }}
+      </div>
+    }
 
     <!-- ACTIONS -->
     <div class="d-flex gap-2">
@@ -51,7 +55,7 @@
         type="button"
         class="btn btn-outline-secondary btn-sm"
         (click)="cancelar()"
-      >
+        >
         Cancel
       </button>
     </div>

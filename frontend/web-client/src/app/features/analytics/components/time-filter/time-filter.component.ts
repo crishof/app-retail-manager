@@ -1,5 +1,5 @@
-import { Component, output, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, output, ChangeDetectionStrategy, inject } from '@angular/core';
+
 import { FormsModule, ReactiveFormsModule, FormBuilder } from '@angular/forms';
 
 export interface DateRange {
@@ -11,25 +11,26 @@ export interface DateRange {
 @Component({
   selector: 'app-time-filter',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [FormsModule, ReactiveFormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex flex-col md:flex-row gap-4 p-4 bg-white rounded-lg border border-gray-200">
       <!-- Preset buttons -->
       <div class="flex flex-wrap gap-2">
-        <button
-          *ngFor="let preset of presets"
-          (click)="selectPreset(preset)"
-          [class.bg-blue-600]="isPresetSelected(preset)"
-          [class.text-white]="isPresetSelected(preset)"
-          [class.bg-gray-100]="!isPresetSelected(preset)"
-          [class.text-gray-700]="!isPresetSelected(preset)"
-          class="px-3 py-2 rounded-md text-sm font-medium transition-colors hover:opacity-80"
-        >
-          {{ preset.label }}
-        </button>
+        @for (preset of presets; track preset) {
+          <button
+            (click)="selectPreset(preset)"
+            [class.bg-blue-600]="isPresetSelected(preset)"
+            [class.text-white]="isPresetSelected(preset)"
+            [class.bg-gray-100]="!isPresetSelected(preset)"
+            [class.text-gray-700]="!isPresetSelected(preset)"
+            class="px-3 py-2 rounded-md text-sm font-medium transition-colors hover:opacity-80"
+            >
+            {{ preset.label }}
+          </button>
+        }
       </div>
-
+    
       <!-- Custom date range -->
       <div class="flex flex-col md:flex-row gap-2 md:ml-auto">
         <div>
@@ -39,7 +40,7 @@ export interface DateRange {
             [(ngModel)]="customStartDate"
             (change)="onCustomDateChange()"
             class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+            />
         </div>
         <div>
           <label class="block text-xs text-gray-600 mb-1">To</label>
@@ -48,19 +49,21 @@ export interface DateRange {
             [(ngModel)]="customEndDate"
             (change)="onCustomDateChange()"
             class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+            />
         </div>
         <button
           (click)="applyCustomRange()"
           class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors self-end"
-        >
+          >
           Apply
         </button>
       </div>
     </div>
-  `
+    `
 })
 export class TimeFilterComponent {
+  private fb = inject(FormBuilder);
+
   dateRangeSelected = output<DateRange>();
 
   presets: DateRange[] = [];
@@ -68,7 +71,7 @@ export class TimeFilterComponent {
   customStartDate: string = '';
   customEndDate: string = '';
 
-  constructor(private fb: FormBuilder) {
+  constructor() {
     this.initializePresets();
   }
 

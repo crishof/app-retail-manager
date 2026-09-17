@@ -1,5 +1,5 @@
 import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { TimeFilterComponent, DateRange } from '../../components/time-filter/time-filter.component';
 import { SalesTrendsChartComponent } from '../../components/sales-trends-chart/sales-trends-chart.component';
 import { RevenueByCategoryChartComponent } from '../../components/revenue-by-category-chart/revenue-by-category.component';
@@ -13,7 +13,6 @@ import { SalesByPaymentMethodChartComponent } from '../../components/sales-by-pa
   selector: 'app-analytics-home',
   standalone: true,
   imports: [
-    CommonModule,
     TimeFilterComponent,
     SalesTrendsChartComponent,
     RevenueByCategoryChartComponent,
@@ -22,7 +21,7 @@ import { SalesByPaymentMethodChartComponent } from '../../components/sales-by-pa
     InventoryAlertsChartComponent,
     CashFlowChartComponent,
     SalesByPaymentMethodChartComponent
-  ],
+],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="space-y-8">

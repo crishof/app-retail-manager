@@ -1,5 +1,5 @@
 import { Component, inject, input, output, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterLink, Router } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { AuthStore, User } from '../../../core/auth/auth.store';
@@ -7,7 +7,7 @@ import { AuthStore, User } from '../../../core/auth/auth.store';
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [RouterLink],
   template: `
     <header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
       <div class="px-4 sm:px-6 lg:px-8">

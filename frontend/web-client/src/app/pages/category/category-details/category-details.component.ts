@@ -13,11 +13,11 @@ import { FormsModule } from "@angular/forms";
 import { DomSanitizer } from "@angular/platform-browser";
 import { CategoryEditComponent } from "../category-edit/category-edit.component";
 import { ModalDialogService } from "../../../services/modal-dialog.service";
-import { CommonModule } from "@angular/common";
+
 
 @Component({
   selector: "app-category-details",
-  imports: [FormsModule, CommonModule, CategoryEditComponent],
+  imports: [FormsModule, CategoryEditComponent],
   templateUrl: "./category-details.component.html",
   styleUrl: "./category-details.component.css",
 })

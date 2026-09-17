@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { ICustomer } from '../../../model/customer.model';
@@ -9,7 +9,7 @@ import { CustomerSaleHistoryComponent } from '../customer-sale-history/customer-
 @Component({
     selector: 'app-customer',
     standalone: true,
-    imports: [CommonModule, FormsModule, ReactiveFormsModule, CustomerSaleHistoryComponent],
+    imports: [FormsModule, ReactiveFormsModule, CustomerSaleHistoryComponent],
     templateUrl: './customer.component.html',
     styleUrl: './customer.component.css'
 })

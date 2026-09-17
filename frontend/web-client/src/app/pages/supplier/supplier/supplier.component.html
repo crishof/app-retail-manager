@@ -26,7 +26,7 @@
         name="searchTerm"
         (input)="onSearchInput()"
         (keyup)="onKeyUp($event)"
-      />
+        />
       @if (searchTerm.length > 0) {
         <button type="button" class="sup-search__clear" (click)="clearSearch()" aria-label="Limpiar búsqueda">
           <span class="material-icons">close</span>
@@ -79,7 +79,7 @@
                 (click)="selectSupplier(supplier)"
                 (dblclick)="navigate(supplier.id)"
                 (keydown.enter)="selectSupplier(supplier)"
-              >
+                >
                 <td>{{ supplier.name }}</td>
                 <td>{{ supplier.legalName }}</td>
                 <td>{{ supplier.taxId }}</td>
@@ -92,15 +92,16 @@
 
     <section class="sup-panel sup-panel--detail">
       <div class="sup-tabs" role="tablist" aria-label="Supplier tabs">
-        <button
-          *ngFor="let tab of tabs"
-          type="button"
-          class="sup-tabs__btn"
-          [ngClass]="{ 'sup-tabs__btn--active': selectedComponent === tab }"
-          (click)="selectedComponent = tab"
-        >
-          {{ tabLabels[tab] }}
-        </button>
+        @for (tab of tabs; track tab) {
+          <button
+            type="button"
+            class="sup-tabs__btn"
+            [ngClass]="{ 'sup-tabs__btn--active': selectedComponent === tab }"
+            (click)="selectedComponent = tab"
+            >
+            {{ tabLabels[tab] }}
+          </button>
+        }
       </div>
 
       <div class="sup-detail-body">

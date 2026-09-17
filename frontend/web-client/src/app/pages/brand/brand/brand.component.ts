@@ -1,4 +1,4 @@
-import { CommonModule } from "@angular/common";
+
 import { Component, Input, OnInit, inject } from "@angular/core";
 import { IBrand } from "../../../model/brand.model";
 import { BrandService } from "../../../services/brand.service";
@@ -11,10 +11,9 @@ import { ModalDialogService } from "../../../services/modal-dialog.service";
   selector: "app-brand",
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
-    ReactiveFormsModule,
-  ],
+    ReactiveFormsModule
+],
   templateUrl: "./brand.component.html",
   styleUrl: "./brand.component.css",
 })

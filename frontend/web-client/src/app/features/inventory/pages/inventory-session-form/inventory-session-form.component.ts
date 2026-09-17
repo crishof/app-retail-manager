@@ -1,5 +1,5 @@
 import { Component, inject, ChangeDetectionStrategy, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { InventoryService, CreateInventorySessionRequest } from '../../../../core/services/inventory.service';
@@ -9,7 +9,7 @@ import { finalize } from 'rxjs/operators';
 @Component({
   selector: 'app-inventory-session-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink],
+  imports: [FormsModule, ReactiveFormsModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-slate-50">

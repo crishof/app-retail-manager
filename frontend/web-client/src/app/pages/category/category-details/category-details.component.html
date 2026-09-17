@@ -1,67 +1,63 @@
 <div class="container m-3 text-center">
-  <ng-container *ngIf="loading">
+  @if (loading) {
     <h5>Loading....</h5>
-  </ng-container>
+  }
 
-  <ng-container *ngIf="!loading && !editingMode">
-    <ng-container *ngIf="!successMessage && category">
+  @if (!loading && !editingMode) {
+    @if (!successMessage && category) {
       <div class="card" style="width: 18rem">
-        <img
-          *ngIf="category.imageUrl"
-          [src]="getImageUrl(category.imageUrl)"
-          class="card-img-top"
-          alt="Category"
-        />
+        @if (category.imageUrl) {
+          <img
+            [src]="getImageUrl(category.imageUrl)"
+            class="card-img-top"
+            alt="Category"
+            />
+        }
         <div class="card-body">
           <h5 class="card-title">{{ category.name }}</h5>
           <p class="card-text">
             {{ category.name }} - Some example description text.
           </p>
-
           <div class="btn-group" role="group">
             <button
               class="btn btn-outline-primary btn-sm"
               (click)="startEditing()"
-            >
+              >
               Edit
             </button>
             <button
               class="btn btn-outline-danger btn-sm"
               (click)="confirmDelete(category.id)"
-            >
+              >
               Delete
             </button>
           </div>
         </div>
       </div>
-    </ng-container>
-
-    <ng-container *ngIf="successMessage">
+    }
+    @if (successMessage) {
       <div class="card bg-success text-light p-2">
         <h5>{{ successMessage }}</h5>
       </div>
-    </ng-container>
-
-    <ng-container *ngIf="errorMessage">
+    }
+    @if (errorMessage) {
       <div class="card bg-danger text-light p-2">
         <h5>{{ errorMessage }}</h5>
       </div>
-    </ng-container>
-  </ng-container>
+    }
+  }
 
-  <ng-container *ngIf="editingMode && category">
+  @if (editingMode && category) {
     <div class="container text-center m-3">
       <h5>Editing Category: {{ category.name }}</h5>
     </div>
-
     <app-category-edit
       [category]="category"
       (saved)="saveChanges($event)"
       (canceled)="cancelEditing()"
     ></app-category-edit>
-
     <button class="btn btn-outline-danger btn-sm" (click)="cancelEditing()">
       Cancel
     </button>
-  </ng-container>
+  }
 </div>

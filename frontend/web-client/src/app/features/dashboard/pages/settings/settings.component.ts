@@ -1,5 +1,5 @@
 import { Component, inject, ChangeDetectionStrategy } from "@angular/core";
-import { CommonModule } from "@angular/common";
+
 import {
   FormBuilder,
   FormGroup,
@@ -11,7 +11,7 @@ import { AuthStore } from "../../../../core/auth/auth.store";
 @Component({
   selector: "app-settings",
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [ReactiveFormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="max-w-4xl mx-auto space-y-8">

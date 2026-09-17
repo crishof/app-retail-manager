@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, EventEmitter, HostListener, Output, inject, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ISupplier } from '../../../model/supplier.model';
@@ -6,7 +6,7 @@ import { SupplierService } from '../../../services/supplier.service';
 
 @Component({
     selector: 'app-supplier-navbar',
-    imports: [CommonModule, RouterLink],
+    imports: [RouterLink],
     templateUrl: './supplier-navbar.component.html',
     styleUrl: './supplier-navbar.component.css'
 })

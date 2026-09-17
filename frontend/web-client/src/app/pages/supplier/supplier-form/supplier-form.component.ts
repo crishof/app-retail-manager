@@ -1,4 +1,4 @@
-import { CommonModule } from "@angular/common";
+
 import { Component, EventEmitter, Input, OnInit, Output, inject } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { ActivatedRoute, Router } from "@angular/router";
@@ -9,7 +9,7 @@ import { ISupplier } from "../../../model/supplier.model";
 @Component({
   selector: "app-supplier-form",
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [ReactiveFormsModule],
   templateUrl: "./supplier-form.component.html",
   styleUrl: "./supplier-form.component.css",
 })

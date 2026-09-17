@@ -1,5 +1,5 @@
 import { Component, input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 interface NavItem {
@@ -13,7 +13,7 @@ interface NavItem {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive],
   template: `
     <aside class="w-64 bg-gray-900 text-white h-screen fixed left-0 top-16 overflow-y-auto hidden lg:flex flex-col">
       <nav class="flex-1 px-4 py-6 space-y-2">

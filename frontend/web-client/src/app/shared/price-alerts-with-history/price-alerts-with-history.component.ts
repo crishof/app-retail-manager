@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { IProductPriceLink } from '../../model/product-price-link.model';
 import { PriceAlertBadgeComponent } from '../price-alert-badge/price-alert-badge.component';
 import { PriceHistoryModalComponent } from '../price-history-modal/price-history-modal.component';
@@ -7,7 +7,7 @@ import { PriceHistoryModalComponent } from '../price-history-modal/price-history
 @Component({
   selector: 'app-price-alerts-with-history',
   standalone: true,
-  imports: [CommonModule, PriceAlertBadgeComponent, PriceHistoryModalComponent],
+  imports: [PriceAlertBadgeComponent, PriceHistoryModalComponent],
   templateUrl: './price-alerts-with-history.component.html',
   styleUrl: './price-alerts-with-history.component.css'
 })

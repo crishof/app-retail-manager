@@ -5,7 +5,7 @@
     class="g-3 needs-validation"
     novalidate
     (submit)="save($event)"
-  >
+    >
     <div class="mb-3">
       <label for="categoryNameInput" class="form-label">Category Name:</label>
       <input
@@ -15,10 +15,12 @@
         placeholder="Type new name here"
         formControlName="categoryName"
         [ngClass]="{ 'is-invalid': hasErrors('categoryName', 'required') }"
-      />
-      <div *ngIf="hasErrors('categoryName', 'required')" class="text-danger">
-        Category name cannot be empty
-      </div>
+        />
+      @if (hasErrors('categoryName', 'required')) {
+        <div class="text-danger">
+          Category name cannot be empty
+        </div>
+      }
     </div>
     <button type="submit" class="btn btn-outline-primary btn-sm">
       Update Name
@@ -27,7 +29,7 @@
       type="button"
       class="btn btn-secondary btn-sm ms-2"
       (click)="cancel()"
-    >
+      >
       Cancel
     </button>
   </form>
@@ -45,14 +47,14 @@
         type="file"
         id="formFile"
         (change)="onFileSelected($event)"
-      />
+        />
     </div>
     <button
       type="button"
       class="btn btn-outline-primary btn-sm"
       [disabled]="!selectedFile"
       (click)="updateImage()"
-    >
+      >
       Update Image
     </button>
   </form>

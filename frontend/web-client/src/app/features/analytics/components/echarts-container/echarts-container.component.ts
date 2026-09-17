@@ -1,11 +1,11 @@
 import { Component, ViewChild, ElementRef, effect, input, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import * as echarts from 'echarts';
 
 @Component({
   selector: 'app-echarts-container',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div

@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnChanges, Output, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { ISupplierProduct } from '../../../model/supplierProduct';
 import { IProduct } from '../../../model/product.model';
@@ -9,7 +9,7 @@ import { ProductPriceLinkService } from '../../../services/product-price-link.se
 @Component({
   selector: 'app-link-product-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './link-product-modal.component.html',
   styleUrl: './link-product-modal.component.css',
 })

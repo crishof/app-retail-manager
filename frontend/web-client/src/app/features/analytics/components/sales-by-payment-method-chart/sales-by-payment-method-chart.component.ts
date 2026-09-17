@@ -1,5 +1,5 @@
 import { Component, input, effect, inject, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { EchartsContainerComponent } from '../echarts-container/echarts-container.component';
 import { AnalyticsDataService, SalesByPaymentMethodData } from '../../../../core/services/analytics-data.service';
 import { signal } from '@angular/core';
@@ -8,7 +8,7 @@ import type { EChartsOption } from 'echarts';
 @Component({
   selector: 'app-sales-by-payment-method-chart',
   standalone: true,
-  imports: [CommonModule, EchartsContainerComponent],
+  imports: [EchartsContainerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
@@ -16,16 +16,20 @@ import type { EChartsOption } from 'echarts';
         <h3 class="text-lg font-semibold text-gray-900">Sales by Payment Method</h3>
         <p class="text-sm text-gray-500">Revenue distribution by payment type</p>
       </div>
-
-      <div *ngIf="isLoading()" class="flex items-center justify-center h-80">
-        <div class="text-gray-400">Loading...</div>
-      </div>
-
-      <div *ngIf="!isLoading()">
-        <app-echarts-container [option]="chartOption()" />
-      </div>
+    
+      @if (isLoading()) {
+        <div class="flex items-center justify-center h-80">
+          <div class="text-gray-400">Loading...</div>
+        </div>
+      }
+    
+      @if (!isLoading()) {
+        <div>
+          <app-echarts-container [option]="chartOption()" />
+        </div>
+      }
     </div>
-  `
+    `
 })
 export class SalesByPaymentMethodChartComponent {
   private analyticsService = inject(AnalyticsDataService);

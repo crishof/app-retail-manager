@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+import { Injectable, inject } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
 import { Observable } from "rxjs";
 import { ConfirmDialogComponent } from "../utils/confirm-dialog/confirm-dialog.component";
@@ -8,7 +8,8 @@ import { CategoryEditComponent } from "../pages/category/category-edit/category-
   providedIn: "root",
 })
 export class ModalDialogService {
-  constructor(readonly dialog: MatDialog) {}
+  readonly dialog = inject(MatDialog);
+
 
   openConfirmDialog(): Observable<boolean> {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {

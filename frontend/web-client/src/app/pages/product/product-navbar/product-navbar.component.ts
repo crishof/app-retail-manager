@@ -1,11 +1,11 @@
 import { Component, EventEmitter, Output, HostListener } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
     selector: 'app-product-navbar',
     standalone: true,
-    imports: [CommonModule, RouterLink],
+    imports: [RouterLink],
     templateUrl: './product-navbar.component.html',
     styleUrl: './product-navbar.component.css',
 })

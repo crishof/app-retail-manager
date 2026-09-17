@@ -17,6 +17,8 @@ import { Router } from '@angular/router';
   styleUrl: './brand-create.component.css'
 })
 export class BrandCreateComponent {
+  private formBuilder = inject(FormBuilder);
+
   @Output() onCancel = new EventEmitter<void>();
 
   brandForm!: FormGroup;
@@ -27,7 +29,7 @@ export class BrandCreateComponent {
   errorMessage = '';
   file: File | null = null;
 
-  constructor(private formBuilder: FormBuilder) {
+  constructor() {
     this.brandForm = this.formBuilder.group({
       brandName: ['', Validators.required],
     });
