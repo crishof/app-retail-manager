@@ -1,0 +1,116 @@
+:host { display: block; }
+
+/* La tabla scrollea horizontalmente dentro de su envoltorio (min-width en la
+   tabla + overflow-x en el wrap). overflow-y hidden explícito para que ninguna
+   animación provoque un scrollbar vertical intermitente. */
+.uit__wrap {
+  overflow-x: auto;
+  overflow-y: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: var(--surface);
+}
+
+.uit {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+}
+
+/* ── Header sticky ── */
+.uit__head th {
+  position: sticky; top: 0; z-index: 2;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  text-align: left;
+  white-space: nowrap;
+}
+.uit__th-inner { display: inline-flex; align-items: center; gap: .25rem; }
+.uit__th--sortable { cursor: pointer; user-select: none; }
+.uit__th--sortable:hover { color: var(--ink-2); }
+.uit__sort { font-size: 1rem; color: var(--ink-4); }
+
+/* ── Celdas ── */
+.uit__cell {
+  padding: 0 .75rem;
+  height: 36px;
+  border-bottom: 1px solid var(--border-soft);
+  color: var(--ink);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.uit__cell--right { text-align: right; }
+.uit__cell--center { text-align: center; }
+.uit__cell--mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.uit__cell--check { width: 2.5rem; padding-right: 0; }
+
+/* ── Filas ── */
+.uit__row { transition: background var(--t); }
+.uit__row:hover { background: var(--surface-2); }
+.uit__row--selected { background: var(--accent-fill); }
+.uit__row:last-child .uit__cell { border-bottom: none; }
+
+/* ── Columna de acciones (sticky a la derecha) ── */
+.uit__cell--actions {
+  position: sticky; right: 0;
+  width: 3rem; text-align: center;
+  background: var(--surface);
+}
+.uit__head .uit__cell--actions { background: var(--surface-2); z-index: 3; }
+.uit__row:hover .uit__cell--actions { background: var(--surface-2); }
+.uit__row--selected .uit__cell--actions { background: var(--accent-fill); }
+/* borde-guía sutil cuando hay scroll */
+.uit__cell--actions::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 1px;
+  background: var(--border-soft);
+}
+
+.uit__kebab {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 1.75rem; height: 1.75rem; border-radius: var(--r-sm);
+  border: none; background: none; color: var(--ink-3); cursor: pointer;
+}
+.uit__kebab:hover { background: var(--sunken); color: var(--ink); }
+.uit__kebab:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.uit__kebab .material-icons { font-size: 1.125rem; }
+
+/* Menú fijo: escapa del contenedor con overflow de la tabla */
+.uit__menu {
+  position: fixed; z-index: 50;
+  transform: translateX(-100%);
+  min-width: 10rem;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-sm);
+  box-shadow: 0 8px 24px rgb(0 0 0 / .18);
+  padding: .25rem;
+  display: flex; flex-direction: column;
+}
+
+/* ── Pager ── */
+.uit__pager {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  margin-top: .625rem;
+}
+.uit__pager-info { font-size: var(--fs-sm); color: var(--ink-3); }
+.uit__pager-info [data-numeric] { font-family: var(--font-mono); }
+.uit__pager-ctrls { display: inline-flex; align-items: center; gap: .5rem; }
+.uit__pager-page { font-family: var(--font-mono); font-size: var(--fs-sm); color: var(--ink-2); }
+.uit__pager-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 2rem; height: 2rem; border-radius: var(--r-sm);
+  border: 1px solid var(--border-strong); background: var(--surface); color: var(--ink-2); cursor: pointer;
+}
+.uit__pager-btn:hover:not(:disabled) { background: var(--surface-2); }
+.uit__pager-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+.uit__sr {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}

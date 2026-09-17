@@ -5,8 +5,12 @@ import {
   UiCheckboxComponent, UiFieldComponent, UiSheetComponent, UiSectionComponent,
   UiDetailRowComponent, UiMoneyRowComponent, UiNoteComponent, UiEmptyStateComponent,
   UiSkeletonComponent, UiStepperComponent, UiTechDetailsComponent, UiBulkBarComponent,
-  UiStep,
+  UiTableComponent, UiCellDirective, UiStep, UiColumn,
 } from '../../ui';
+
+interface DemoRow {
+  id: number; codigo: string; producto: string; stock: number; precio: string; estado: 'ok' | 'attn' | 'stop';
+}
 
 /**
  * /ui-kit — galería del Design System. Muestra todos los átomos con sus
@@ -22,6 +26,7 @@ import {
     UiCheckboxComponent, UiFieldComponent, UiSheetComponent, UiSectionComponent,
     UiDetailRowComponent, UiMoneyRowComponent, UiNoteComponent, UiEmptyStateComponent,
     UiSkeletonComponent, UiStepperComponent, UiTechDetailsComponent, UiBulkBarComponent,
+    UiTableComponent, UiCellDirective,
   ],
   template: `
     <div class="kit">
@@ -167,6 +172,34 @@ import {
         </ui-empty-state>
       </ui-section>
 
+      <!-- Tabla -->
+      <ui-section label="ui-table" class="kit__block">
+        <ui-table
+          [columns]="cols"
+          [rows]="rows"
+          [selectable]="true"
+          [pageSize]="5"
+          (selectionChange)="tableSel.set($event.length)"
+        >
+          <ng-template uiCell="estado" let-row>
+            <ui-tag [tone]="row.estado">
+              {{ row.estado === 'ok' ? 'En stock' : row.estado === 'attn' ? 'Bajo' : 'Sin stock' }}
+            </ui-tag>
+          </ng-template>
+          <ng-template uiCell="__actions" let-row>
+            <button type="button" class="kit__menuitem">Editar {{ row.codigo }}</button>
+            <button type="button" class="kit__menuitem">Duplicar</button>
+            <button type="button" class="kit__menuitem kit__menuitem--danger">Eliminar</button>
+          </ng-template>
+        </ui-table>
+        @if (tableSel() > 0) {
+          <ui-bulk-bar [count]="tableSel()" (clear)="tableSel.set(0)">
+            <ui-button variant="quiet" size="sm">Exportar</ui-button>
+            <ui-button variant="danger" size="sm">Eliminar</ui-button>
+          </ui-bulk-bar>
+        }
+      </ui-section>
+
       <!-- Bulk bar -->
       <ui-section label="ui-bulk-bar" class="kit__block">
         <div class="row">
@@ -196,11 +229,36 @@ import {
     .row + .row { margin-top: .75rem; }
     .stack { display: flex; flex-direction: column; gap: .625rem; }
     .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); gap: 1rem; }
+    .kit__menuitem {
+      text-align: left; background: none; border: none; cursor: pointer;
+      padding: .4375rem .5rem; border-radius: var(--r-sm); font-size: var(--fs-sm); color: var(--ink-2);
+    }
+    .kit__menuitem:hover { background: var(--surface-2); color: var(--ink); }
+    .kit__menuitem--danger { color: var(--stop); }
   `],
 })
 export class UiKitComponent {
   readonly theme = inject(ThemeService);
   readonly selected = signal(0);
+  readonly tableSel = signal(0);
+
+  readonly cols: UiColumn[] = [
+    { key: 'codigo', header: 'Código', type: 'mono', sortable: true, width: '8rem' },
+    { key: 'producto', header: 'Producto', sortable: true },
+    { key: 'stock', header: 'Stock', type: 'number', sortable: true, width: '7rem' },
+    { key: 'precio', header: 'Precio', type: 'mono', align: 'right', sortable: true, width: '9rem' },
+    { key: 'estado', header: 'Estado', width: '9rem' },
+  ];
+  readonly rows: DemoRow[] = [
+    { id: 1, codigo: 'GTR-001', producto: 'Guitarra criolla Fonseca', stock: 12, precio: '$ 189.900', estado: 'ok' },
+    { id: 2, codigo: 'TEC-044', producto: 'Teclado Yamaha PSR-E373', stock: 3, precio: '$ 412.500', estado: 'attn' },
+    { id: 3, codigo: 'BAT-010', producto: 'Batería acústica Mapex', stock: 0, precio: '$ 1.240.000', estado: 'stop' },
+    { id: 4, codigo: 'MIC-207', producto: 'Micrófono Shure SM58', stock: 27, precio: '$ 98.400', estado: 'ok' },
+    { id: 5, codigo: 'AMP-133', producto: 'Amplificador Marshall MG15', stock: 6, precio: '$ 274.000', estado: 'ok' },
+    { id: 6, codigo: 'CAB-090', producto: 'Cable Plug-Plug 6m', stock: 2, precio: '$ 12.900', estado: 'attn' },
+    { id: 7, codigo: 'UKU-015', producto: 'Ukelele soprano Mahalo', stock: 18, precio: '$ 46.700', estado: 'ok' },
+  ];
+
   readonly steps: UiStep[] = [
     { label: 'Presupuesto', state: 'done' },
     { label: 'Facturado', state: 'done' },

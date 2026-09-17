@@ -18,7 +18,7 @@ import {
         class="ui-cbx__input"
         [checked]="checked()"
         [disabled]="disabled()"
-        [attr.aria-label]="label() || null"
+        [attr.aria-label]="ariaLabel() || label() || null"
         (change)="onChange($event)"
       />
       <span class="ui-cbx__box" aria-hidden="true"></span>
@@ -53,6 +53,8 @@ export class UiCheckboxComponent {
   readonly indeterminate = input(false);
   readonly disabled = input(false);
   readonly label = input<string>('');
+  /** Nombre accesible sin texto visible (para checkbox de sólo control). */
+  readonly ariaLabel = input<string>('');
 
   private readonly box = viewChild<ElementRef<HTMLInputElement>>('box');
 

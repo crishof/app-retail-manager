@@ -192,9 +192,9 @@ export const APP_NAVIGATION: NavSection[] = [
       {
         label: 'Facturación electrónica',
         icon: 'verified_user',
-        description: 'Preparado para VeriFactu/AEAT y obligación antifraude.',
+        description: 'Integración con ARCA (AFIP) para comprobantes electrónicos.',
         route: '/contabilidad/facturacion-electronica',
-        badge: 'AEAT',
+        badge: 'ARCA',
         roles: ['ADMIN', 'MANAGER'],
       },
     ],

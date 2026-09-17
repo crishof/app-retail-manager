@@ -15,3 +15,5 @@ export * from './ui-skeleton/ui-skeleton.component';
 export * from './ui-stepper/ui-stepper.component';
 export * from './ui-tech-details/ui-tech-details.component';
 export * from './ui-bulk-bar/ui-bulk-bar.component';
+export * from './ui-table/ui-table.component';
+export * from './ui-table/ui-cell.directive';

@@ -140,7 +140,7 @@ export const routes: Routes = [
   { path: 'contabilidad/libro-iva',   component: EnConstruccionComponent, canActivate: [authGuard], data: { titulo: 'Libro IVA' } },
   { path: 'contabilidad/retenciones', component: EnConstruccionComponent, canActivate: [authGuard], data: { titulo: 'Retenciones de IIBB' } },
   { path: 'contabilidad/libro-mayor', component: EnConstruccionComponent, canActivate: [authGuard], data: { titulo: 'Libro Mayor' } },
-  { path: 'contabilidad/facturacion-electronica', component: EnConstruccionComponent, canActivate: [authGuard], data: { titulo: 'Facturación electrónica · VeriFactu / AEAT' } },
+  { path: 'contabilidad/facturacion-electronica', component: EnConstruccionComponent, canActivate: [authGuard], data: { titulo: 'Facturación electrónica · ARCA (AFIP)' } },
 
   // ── Configuración ──────────────────────────────────
   { path: 'configuracion/general',              component: CompaniesComponent, canActivate: [authGuard] },
