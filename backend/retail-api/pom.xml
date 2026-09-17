@@ -87,6 +87,14 @@
             <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
 
+        <!-- JSON (Jackson 3): en Spring Boot 4 el starter-webmvc NO lo arrastra.
+             Provee tools.jackson (Jackson 3), la autoconfig del ObjectMapper y
+             los convertidores HTTP JSON de la API REST. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-json</artifactId>
+        </dependency>
+
         <!-- Persistence -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

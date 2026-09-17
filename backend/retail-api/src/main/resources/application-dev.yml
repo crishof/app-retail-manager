@@ -3,6 +3,11 @@ server:
   shutdown: graceful
 
 spring:
+  # Seed de desarrollo (usuario + catálogo de prueba). No aplica en producción,
+  # que sólo usa classpath:db/migration (definido en application.yaml).
+  flyway:
+    locations: classpath:db/migration,classpath:db/dev
+
   datasource:
     # Development: connect to localhost PostgreSQL
     url: jdbc:postgresql://localhost:5544/${POSTGRES_DB:retail_db}
