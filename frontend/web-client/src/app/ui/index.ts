@@ -1,0 +1,17 @@
+// Barrel del Design System (átomos). Import: `from '@app/ui'` o ruta relativa.
+export * from './ui-button/ui-button.component';
+export * from './ui-tag/ui-tag.component';
+export * from './ui-chip/ui-chip.component';
+export * from './ui-switch/ui-switch.component';
+export * from './ui-checkbox/ui-checkbox.component';
+export * from './ui-field/ui-field.component';
+export * from './ui-sheet/ui-sheet.component';
+export * from './ui-section/ui-section.component';
+export * from './ui-detail-row/ui-detail-row.component';
+export * from './ui-money-row/ui-money-row.component';
+export * from './ui-note/ui-note.component';
+export * from './ui-empty-state/ui-empty-state.component';
+export * from './ui-skeleton/ui-skeleton.component';
+export * from './ui-stepper/ui-stepper.component';
+export * from './ui-tech-details/ui-tech-details.component';
+export * from './ui-bulk-bar/ui-bulk-bar.component';

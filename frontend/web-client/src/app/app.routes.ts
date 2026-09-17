@@ -31,6 +31,13 @@ export const routes: Routes = [
     loadChildren: () => import('./features/auth/auth.routes').then(m => m.authRoutes)
   },
 
+  // ── Design System (galería de átomos) ──────────────
+  {
+    path: 'ui-kit',
+    loadComponent: () => import('./features/ui-kit/ui-kit.component').then(m => m.UiKitComponent),
+    data: { title: 'UI Kit' }
+  },
+
   // ── Dashboard ──────────────────────────────────────
   { path: 'dashboard', component: DashboardHomeComponent, canActivate: [authGuard] },
   {

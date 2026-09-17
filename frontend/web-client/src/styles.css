@@ -1,6 +1,7 @@
 /* Capa canónica del Design System: CSS plano, va PRIMERO y sus reglas base
    (body/canvas, tipografía) mandan sobre la preflight de Tailwind. */
 @import './styles/design-system.css';
+@import './styles/ui-controls.css';
 
 @tailwind base;
 @tailwind components;
@@ -34,10 +35,11 @@
 html, body {
   height: 100%;
   margin: 0;
-  font-family: 'Roboto', 'Helvetica Neue', sans-serif;
+  /* Base del documento tomada del Design System (theme-aware). */
+  font-family: var(--font-sans);
   font-size: 14px;
-  color: var(--color-text);
-  background-color: var(--color-bg);
+  color: var(--ink-2);
+  background-color: var(--canvas);
 }
 
 /* ─── Angular Material Overrides ─────────────────────── */

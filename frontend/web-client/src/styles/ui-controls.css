@@ -1,0 +1,67 @@
+/* ============================================================================
+   Controles de formulario del Design System (clases globales)
+   ----------------------------------------------------------------------------
+   Se aplican a <input>/<select>/<textarea> proyectados dentro de <ui-field>,
+   evitando ::ng-deep. Todo sale de tokens; el consumidor ajusta con variables.
+   ========================================================================== */
+
+.ui-control {
+  display: block;
+  width: 100%;
+  font-family: var(--font-sans);
+  font-size: var(--fs-base);
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-sm);
+  padding: .5rem .625rem;
+  line-height: 1.4;
+  transition: border-color var(--t), box-shadow var(--t);
+  appearance: none;
+}
+.ui-control::placeholder { color: var(--ink-4); }
+.ui-control:hover { border-color: var(--ink-4); }
+.ui-control:focus,
+.ui-control:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-fill);
+}
+.ui-control:disabled {
+  background: var(--surface-2);
+  color: var(--ink-3);
+  cursor: not-allowed;
+}
+textarea.ui-control { min-height: 5rem; resize: vertical; }
+
+/* Números / importes / IDs en campos numéricos */
+.ui-control--mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Select: cheurón dibujado con background para no depender de assets */
+select.ui-control {
+  padding-right: 2rem;
+  background-image: linear-gradient(45deg, transparent 50%, var(--ink-3) 50%),
+                    linear-gradient(135deg, var(--ink-3) 50%, transparent 50%);
+  background-position: calc(100% - 1rem) 55%, calc(100% - .7rem) 55%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+/* Estado de error (lo fija <ui-field> vía clase en el control) */
+.ui-control--error {
+  border-color: var(--stop);
+}
+.ui-control--error:focus {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--stop) 15%, transparent);
+}
+
+.ui-label {
+  display: block;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--ink-2);
+  margin-bottom: .3125rem;
+}
