@@ -1,0 +1,191 @@
+/* ============================================================================
+   RetailManager — Design System (capa canónica de tokens)
+   ----------------------------------------------------------------------------
+   Fuente única de verdad de color, forma, tipografía y movimiento.
+   Sistema "carbón": neutros cálidos en claro, carbón puro en oscuro.
+   El acento (petróleo / neón) es lo ÚNICO que se cambia por marca.
+
+   Modos:
+   - :root                        → claro (default)
+   - @media (prefers-color-scheme: dark) sobre :root:not([data-theme="light"])
+                                    → oscuro automático si el SO lo pide y el
+                                      usuario no forzó "claro"
+   - :root[data-theme="dark"]     → oscuro forzado por el usuario (ThemeService)
+   - :root[data-theme="light"]    → claro forzado (gana sobre el media query)
+
+   Contraste: todo token de texto (--ink, --ink-2, --ink-3) cumple >= 4,5:1
+   contra su superficie en ambos modos. --ink-4 es SÓLO íconos y bordes.
+   Verificado por scripts/check-contrast.mjs.
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* ── Neutros — claro ─────────────────────────────────────────────── */
+  --canvas: #EDEBE6;
+  --surface: #FFFFFF;
+  --surface-2: #F8F7F4;
+  --sunken: #F0EEE9;
+
+  --border: #E2E0D9;
+  --border-soft: #EBE9E3;
+  --border-strong: #D0CDC4;
+
+  --ink: #171614;      /* 16,3:1  títulos                      */
+  --ink-2: #4B4A45;    /*  8,4:1  cuerpo                       */
+  --ink-3: #6E6C65;    /*  4,9:1  apagado ← piso de texto      */
+  --ink-4: #9B988F;    /*  2,7:1  SÓLO íconos y bordes         */
+
+  /* ── Acento y señales — claro ────────────────────────────────────── */
+  --accent: #2A5E7C;      /* interactivo sobre claro: links, foco, chips  */
+  --accent-hi: #3DE0F0;   /* neón, SÓLO sobre superficies oscuras         */
+  --accent-fill: color-mix(in srgb, var(--accent) 8%, transparent);
+  --accent-line: color-mix(in srgb, var(--accent) 24%, transparent);
+
+  --ok: #2E7A50;
+  --attn: #8A6512;
+  --stop: #A34438;
+
+  --led: #0BE07B;
+  --led-glow: 0 0 6px color-mix(in srgb, var(--led) 70%, transparent);
+
+  /* ── Navegación (oscura en los dos modos) ────────────────────────── */
+  --rail: #0B0B0B;
+  --rail-hover: #1D1D1D;
+  --rail-ink: #ABABAB;
+  --rail-ink-hi: #FFFFFF;
+
+  --nav: #161616;
+  --nav-border: #292929;
+  --nav-hover: #212121;
+  --nav-field: #101010;
+  --nav-ink: #C9C9C9;
+  --nav-lbl: #919191;
+  --nav-icon: #9C9C9C;
+  /* pill activa: neón al 16% — la nav es superficie oscura, ver regla del neón */
+  --nav-active: color-mix(in srgb, var(--accent-hi) 16%, transparent);
+
+  /* ── Forma ───────────────────────────────────────────────────────── */
+  --r: 10px;
+  --r-sm: 7px;
+  --pad: 22px;
+
+  /* ── Sombras (casi nulas) ────────────────────────────────────────── */
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.06);
+  --shadow-2: 0 1px 2px rgb(0 0 0 / 0.10);
+
+  /* ── Tipografía ──────────────────────────────────────────────────── */
+  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', monospace;
+
+  /* escala: 21 / 16 / 14 / 13 / 12,5 / 10  (base 14) */
+  --fs-xl: 1.3125rem;   /* 21 */
+  --fs-lg: 1rem;        /* 16 */
+  --fs-base: 0.875rem;  /* 14 */
+  --fs-sm: 0.8125rem;   /* 13 */
+  --fs-xs: 0.78125rem;  /* 12,5 */
+  --fs-2xs: 0.625rem;   /* 10 */
+  --lh: 1.5;
+
+  /* ── Movimiento ──────────────────────────────────────────────────── */
+  --t: 0.12s ease;
+}
+
+/* ── Oscuro automático (SO en oscuro y el usuario no forzó "claro") ── */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --canvas: #121212;
+    --surface: #1A1A1A;
+    --surface-2: #212121;
+    --sunken: #161616;
+
+    --border: #2E2E2E;
+    --border-soft: #262626;
+    --border-strong: #3D3D3D;
+
+    --ink: #F1F1F1;
+    --ink-2: #C2C2C2;
+    --ink-3: #919191;
+    --ink-4: #6E6E6E;
+
+    --ok: #57AE7C;
+    --attn: #CFA548;
+    --stop: #DE8073;
+
+    --led: #3BFF9C;
+    --led-glow: 0 0 8px color-mix(in srgb, var(--led) 75%, transparent);
+
+    --shadow-1: 0 1px 2px rgb(0 0 0 / 0.40);
+    --shadow-2: 0 1px 2px rgb(0 0 0 / 0.55);
+  }
+}
+
+/* ── Oscuro forzado por el usuario (gana siempre) ───────────────────── */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --canvas: #121212;
+  --surface: #1A1A1A;
+  --surface-2: #212121;
+  --sunken: #161616;
+
+  --border: #2E2E2E;
+  --border-soft: #262626;
+  --border-strong: #3D3D3D;
+
+  --ink: #F1F1F1;
+  --ink-2: #C2C2C2;
+  --ink-3: #919191;
+  --ink-4: #6E6E6E;
+
+  --ok: #57AE7C;
+  --attn: #CFA548;
+  --stop: #DE8073;
+
+  --led: #3BFF9C;
+  --led-glow: 0 0 8px color-mix(in srgb, var(--led) 75%, transparent);
+
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.40);
+  --shadow-2: 0 1px 2px rgb(0 0 0 / 0.55);
+}
+
+/* ============================================================================
+   Base de documento
+   ========================================================================== */
+html {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+  background: var(--canvas);
+  color: var(--ink-2);
+  font-size: var(--fs-base);
+  line-height: var(--lh);
+}
+
+/* Números siempre tabulares para datos, IDs, importes, fechas */
+.font-mono,
+[data-numeric] {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+/* Respeta prefers-reduced-motion en todo el árbol */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

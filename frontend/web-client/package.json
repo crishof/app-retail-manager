@@ -9,6 +9,7 @@
     "vercel-build": "npm run build:prod",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "check:contrast": "node scripts/check-contrast.mjs",
     "serve:ssr:retailmanager": "node dist/retailmanager/server/server.mjs"
   },
   "engines": {

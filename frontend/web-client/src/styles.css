@@ -1,7 +1,14 @@
+/* Capa canónica del Design System: CSS plano, va PRIMERO y sus reglas base
+   (body/canvas, tipografía) mandan sobre la preflight de Tailwind. */
+@import './styles/design-system.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Tokens legacy: usan @apply/@layer, así que deben procesarse DESPUÉS de las
+   directivas @tailwind. Se retiran al migrar las pantallas (Fase 5); su @import
+   tardío deja un warning benigno de esbuild, aislado a este archivo legacy. */
 @import './styles/design-tokens.css';
 
 /* ─── CSS Custom Properties ─────────────────────────── */

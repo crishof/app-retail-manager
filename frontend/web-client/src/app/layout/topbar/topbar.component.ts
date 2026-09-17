@@ -3,6 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { filter, map } from 'rxjs/operators';
 import { AuthStore } from '../../core/auth/auth.store';
+import { ThemeService } from '../../core/services/theme.service';
 import { findNavBreadcrumbs } from '../navigation/navigation.config';
 
 @Component({
@@ -15,6 +16,7 @@ import { findNavBreadcrumbs } from '../navigation/navigation.config';
 export class TopbarComponent {
   private readonly router = inject(Router);
   readonly store = inject(AuthStore);
+  readonly theme = inject(ThemeService);
 
   @Input() sidebarCollapsed = false;
   @Output() toggleSidebar = new EventEmitter<void>();

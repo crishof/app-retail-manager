@@ -22,6 +22,17 @@
   </div>
 
   <div class="topbar__actions">
+    <button
+      type="button"
+      class="topbar__icon-btn"
+      (click)="theme.toggle()"
+      [attr.aria-pressed]="theme.isDark()"
+      [attr.aria-label]="theme.isDark() ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+    >
+      <span class="material-icons">{{ theme.isDark() ? 'light_mode' : 'dark_mode' }}</span>
+      <span class="topbar__icon-label">{{ theme.isDark() ? 'Claro' : 'Oscuro' }}</span>
+    </button>
+
     <a class="topbar__icon-btn" [routerLink]="['/ayuda']">
       <span class="material-icons">help_outline</span>
       <span class="topbar__icon-label">Ayuda</span>

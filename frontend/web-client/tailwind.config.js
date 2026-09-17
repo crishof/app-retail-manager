@@ -1,9 +1,54 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ['./src/**/*.{html,ts}'],
+  // Modo oscuro dirigido por el atributo data-theme (ThemeService).
+  darkMode: ['selector', '[data-theme="dark"]'],
   theme: {
     extend: {
       colors: {
+        // ── Tokens semánticos del Design System (backed by CSS vars) ──────
+        // Uso: bg-surface, text-ink, border-border, text-accent, bg-ok, etc.
+        // Definidos en src/styles/design-system.css. Son la vía nueva; la
+        // paleta numérica de abajo queda por compatibilidad durante la
+        // migración de pantallas (Fase 5) y se retirará al final.
+        canvas: 'var(--canvas)',
+        surface: 'var(--surface)',
+        'surface-2': 'var(--surface-2)',
+        sunken: 'var(--sunken)',
+
+        border: 'var(--border)',
+        'border-soft': 'var(--border-soft)',
+        'border-strong': 'var(--border-strong)',
+
+        ink: 'var(--ink)',
+        'ink-2': 'var(--ink-2)',
+        'ink-3': 'var(--ink-3)',
+        'ink-4': 'var(--ink-4)',
+
+        accent: 'var(--accent)',
+        'accent-hi': 'var(--accent-hi)',
+        'accent-fill': 'var(--accent-fill)',
+        'accent-line': 'var(--accent-line)',
+
+        ok: 'var(--ok)',
+        attn: 'var(--attn)',
+        stop: 'var(--stop)',
+        led: 'var(--led)',
+
+        rail: 'var(--rail)',
+        'rail-hover': 'var(--rail-hover)',
+        'rail-ink': 'var(--rail-ink)',
+        'rail-ink-hi': 'var(--rail-ink-hi)',
+        nav: 'var(--nav)',
+        'nav-border': 'var(--nav-border)',
+        'nav-hover': 'var(--nav-hover)',
+        'nav-field': 'var(--nav-field)',
+        'nav-ink': 'var(--nav-ink)',
+        'nav-lbl': 'var(--nav-lbl)',
+        'nav-icon': 'var(--nav-icon)',
+        'nav-active': 'var(--nav-active)',
+
+        // ── Paleta legacy (compatibilidad; se retira en Fase 5) ───────────
         // Primary brand color - Blue
         primary: {
           50:  '#eff6ff',
@@ -47,8 +92,18 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ['Inter', 'Helvetica Neue', 'sans-serif'],
-        display: ['Inter', 'sans-serif'],
+        sans: ['IBM Plex Sans', 'system-ui', 'Segoe UI', 'sans-serif'],
+        mono: ['IBM Plex Mono', 'ui-monospace', 'monospace'],
+        display: ['IBM Plex Sans', 'system-ui', 'sans-serif'],
+      },
+      fontSize: {
+        // escala del Design System: 21 / 16 / 14 / 13 / 12,5 / 10 (base 14)
+        'ds-xl': ['1.3125rem', { lineHeight: '1.4' }],
+        'ds-lg': ['1rem', { lineHeight: '1.5' }],
+        'ds-base': ['0.875rem', { lineHeight: '1.5' }],
+        'ds-sm': ['0.8125rem', { lineHeight: '1.5' }],
+        'ds-xs': ['0.78125rem', { lineHeight: '1.4' }],
+        'ds-2xs': ['0.625rem', { lineHeight: '1.3' }],
       },
       spacing: {
         xs: '0.25rem',   // 4px
@@ -60,6 +115,10 @@ module.exports = {
         '3xl': '4rem',   // 64px
       },
       borderRadius: {
+        // Design System
+        ds: 'var(--r)',        // 10px
+        'ds-sm': 'var(--r-sm)', // 7px
+        // legacy (se retira en Fase 5)
         sm: '0.375rem',    // 6px
         md: '0.5rem',      // 8px
         lg: '0.75rem',     // 12px

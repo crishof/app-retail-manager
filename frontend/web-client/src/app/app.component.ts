@@ -4,6 +4,7 @@ import { SidebarComponent } from './layout/sidebar/sidebar.component';
 import { TopbarComponent } from './layout/topbar/topbar.component';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map } from 'rxjs/operators';
+import { ThemeService } from './core/services/theme.service';
 
 @Component({
   selector: "app-root",
@@ -13,6 +14,8 @@ import { filter, map } from 'rxjs/operators';
 })
 export class AppComponent {
   private readonly router = inject(Router);
+  // Instancia el servicio de tema en el arranque para aplicar data-theme.
+  private readonly theme = inject(ThemeService);
 
   sidebarCollapsed = false;
 
