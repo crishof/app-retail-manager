@@ -1,5 +1,0 @@
-spring:
-  application:
-    name: api-gateway
-  config:
-    import: "${SPRING_CONFIG_IMPORT:optional:configserver:http://config-server:8088}"
